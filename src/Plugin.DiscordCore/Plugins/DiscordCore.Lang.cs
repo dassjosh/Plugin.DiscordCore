@@ -110,7 +110,7 @@ namespace DiscordCorePlugin.Plugins
                 [ServerLang.Commands.AcceptCommand] = "accept",
                 [ServerLang.Commands.DeclineCommand] = "decline",
                 
-                [ServerLang.Commands.Code.LinkInfo] = $"To complete your activation please open Discord use the following command: <color=#{AccentColor}>/{{plugin.lang:{UserAppCommandKeys.Command}}} {{plugin.lang:{UserAppCommandKeys.Link.Command}}} {{discordcore.link.code}}</color>.\n",
+                [ServerLang.Commands.Code.LinkInfo] = $"To complete your activation please open Discord use the following command: <color=#{AccentColor}>/{{plugin.lang:{ServerLang.Discord.DiscordCommand}}} {{plugin.lang:{ServerLang.Discord.LinkCommand}}} {{discordcore.link.code}}</color>.\n",
                 [ServerLang.Commands.Code.LinkServer] = $"In order to use this command you must be in the <color=#{AccentColor}>{{guild.name}}</color> discord server. " +
                                                         $"You can join @ <color=#{DiscordSuccess}>discord.gg/{{discordcore.invite.code}}</color>.\n",
                 [ServerLang.Commands.Code.LinkInGuild] = "This command can be used in the following guild channels {dc.command.channels} .\n",
@@ -163,6 +163,9 @@ namespace DiscordCorePlugin.Plugins
                 [ServerLang.Join.ByPlayer] = "{user.fullname} is trying to link their Discord account with your game account. " +
                                              $"If you wish to [#{DiscordSuccess}]accept[/#] this link please type [#{DiscordSuccess}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.AcceptCommand}}}[/#]. " +
                                              $"If you wish to [#{DiscordDanger}]decline[/#] this link please type [#{DiscordDanger}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.DeclineCommand}}}[/#]",
+                [ServerLang.Discord.DiscordCommand] = "dc",
+                [ServerLang.Discord.LinkCommand] = "link",
+
                 [ServerLang.Join.Errors.PlayerJoinActivationNotFound] = "There are no pending joins in progress for this game account. Please start the link in Discord and try again.",
                 
                 [ServerLang.Errors.PlayerAlreadyLinked] = "This player is already linked to Discord user {user.fullname}. " +
@@ -181,46 +184,6 @@ namespace DiscordCorePlugin.Plugins
                                                     $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.UserCommand}}} userid[/#] to start the link process by your discord user ID\n" +
                                                     $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.LeaveCommand}}}[/#] to to unlink yourself from discord\n" +
                                                     $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}}[/#] to see this message again",
-                                                    
-                [UserAppCommandKeys.Command] = UserAppCommands.Command,           
-                [UserAppCommandKeys.Description] = UserAppCommands.Description,   
-                [UserAppCommandKeys.Code.Command] = UserAppCommands.Code.Command,           
-                [UserAppCommandKeys.Code.Description] = UserAppCommands.Code.Description,     
-                [UserAppCommandKeys.User.Command] = UserAppCommands.User.Command,           
-                [UserAppCommandKeys.User.Description] = UserAppCommands.User.Description,     
-                [UserAppCommandKeys.User.Args.Player.Name] = UserAppCommands.User.Args.Player.Name,           
-                [UserAppCommandKeys.User.Args.Player.Description] = UserAppCommands.User.Args.Player.Description,     
-                [UserAppCommandKeys.Leave.Command] = UserAppCommands.Leave.Command,           
-                [UserAppCommandKeys.Leave.Description] = UserAppCommands.Leave.Description,     
-                [UserAppCommandKeys.Link.Command] = UserAppCommands.Link.Command,           
-                [UserAppCommandKeys.Link.Description] = UserAppCommands.Link.Description,     
-                [UserAppCommandKeys.Link.Args.Code.Name] = UserAppCommands.Link.Args.Code.Name,           
-                [UserAppCommandKeys.Link.Args.Code.Description] = UserAppCommands.Link.Args.Code.Description,
-                
-                [AdminAppCommandKeys.Command] = AdminAppCommands.Command,           
-                [AdminAppCommandKeys.Description] = AdminAppCommands.Description,           
-                [AdminAppCommandKeys.Link.Command] = AdminAppCommands.Link.Command,           
-                [AdminAppCommandKeys.Link.Description] = AdminAppCommands.Link.Description,           
-                [AdminAppCommandKeys.Link.Args.Player.Name] = AdminAppCommands.Link.Args.Player.Name,           
-                [AdminAppCommandKeys.Link.Args.Player.Description] = AdminAppCommands.Link.Args.Player.Description,           
-                [AdminAppCommandKeys.Link.Args.User.Name] = AdminAppCommands.Link.Args.User.Name,           
-                [AdminAppCommandKeys.Link.Args.User.Description] = AdminAppCommands.Link.Args.User.Description,           
-                [AdminAppCommandKeys.Unlink.Command] = AdminAppCommands.Unlink.Command,           
-                [AdminAppCommandKeys.Unlink.Description] = AdminAppCommands.Unlink.Description,           
-                [AdminAppCommandKeys.Unlink.Args.Player.Name] = AdminAppCommands.Unlink.Args.Player.Name,           
-                [AdminAppCommandKeys.Unlink.Args.Player.Description] = AdminAppCommands.Unlink.Args.Player.Description,           
-                [AdminAppCommandKeys.Unlink.Args.User.Name] = AdminAppCommands.Unlink.Args.User.Name,           
-                [AdminAppCommandKeys.Unlink.Args.User.Description] = AdminAppCommands.Unlink.Args.User.Description,           
-                [AdminAppCommandKeys.Search.Command] = AdminAppCommands.Search.Command,           
-                [AdminAppCommandKeys.Search.CommandDescription] = AdminAppCommands.Search.Description,           
-                [AdminAppCommandKeys.Search.SubCommand.Player.Command] = AdminAppCommands.Search.SubCommand.Player.Command,           
-                [AdminAppCommandKeys.Search.SubCommand.Player.Description] = AdminAppCommands.Search.SubCommand.Player.Description,           
-                [AdminAppCommandKeys.Search.SubCommand.Player.Args.Players.Name] = AdminAppCommands.Search.SubCommand.Player.Args.Players.Name,           
-                [AdminAppCommandKeys.Search.SubCommand.Player.Args.Players.Description] = AdminAppCommands.Search.SubCommand.Player.Args.Players.Description,            
-                [AdminAppCommandKeys.Search.SubCommand.User.Command]= AdminAppCommands.Search.SubCommand.User.Command,           
-                [AdminAppCommandKeys.Search.SubCommand.User.Description] = AdminAppCommands.Search.SubCommand.User.Description,           
-                [AdminAppCommandKeys.Search.SubCommand.User.Args.Users.Name] = AdminAppCommands.Search.SubCommand.User.Args.Users.Name,           
-                [AdminAppCommandKeys.Search.SubCommand.User.Args.Users.Description] = AdminAppCommands.Search.SubCommand.User.Args.Users.Description,
             }, this);
         }
     }

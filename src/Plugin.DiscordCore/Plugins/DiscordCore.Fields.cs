@@ -13,6 +13,7 @@ using Oxide.Ext.Discord.Libraries.Langs;
 using Oxide.Ext.Discord.Libraries.Linking;
 using Oxide.Ext.Discord.Libraries.Placeholders;
 using Oxide.Ext.Discord.Libraries.Templates;
+using Oxide.Ext.Discord.Libraries.Templates.Commands;
 using Oxide.Ext.Discord.Libraries.Templates.Messages;
 
 namespace DiscordCorePlugin.Plugins
@@ -39,6 +40,7 @@ namespace DiscordCorePlugin.Plugins
         private readonly DiscordMessageTemplates _templates = Interface.Oxide.GetLibrary<DiscordMessageTemplates>();
         private readonly DiscordPlaceholders _placeholders = Interface.Oxide.GetLibrary<DiscordPlaceholders>();
         private readonly DiscordLang _lang = Interface.Oxide.GetLibrary<DiscordLang>();
+        private readonly DiscordCommandLocalizations _local = Interface.Oxide.GetLibrary<DiscordCommandLocalizations>();
         private readonly StringBuilder _sb = new StringBuilder();
 
         private JoinHandler _joinHandler;
@@ -49,6 +51,9 @@ namespace DiscordCorePlugin.Plugins
         private const string AccentColor = "de8732";
         private const string DiscordSuccess = "43b581";
         private const string DiscordDanger = "f04747";
+        private const string PlayerArg = "player";
+        private const string UserArg = "user";
+        private const string CodeArg = "code";
 
         private DiscordApplicationCommand _appCommand;
         private string _allowedChannels;

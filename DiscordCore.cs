@@ -30,6 +30,7 @@ using Oxide.Ext.Discord.Libraries.Linking;
 using Oxide.Ext.Discord.Libraries.Placeholders;
 using Oxide.Ext.Discord.Libraries.Placeholders.Default;
 using Oxide.Ext.Discord.Libraries.Templates;
+using Oxide.Ext.Discord.Libraries.Templates.Commands;
 using Oxide.Ext.Discord.Libraries.Templates.Components;
 using Oxide.Ext.Discord.Libraries.Templates.Messages;
 using Oxide.Ext.Discord.Libraries.Templates.Messages.Embeds;
@@ -68,6 +69,7 @@ namespace Oxide.Plugins
         private readonly DiscordMessageTemplates _templates = Interface.Oxide.GetLibrary<DiscordMessageTemplates>();
         private readonly DiscordPlaceholders _placeholders = Interface.Oxide.GetLibrary<DiscordPlaceholders>();
         private readonly DiscordLang _lang = Interface.Oxide.GetLibrary<DiscordLang>();
+        private readonly DiscordCommandLocalizations _local = Interface.Oxide.GetLibrary<DiscordCommandLocalizations>();
         private readonly StringBuilder _sb = new StringBuilder();
         
         private JoinHandler _joinHandler;
@@ -78,6 +80,9 @@ namespace Oxide.Plugins
         private const string AccentColor = "de8732";
         private const string DiscordSuccess = "43b581";
         private const string DiscordDanger = "f04747";
+        private const string PlayerArg = "player";
+        private const string UserArg = "user";
+        private const string CodeArg = "code";
         
         private DiscordApplicationCommand _appCommand;
         private string _allowedChannels;
@@ -256,7 +261,7 @@ namespace Oxide.Plugins
                 [ServerLang.Commands.AcceptCommand] = "accept",
                 [ServerLang.Commands.DeclineCommand] = "decline",
                 
-                [ServerLang.Commands.Code.LinkInfo] = $"To complete your activation please open Discord use the following command: <color=#{AccentColor}>/{{plugin.lang:{UserAppCommandKeys.Command}}} {{plugin.lang:{UserAppCommandKeys.Link.Command}}} {{discordcore.link.code}}</color>.\n",
+                [ServerLang.Commands.Code.LinkInfo] = $"To complete your activation please open Discord use the following command: <color=#{AccentColor}>/{{plugin.lang:{ServerLang.Discord.DiscordCommand}}} {{plugin.lang:{ServerLang.Discord.LinkCommand}}} {{discordcore.link.code}}</color>.\n",
                 [ServerLang.Commands.Code.LinkServer] = $"In order to use this command you must be in the <color=#{AccentColor}>{{guild.name}}</color> discord server. " +
                 $"You can join @ <color=#{DiscordSuccess}>discord.gg/{{discordcore.invite.code}}</color>.\n",
                 [ServerLang.Commands.Code.LinkInGuild] = "This command can be used in the following guild channels {dc.command.channels} .\n",
@@ -309,6 +314,9 @@ namespace Oxide.Plugins
                 [ServerLang.Join.ByPlayer] = "{user.fullname} is trying to link their Discord account with your game account. " +
                 $"If you wish to [#{DiscordSuccess}]accept[/#] this link please type [#{DiscordSuccess}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.AcceptCommand}}}[/#]. " +
                 $"If you wish to [#{DiscordDanger}]decline[/#] this link please type [#{DiscordDanger}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.DeclineCommand}}}[/#]",
+                [ServerLang.Discord.DiscordCommand] = "dc",
+                [ServerLang.Discord.LinkCommand] = "link",
+                
                 [ServerLang.Join.Errors.PlayerJoinActivationNotFound] = "There are no pending joins in progress for this game account. Please start the link in Discord and try again.",
                 
                 [ServerLang.Errors.PlayerAlreadyLinked] = "This player is already linked to Discord user {user.fullname}. " +
@@ -327,46 +335,6 @@ namespace Oxide.Plugins
                 $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.UserCommand}}} userid[/#] to start the link process by your discord user ID\n" +
                 $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.LeaveCommand}}}[/#] to to unlink yourself from discord\n" +
                 $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}}[/#] to see this message again",
-                
-                [UserAppCommandKeys.Command] = UserAppCommands.Command,
-                [UserAppCommandKeys.Description] = UserAppCommands.Description,
-                [UserAppCommandKeys.Code.Command] = UserAppCommands.Code.Command,
-                [UserAppCommandKeys.Code.Description] = UserAppCommands.Code.Description,
-                [UserAppCommandKeys.User.Command] = UserAppCommands.User.Command,
-                [UserAppCommandKeys.User.Description] = UserAppCommands.User.Description,
-                [UserAppCommandKeys.User.Args.Player.Name] = UserAppCommands.User.Args.Player.Name,
-                [UserAppCommandKeys.User.Args.Player.Description] = UserAppCommands.User.Args.Player.Description,
-                [UserAppCommandKeys.Leave.Command] = UserAppCommands.Leave.Command,
-                [UserAppCommandKeys.Leave.Description] = UserAppCommands.Leave.Description,
-                [UserAppCommandKeys.Link.Command] = UserAppCommands.Link.Command,
-                [UserAppCommandKeys.Link.Description] = UserAppCommands.Link.Description,
-                [UserAppCommandKeys.Link.Args.Code.Name] = UserAppCommands.Link.Args.Code.Name,
-                [UserAppCommandKeys.Link.Args.Code.Description] = UserAppCommands.Link.Args.Code.Description,
-                
-                [AdminAppCommandKeys.Command] = AdminAppCommands.Command,
-                [AdminAppCommandKeys.Description] = AdminAppCommands.Description,
-                [AdminAppCommandKeys.Link.Command] = AdminAppCommands.Link.Command,
-                [AdminAppCommandKeys.Link.Description] = AdminAppCommands.Link.Description,
-                [AdminAppCommandKeys.Link.Args.Player.Name] = AdminAppCommands.Link.Args.Player.Name,
-                [AdminAppCommandKeys.Link.Args.Player.Description] = AdminAppCommands.Link.Args.Player.Description,
-                [AdminAppCommandKeys.Link.Args.User.Name] = AdminAppCommands.Link.Args.User.Name,
-                [AdminAppCommandKeys.Link.Args.User.Description] = AdminAppCommands.Link.Args.User.Description,
-                [AdminAppCommandKeys.Unlink.Command] = AdminAppCommands.Unlink.Command,
-                [AdminAppCommandKeys.Unlink.Description] = AdminAppCommands.Unlink.Description,
-                [AdminAppCommandKeys.Unlink.Args.Player.Name] = AdminAppCommands.Unlink.Args.Player.Name,
-                [AdminAppCommandKeys.Unlink.Args.Player.Description] = AdminAppCommands.Unlink.Args.Player.Description,
-                [AdminAppCommandKeys.Unlink.Args.User.Name] = AdminAppCommands.Unlink.Args.User.Name,
-                [AdminAppCommandKeys.Unlink.Args.User.Description] = AdminAppCommands.Unlink.Args.User.Description,
-                [AdminAppCommandKeys.Search.Command] = AdminAppCommands.Search.Command,
-                [AdminAppCommandKeys.Search.CommandDescription] = AdminAppCommands.Search.Description,
-                [AdminAppCommandKeys.Search.SubCommand.Player.Command] = AdminAppCommands.Search.SubCommand.Player.Command,
-                [AdminAppCommandKeys.Search.SubCommand.Player.Description] = AdminAppCommands.Search.SubCommand.Player.Description,
-                [AdminAppCommandKeys.Search.SubCommand.Player.Args.Players.Name] = AdminAppCommands.Search.SubCommand.Player.Args.Players.Name,
-                [AdminAppCommandKeys.Search.SubCommand.Player.Args.Players.Description] = AdminAppCommands.Search.SubCommand.Player.Args.Players.Description,
-                [AdminAppCommandKeys.Search.SubCommand.User.Command]= AdminAppCommands.Search.SubCommand.User.Command,
-                [AdminAppCommandKeys.Search.SubCommand.User.Description] = AdminAppCommands.Search.SubCommand.User.Description,
-                [AdminAppCommandKeys.Search.SubCommand.User.Args.Users.Name] = AdminAppCommands.Search.SubCommand.User.Args.Users.Name,
-                [AdminAppCommandKeys.Search.SubCommand.User.Args.Users.Description] = AdminAppCommands.Search.SubCommand.User.Args.Users.Description,
             }, this);
         }
         #endregion
@@ -783,59 +751,54 @@ namespace Oxide.Plugins
         public void RegisterUserApplicationCommands()
         {
             ApplicationCommandBuilder builder = new ApplicationCommandBuilder(UserAppCommands.Command, "Discord Core Commands", ApplicationCommandType.ChatInput)
-            .AddDefaultPermissions(PermissionFlags.None)
-            .AddNameLocalizations(this, UserAppCommandKeys.Command)
-            .AddDescriptionLocalizations(this, UserAppCommandKeys.Description);
+            .AddDefaultPermissions(PermissionFlags.None);
             
             AddUserCodeCommand(builder);
             AddUserUserCommand(builder);
             AddUserLeaveCommand(builder);
             AddUserLinkCommand(builder);
             
-            Client.Bot.Application.CreateGlobalCommand(Client, builder.Build(), command =>
+            CommandCreate build = builder.Build();
+            DiscordCommandLocalization localization = builder.BuildCommandLocalization();
+            
+            _local.RegisterCommandLocalization(this, "User", localization, new TemplateVersion(1, 0, 0)).OnSuccess(() =>
             {
-                _appCommand = command;
-                command.GetPermissions(Client, Guild.Id, CreateAllowedChannels);
+                _local.ApplyCommandLocalizationsAsync(this, build, "User").OnSuccess(() =>
+                {
+                    Client.Bot.Application.CreateGlobalCommand(Client, build, command =>
+                    {
+                        _appCommand = command;
+                        command.GetPermissions(Client, Guild.Id, CreateAllowedChannels);
+                    });
+                });
             });
         }
         
         public void AddUserCodeCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(UserAppCommands.Code.Command, UserAppCommands.Code.Description)
-            .AddNameLocalizations(this, UserAppCommandKeys.Code.Command)
-            .AddDescriptionLocalizations(this, UserAppCommandKeys.Code.Description);
+            builder.AddSubCommand(UserAppCommands.CodeCommand, "start the link between discord and the game server using a link code");
         }
         
         public void AddUserUserCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(UserAppCommands.User.Command, UserAppCommands.User.Description)
-            .AddNameLocalizations(this, UserAppCommandKeys.User.Command)
-            .AddDescriptionLocalizations(this, UserAppCommandKeys.User.Description)
-            .AddOption(CommandOptionType.String, UserAppCommands.User.Args.Player.Name, UserAppCommands.User.Args.Player.Description)
+            builder.AddSubCommand(UserAppCommands.UserCommand, "start the link between discord and the game server by game server player name")
+            .AddOption(CommandOptionType.String, PlayerArg, "Player name on the game server")
             .Required()
-            .AutoComplete()
-            .AddNameLocalizations(this, UserAppCommandKeys.User.Args.Player.Name)
-            .AddDescriptionLocalizations(this, UserAppCommandKeys.User.Args.Player.Description);
+            .AutoComplete();
         }
         
         public void AddUserLeaveCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(UserAppCommands.Leave.Command, UserAppCommands.Leave.Description)
-            .AddNameLocalizations(this, UserAppCommandKeys.Leave.Command)
-            .AddDescriptionLocalizations(this, UserAppCommandKeys.Leave.Description);
+            builder.AddSubCommand(UserAppCommands.LeaveCommand, "unlink your discord and game server accounts");
         }
         
         public void AddUserLinkCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(UserAppCommands.Link.Command, UserAppCommands.Link.Description)
-            .AddNameLocalizations(this, UserAppCommandKeys.Link.Command)
-            .AddDescriptionLocalizations(this, UserAppCommandKeys.Link.Description)
-            .AddOption(CommandOptionType.String, UserAppCommands.Link.Args.Code.Name, UserAppCommands.Link.Args.Code.Description)
+            builder.AddSubCommand(UserAppCommands.LinkCommand, "complete the link using the given link code")
+            .AddOption(CommandOptionType.String, CodeArg, "code to complete the link")
             .Required()
             .SetMinLength(_pluginConfig.LinkSettings.LinkCodeLength)
-            .SetMaxLength(_pluginConfig.LinkSettings.LinkCodeLength)
-            .AddNameLocalizations(this, UserAppCommandKeys.Link.Args.Code.Name)
-            .AddDescriptionLocalizations(this, UserAppCommandKeys.Link.Args.Code.Description);
+            .SetMaxLength(_pluginConfig.LinkSettings.LinkCodeLength);
         }
         
         public void CreateAllowedChannels(GuildCommandPermissions permissions)
@@ -858,7 +821,7 @@ namespace Oxide.Plugins
             _placeholders.RegisterPlaceholder(this, "dc.command.channels", _allowedChannels);
         }
         
-        [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.Code.Command)]
+        [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.CodeCommand)]
         private void DiscordCodeCommand(DiscordInteraction interaction)
         {
             DiscordUser user = interaction.User;
@@ -872,7 +835,7 @@ namespace Oxide.Plugins
             SendTemplateMessage(TemplateKeys.Commands.Code.Success, interaction, GetDefault(user).Add(CodeKey, join.Code));
         }
         
-        [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.User.Command)]
+        [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.UserCommand)]
         private void DiscordUserCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
             DiscordUser user = interaction.User;
@@ -888,7 +851,7 @@ namespace Oxide.Plugins
                 return;
             }
             
-            string playerId = parsed.Args.GetString(UserAppCommands.User.Args.Player.Name);
+            string playerId = parsed.Args.GetString(PlayerArg);
             IPlayer player = covalence.Players.FindPlayerById(playerId);
             if (player == null)
             {
@@ -918,7 +881,7 @@ namespace Oxide.Plugins
             }
         }
         
-        [DiscordAutoCompleteCommand(UserAppCommands.Command, UserAppCommands.User.Args.Player.Name, UserAppCommands.User.Command)]
+        [DiscordAutoCompleteCommand(UserAppCommands.Command, PlayerArg, UserAppCommands.UserCommand)]
         private void HandleNameAutoComplete(DiscordInteraction interaction, InteractionDataOption focused)
         {
             string search = (string)focused.Value;
@@ -927,7 +890,7 @@ namespace Oxide.Plugins
             interaction.CreateInteractionResponse(Client, response);
         }
         
-        [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.Leave.Command)]
+        [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.LeaveCommand)]
         private void DiscordLeaveCommand(DiscordInteraction interaction)
         {
             DiscordUser user = interaction.User;
@@ -941,7 +904,7 @@ namespace Oxide.Plugins
             _linkHandler.HandleUnlink(player, user, UnlinkedReason.Command, interaction);
         }
         
-        [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.Link.Command)]
+        [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.LinkCommand)]
         private void DiscordLinkCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
             DiscordUser user = interaction.User;
@@ -951,7 +914,7 @@ namespace Oxide.Plugins
                 return;
             }
             
-            string code = parsed.Args.GetString(UserAppCommands.Link.Args.Code.Name);
+            string code = parsed.Args.GetString(CodeArg);
             JoinData join = _joinHandler.FindByCode(code);
             if (join == null)
             {
@@ -1044,93 +1007,78 @@ namespace Oxide.Plugins
         public void RegisterAdminApplicationCommands()
         {
             ApplicationCommandBuilder builder = new ApplicationCommandBuilder(AdminAppCommands.Command, "Discord Core Admin Commands", ApplicationCommandType.ChatInput)
-            .AddDefaultPermissions(PermissionFlags.None)
-            .AddNameLocalizations(this, AdminAppCommandKeys.Command)
-            .AddDescriptionLocalizations(this, AdminAppCommandKeys.Description);
+            .AddDefaultPermissions(PermissionFlags.None);
+            
             AddAdminLinkCommand(builder);
             AddAdminUnlinkCommand(builder);
             AddAdminSearchGroupCommand(builder);
             
-            Client.Bot.Application.CreateGlobalCommand(Client, builder.Build());
+            CommandCreate build = builder.Build();
+            DiscordCommandLocalization localization = builder.BuildCommandLocalization();
+            
+            _local.RegisterCommandLocalization(this, "Admin", localization, new TemplateVersion(1, 0, 0)).OnSuccess(() =>
+            {
+                _local.ApplyCommandLocalizationsAsync(this, build, "Admin").OnSuccess(() =>
+                {
+                    Client.Bot.Application.CreateGlobalCommand(Client, build);
+                });
+            });
         }
         
         public void AddAdminLinkCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(AdminAppCommands.Link.Command, AdminAppCommands.Link.Description)
-            .AddNameLocalizations(this, AdminAppCommandKeys.Link.Command)
-            .AddDescriptionLocalizations(this, AdminAppCommandKeys.Link.Description)
+            builder.AddSubCommand(AdminAppCommands.LinkCommand,  "admin link player game account and Discord user")
             
-            .AddOption(CommandOptionType.String, AdminAppCommands.Link.Args.Player.Name, AdminAppCommands.Link.Args.Player.Description)
+            .AddOption(CommandOptionType.String, PlayerArg, "player to link")
             .AutoComplete()
             .Required()
-            .AddNameLocalizations(this, AdminAppCommandKeys.Link.Args.Player.Name)
-            .AddDescriptionLocalizations(this, AdminAppCommandKeys.Link.Args.Player.Description)
             .Build()
             
-            .AddOption(CommandOptionType.User, AdminAppCommands.Link.Args.User.Name, AdminAppCommands.Link.Args.User.Description)
+            .AddOption(CommandOptionType.User, UserArg, "user to link")
             .Required()
-            .AddNameLocalizations(this, AdminAppCommandKeys.Link.Args.User.Name)
-            .AddDescriptionLocalizations(this, AdminAppCommandKeys.Link.Args.User.Description)
             .Build();
         }
         
         public void AddAdminUnlinkCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(AdminAppCommands.Unlink.Command, AdminAppCommands.Unlink.Description)
-            .AddNameLocalizations(this, AdminAppCommandKeys.Unlink.Command)
-            .AddDescriptionLocalizations(this, AdminAppCommandKeys.Unlink.Description)
+            builder.AddSubCommand(AdminAppCommands.UnlinkCommand, "admin unlink player game account and Discord user")
             
-            .AddOption(CommandOptionType.String, AdminAppCommands.Unlink.Args.Player.Name, AdminAppCommands.Unlink.Args.Player.Description)
+            .AddOption(CommandOptionType.String, PlayerArg, "player to unlink")
             .AutoComplete()
-            .AddNameLocalizations(this, AdminAppCommandKeys.Unlink.Args.Player.Name)
-            .AddDescriptionLocalizations(this, AdminAppCommandKeys.Unlink.Args.Player.Description)
             .Build()
             
-            .AddOption(CommandOptionType.User, AdminAppCommands.Unlink.Args.User.Name, AdminAppCommands.Unlink.Args.User.Name)
-            .AddNameLocalizations(this, AdminAppCommandKeys.Unlink.Args.User.Name)
-            .AddDescriptionLocalizations(this, AdminAppCommandKeys.Unlink.Args.User.Description)
+            .AddOption(CommandOptionType.User, UserArg, "user to unlink")
             .Build();
         }
         
         public void AddAdminSearchGroupCommand(ApplicationCommandBuilder builder)
         {
-            SubCommandGroupBuilder group = builder.AddSubCommandGroup(AdminAppCommands.Search.Command, AdminAppCommands.Search.Description)
-            .AddNameLocalizations(this, AdminAppCommandKeys.Search.Command)
-            .AddDescriptionLocalizations(this, AdminAppCommandKeys.Search.CommandDescription);
+            SubCommandGroupBuilder group = builder.AddSubCommandGroup(AdminAppCommands.SearchCommand, "search linked accounts by discord or player");
+            
             AddAdminSearchByPlayerCommand(group);
             AddAdminSearchByUserCommand(group);
         }
         
         public void AddAdminSearchByPlayerCommand(SubCommandGroupBuilder builder)
         {
-            builder.AddSubCommand(AdminAppCommands.Search.SubCommand.Player.Command, AdminAppCommands.Search.SubCommand.Player.Description)
-            .AddNameLocalizations(this, AdminAppCommandKeys.Search.SubCommand.Player.Command)
-            .AddDescriptionLocalizations(this, AdminAppCommandKeys.Search.SubCommand.Player.Description)
-            
-            .AddOption(CommandOptionType.String, AdminAppCommands.Search.SubCommand.Player.Args.Players.Name, AdminAppCommands.Search.SubCommand.Player.Args.Players.Description)
+            builder.AddSubCommand(AdminAppCommands.PlayerCommand, "search by player")
+            .AddOption(CommandOptionType.String, PlayerArg, "player to search")
             .AutoComplete()
-            .AddNameLocalizations(this, AdminAppCommandKeys.Search.SubCommand.Player.Args.Players.Name)
-            .AddDescriptionLocalizations(this, AdminAppCommandKeys.Search.SubCommand.Player.Args.Players.Description)
             .Build();
         }
         
         public void AddAdminSearchByUserCommand(SubCommandGroupBuilder builder)
         {
-            builder.AddSubCommand(AdminAppCommands.Search.SubCommand.User.Command, AdminAppCommands.Search.SubCommand.User.Description)
-            .AddNameLocalizations(this, AdminAppCommandKeys.Search.SubCommand.User.Command)
-            .AddDescriptionLocalizations(this, AdminAppCommandKeys.Search.SubCommand.User.Description)
-            
-            .AddOption(CommandOptionType.User, AdminAppCommands.Search.SubCommand.User.Args.Users.Name, AdminAppCommands.Search.SubCommand.User.Args.Users.Description)
-            .AddNameLocalizations(this, AdminAppCommandKeys.Search.SubCommand.User.Args.Users.Name)
-            .AddDescriptionLocalizations(this, AdminAppCommandKeys.Search.SubCommand.User.Args.Users.Description)
+            builder.AddSubCommand(AdminAppCommands.UserCommand, "search by user")
+            .AddOption(CommandOptionType.User, UserArg, "user to search")
             .Build();
         }
         
-        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.Link.Command)]
+        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.LinkCommand)]
         private void DiscordAdminLinkCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
-            string playerId = parsed.Args.GetString(AdminAppCommands.Link.Args.Player.Name);
-            DiscordUser user = parsed.Args.GetUser(AdminAppCommands.Link.Args.User.Name);
+            string playerId = parsed.Args.GetString(PlayerArg);
+            DiscordUser user = parsed.Args.GetUser(UserArg);
             IPlayer player = players.FindPlayerById(playerId);
             if (player == null)
             {
@@ -1154,12 +1102,12 @@ namespace Oxide.Plugins
             SendTemplateMessage(TemplateKeys.Commands.Admin.Link.Success, interaction, GetDefault(player, user));
         }
         
-        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.Unlink.Command)]
+        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.UnlinkCommand)]
         private void DiscordAdminUnlinkCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
-            string playerId = parsed.Args.GetString(AdminAppCommands.Unlink.Args.Player.Name);
+            string playerId = parsed.Args.GetString(PlayerArg);
             IPlayer player = players.FindPlayerById(playerId);
-            DiscordUser user = parsed.Args.GetUser(AdminAppCommands.Unlink.Args.User.Name);
+            DiscordUser user = parsed.Args.GetUser(UserArg);
             
             if (player == null && user == null)
             {
@@ -1203,10 +1151,10 @@ namespace Oxide.Plugins
             SendTemplateMessage(TemplateKeys.Commands.Admin.Unlink.Success, interaction, GetDefault(player, user));
         }
         
-        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.Search.SubCommand.Player.Command, AdminAppCommands.Search.Command)]
+        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.PlayerCommand, AdminAppCommands.SearchCommand)]
         private void DiscordAdminSearchByPlayer(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
-            string playerId = parsed.Args.GetString(AdminAppCommands.Search.SubCommand.Player.Args.Players.Name);
+            string playerId = parsed.Args.GetString(PlayerArg);
             IPlayer player = !string.IsNullOrEmpty(playerId) ? players.FindPlayerById(playerId) : null;
             if (player == null)
             {
@@ -1218,10 +1166,10 @@ namespace Oxide.Plugins
             SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Success, interaction, GetDefault(player, user));
         }
         
-        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.Search.SubCommand.User.Command, AdminAppCommands.Search.Command)]
+        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.UserCommand, AdminAppCommands.SearchCommand)]
         private void DiscordAdminSearchByUser(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
-            DiscordUser user = parsed.Args.GetUser(AdminAppCommands.Search.SubCommand.User.Args.Users.Name);
+            DiscordUser user = parsed.Args.GetUser(UserArg);
             IPlayer player = user.Player;
             SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Success, interaction, GetDefault(player, user));
         }
@@ -1711,88 +1659,11 @@ namespace Oxide.Plugins
         public static class AdminAppCommands
         {
             public const string Command = "dca";
-            public const string Description =  "Discord Core Admin Commands";
-            
-            public static class Link
-            {
-                public const string Command = "link";
-                public const string Description = "admin link player game account and Discord user";
-                
-                public static class Args
-                {
-                    public static class Player
-                    {
-                        public const string Name = "player";
-                        public const string Description = "player to link";
-                    }
-                    
-                    public static class User
-                    {
-                        public const string Name = "user";
-                        public const string Description = "user to link";
-                    }
-                }
-            }
-            
-            public static class Unlink
-            {
-                public const string Command = "unlink";
-                public const string Description =  "admin unlink player game account and Discord user";
-                
-                public static class Args
-                {
-                    public static class Player
-                    {
-                        public const string Name = "player";
-                        public const string Description = "player to unlink";
-                    }
-                    
-                    public static class User
-                    {
-                        public const string Name = "user";
-                        public const string Description = "user to unlink";
-                    }
-                }
-            }
-            
-            public static class Search
-            {
-                public const string Command = "search";
-                public const string Description =  "search linked accounts by discord or player";
-                
-                public static class SubCommand
-                {
-                    public static class Player
-                    {
-                        public const string Command = "player";
-                        public const string Description = "search by player";
-                        
-                        public static class Args
-                        {
-                            public static class Players
-                            {
-                                public const string Name = "player";
-                                public const string Description = "player to search";
-                            }
-                        }
-                    }
-                    
-                    public static class User
-                    {
-                        public const string Command = "user";
-                        public const string Description = "search by user";
-                        
-                        public static class Args
-                        {
-                            public static class Users
-                            {
-                                public const string Name = "user";
-                                public const string Description = "user to search";
-                            }
-                        }
-                    }
-                }
-            }
+            public const string LinkCommand = "link";
+            public const string UnlinkCommand = "unlink";
+            public const string SearchCommand = "search";
+            public const string PlayerCommand = "player";
+            public const string UserCommand = "user";
         }
         #endregion
 
@@ -1800,50 +1671,10 @@ namespace Oxide.Plugins
         public static class UserAppCommands
         {
             public const string Command = "dc";
-            public const string Description = "Discord Core Commands";
-            
-            public static class Code
-            {
-                public const string Command = "code";
-                public const string Description = "start the link between discord and the game server using a link code";
-            }
-            
-            public static class User
-            {
-                public const string Command = "user";
-                public const string Description = "start the link between discord and the game server by game server player name";
-                
-                public static class Args
-                {
-                    public static class Player
-                    {
-                        public const string Name = "player";
-                        public const string Description = "Player name on the game server";
-                    }
-                }
-            }
-            
-            public static class Leave
-            {
-                public const string Command = "leave";
-                public const string Description = "unlink your discord and game server accounts";
-            }
-            
-            public static class Link
-            {
-                public const string Command = "link";
-                public const string Description =  "complete the link using the given link code";
-                
-                public static class Args
-                {
-                    
-                    public static class Code
-                    {
-                        public const string Name = "code";
-                        public const string Description = "code to complete the link";
-                    }
-                }
-            }
+            public const string CodeCommand = "code";
+            public const string UserCommand = "user";
+            public const string LeaveCommand = "leave";
+            public const string LinkCommand = "link";
         }
         #endregion
 
@@ -2705,129 +2536,6 @@ namespace Oxide.Plugins
         }
         #endregion
 
-        #region Localization\AdminAppCommandKeys.cs
-        public static class AdminAppCommandKeys
-        {
-            private const string Base = "AppCommand.Admin.";
-            
-            public const string Command = Base + nameof(Command);
-            public const string Description = Base + nameof(Description);
-            
-            public static class Link
-            {
-                private const string Base = AdminAppCommandKeys.Base + nameof(Link) + ".";
-                
-                public const string Command = Base + nameof(Command);
-                public const string Description = Base + nameof(Description);
-                
-                public static class Args
-                {
-                    private const string Base = Link.Base + nameof(Args) + ".";
-                    
-                    public static class Player
-                    {
-                        private const string Base = Args.Base + nameof(Player) + ".";
-                        
-                        public const string Name = Base + nameof(Name);
-                        public const string Description = Base + nameof(Description);
-                    }
-                    
-                    public static class User
-                    {
-                        private const string Base = Args.Base + nameof(User) + ".";
-                        
-                        public const string Name = Base + nameof(Name);
-                        public const string Description = Base + nameof(Description);
-                    }
-                }
-            }
-            
-            public static class Unlink
-            {
-                private const string Base = AdminAppCommandKeys.Base + nameof(Unlink) + ".";
-                
-                public const string Command = Base + nameof(Command);
-                public const string Description = Base + nameof(Description);
-                
-                public static class Args
-                {
-                    private const string Base = Unlink.Base + nameof(Args) + ".";
-                    
-                    public static class Player
-                    {
-                        private const string Base = Args.Base + nameof(Player) + ".";
-                        
-                        public const string Name = Base + nameof(Name);
-                        public const string Description = Base + nameof(Description);
-                    }
-                    
-                    public static class User
-                    {
-                        private const string Base = Args.Base + nameof(User) + ".";
-                        
-                        public const string Name = Base + nameof(Name);
-                        public const string Description = Base + nameof(Description);
-                    }
-                }
-            }
-            
-            public static class Search
-            {
-                private const string Base = AdminAppCommandKeys.Base + nameof(Search) + ".";
-                
-                public const string Command = Base + nameof(Command);
-                public const string CommandDescription = Base + nameof(CommandDescription);
-                
-                public static class SubCommand
-                {
-                    private const string Base = Search.Base + nameof(SubCommand) + ".";
-                    
-                    public static class Player
-                    {
-                        private const string Base = SubCommand.Base + nameof(Player) + ".";
-                        
-                        public const string Command = Base + nameof(Command);
-                        public const string Description = Base + nameof(Description);
-                        
-                        public static class Args
-                        {
-                            private const string Base = Player.Base + nameof(Args) + ".";
-                            
-                            public static class Players
-                            {
-                                private const string Base = Args.Base + nameof(Players) + ".";
-                                
-                                public const string Name = Base + nameof(Name);
-                                public const string Description = Base + nameof(Description);
-                            }
-                        }
-                    }
-                    
-                    public static class User
-                    {
-                        private const string Base = SubCommand.Base + nameof(User) + ".";
-                        
-                        public const string Command = Base + nameof(Command);
-                        public const string Description = Base + nameof(Description);
-                        
-                        public static class Args
-                        {
-                            private const string Base = User.Base + nameof(Args) + ".";
-                            
-                            public static class Users
-                            {
-                                private const string Base = Args.Base + nameof(Users) + ".";
-                                
-                                public const string Name = Base + nameof(Name);
-                                public const string Description = Base + nameof(Description);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        #endregion
-
         #region Localization\ServerLang.cs
         public static class ServerLang
         {
@@ -2979,6 +2687,14 @@ namespace Oxide.Plugins
                 }
             }
             
+            public static class Discord
+            {
+                private const string Base = ServerLang.Base + nameof(Discord) + ".";
+                
+                public const string DiscordCommand = Base + nameof(DiscordCommand);
+                public const string LinkCommand = Base + nameof(LinkCommand);
+            }
+            
             public static class Errors
             {
                 private const string Base = ServerLang.Base + nameof(Errors) + ".";
@@ -2988,74 +2704,6 @@ namespace Oxide.Plugins
                 public const string ActivationNotFound = Base + nameof(ActivationNotFound);
                 public const string MustBeCompletedInDiscord = Base + nameof(MustBeCompletedInDiscord);
                 public const string ConsolePlayerNotSupported = Base + nameof(ConsolePlayerNotSupported);
-            }
-        }
-        #endregion
-
-        #region Localization\UserAppCommandKeys.cs
-        public static class UserAppCommandKeys
-        {
-            private const string Base = "AppCommand.User.";
-            
-            public const string Command = Base + nameof(Command);
-            public const string Description = Base + nameof(Description);
-            
-            public static class Code
-            {
-                private const string Base = UserAppCommandKeys.Base + nameof(Code) + ".";
-                
-                public const string Command = Base + nameof(Command);
-                public const string Description = Base + nameof(Description);
-            }
-            
-            public static class User
-            {
-                private const string Base = UserAppCommandKeys.Base + nameof(User) + ".";
-                
-                public const string Command = Base + nameof(Command);
-                public const string Description = Base + nameof(Description);
-                
-                public static class Args
-                {
-                    private const string Base = User.Base + nameof(Args) + ".";
-                    
-                    public static class Player
-                    {
-                        private const string Base = Args.Base + nameof(Player) + ".";
-                        
-                        public const string Name = Base + nameof(Name);
-                        public const string Description = Base + nameof(Description);
-                    }
-                }
-            }
-            
-            public static class Leave
-            {
-                private const string Base = UserAppCommandKeys.Base + nameof(Leave) + ".";
-                
-                public const string Command = Base + nameof(Command);
-                public const string Description = Base + nameof(Description);
-            }
-            
-            public static class Link
-            {
-                private const string Base = UserAppCommandKeys.Base + nameof(Link) + ".";
-                
-                public const string Command = Base + nameof(Command);
-                public const string Description = Base + nameof(Description);
-                
-                public static class Args
-                {
-                    private const string Base = Link.Base + nameof(Args) + ".";
-                    
-                    public static class Code
-                    {
-                        private const string Base = Args.Base + nameof(Code) + ".";
-                        
-                        public const string Name = Base + nameof(Command);
-                        public const string Description = Base + nameof(Description);
-                    }
-                }
             }
         }
         #endregion

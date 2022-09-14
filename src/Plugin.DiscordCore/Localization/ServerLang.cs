@@ -150,6 +150,14 @@
             }
         }
 
+        public static class Discord
+        {
+            private const string Base = ServerLang.Base + nameof(Discord) + ".";
+            
+            public const string DiscordCommand = Base + nameof(DiscordCommand);
+            public const string LinkCommand = Base + nameof(LinkCommand);
+        }
+
         public static class Errors
         {
             private const string Base = ServerLang.Base + nameof(Errors) + ".";

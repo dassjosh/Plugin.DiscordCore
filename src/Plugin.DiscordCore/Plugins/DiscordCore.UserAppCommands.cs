@@ -15,6 +15,8 @@ using Oxide.Ext.Discord.Entities.Permissions;
 using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Ext.Discord.Extensions;
 using Oxide.Ext.Discord.Libraries.Placeholders;
+using Oxide.Ext.Discord.Libraries.Templates;
+using Oxide.Ext.Discord.Libraries.Templates.Commands;
 
 namespace DiscordCorePlugin.Plugins
 {
@@ -24,59 +26,54 @@ namespace DiscordCorePlugin.Plugins
         public void RegisterUserApplicationCommands()
         {
             ApplicationCommandBuilder builder = new ApplicationCommandBuilder(UserAppCommands.Command, "Discord Core Commands", ApplicationCommandType.ChatInput)
-                                                .AddDefaultPermissions(PermissionFlags.None)
-                                                .AddNameLocalizations(this, UserAppCommandKeys.Command)
-                                                .AddDescriptionLocalizations(this, UserAppCommandKeys.Description);
+                                                .AddDefaultPermissions(PermissionFlags.None);
 
             AddUserCodeCommand(builder);
             AddUserUserCommand(builder);
             AddUserLeaveCommand(builder);
             AddUserLinkCommand(builder);
 
-            Client.Bot.Application.CreateGlobalCommand(Client, builder.Build(), command =>
+            CommandCreate build = builder.Build();
+            DiscordCommandLocalization localization = builder.BuildCommandLocalization();
+            
+            _local.RegisterCommandLocalization(this, "User", localization, new TemplateVersion(1, 0, 0)).OnSuccess(() =>
             {
-                _appCommand = command;
-                command.GetPermissions(Client, Guild.Id, CreateAllowedChannels);
+                _local.ApplyCommandLocalizationsAsync(this, build, "User").OnSuccess(() =>
+                {
+                    Client.Bot.Application.CreateGlobalCommand(Client, build, command =>
+                    {
+                        _appCommand = command;
+                        command.GetPermissions(Client, Guild.Id, CreateAllowedChannels);
+                    });
+                });
             });
         }
 
         public void AddUserCodeCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(UserAppCommands.Code.Command, UserAppCommands.Code.Description)
-                   .AddNameLocalizations(this, UserAppCommandKeys.Code.Command)
-                   .AddDescriptionLocalizations(this, UserAppCommandKeys.Code.Description);
+            builder.AddSubCommand(UserAppCommands.CodeCommand, "start the link between discord and the game server using a link code");
         } 
         
         public void AddUserUserCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(UserAppCommands.User.Command, UserAppCommands.User.Description)
-                   .AddNameLocalizations(this, UserAppCommandKeys.User.Command)
-                   .AddDescriptionLocalizations(this, UserAppCommandKeys.User.Description)
-                   .AddOption(CommandOptionType.String, UserAppCommands.User.Args.Player.Name, UserAppCommands.User.Args.Player.Description)
+            builder.AddSubCommand(UserAppCommands.UserCommand, "start the link between discord and the game server by game server player name")
+                   .AddOption(CommandOptionType.String, PlayerArg, "Player name on the game server")
                    .Required()
-                   .AutoComplete()
-                   .AddNameLocalizations(this, UserAppCommandKeys.User.Args.Player.Name)
-                   .AddDescriptionLocalizations(this, UserAppCommandKeys.User.Args.Player.Description);
+                   .AutoComplete();
         }
         
         public void AddUserLeaveCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(UserAppCommands.Leave.Command, UserAppCommands.Leave.Description)
-                   .AddNameLocalizations(this, UserAppCommandKeys.Leave.Command)
-                   .AddDescriptionLocalizations(this, UserAppCommandKeys.Leave.Description);
+            builder.AddSubCommand(UserAppCommands.LeaveCommand, "unlink your discord and game server accounts");
         }
 
         public void AddUserLinkCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(UserAppCommands.Link.Command, UserAppCommands.Link.Description)
-                   .AddNameLocalizations(this, UserAppCommandKeys.Link.Command)
-                   .AddDescriptionLocalizations(this, UserAppCommandKeys.Link.Description)
-                   .AddOption(CommandOptionType.String, UserAppCommands.Link.Args.Code.Name, UserAppCommands.Link.Args.Code.Description)
+            builder.AddSubCommand(UserAppCommands.LinkCommand, "complete the link using the given link code")
+                   .AddOption(CommandOptionType.String, CodeArg, "code to complete the link")
                    .Required()
                    .SetMinLength(_pluginConfig.LinkSettings.LinkCodeLength)
-                   .SetMaxLength(_pluginConfig.LinkSettings.LinkCodeLength)
-                   .AddNameLocalizations(this, UserAppCommandKeys.Link.Args.Code.Name)
-                   .AddDescriptionLocalizations(this, UserAppCommandKeys.Link.Args.Code.Description);
+                   .SetMaxLength(_pluginConfig.LinkSettings.LinkCodeLength);
         }
 
         public void CreateAllowedChannels(GuildCommandPermissions permissions)
@@ -99,7 +96,7 @@ namespace DiscordCorePlugin.Plugins
             _placeholders.RegisterPlaceholder(this, "dc.command.channels", _allowedChannels);
         }
 
-        [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.Code.Command)]
+        [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.CodeCommand)]
         private void DiscordCodeCommand(DiscordInteraction interaction)
         {
             DiscordUser user = interaction.User;
@@ -113,7 +110,7 @@ namespace DiscordCorePlugin.Plugins
             SendTemplateMessage(TemplateKeys.Commands.Code.Success, interaction, GetDefault(user).Add(CodeKey, join.Code));
         }
 
-        [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.User.Command)]
+        [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.UserCommand)]
         private void DiscordUserCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
             DiscordUser user = interaction.User;
@@ -129,7 +126,7 @@ namespace DiscordCorePlugin.Plugins
                 return;
             }
 
-            string playerId = parsed.Args.GetString(UserAppCommands.User.Args.Player.Name);
+            string playerId = parsed.Args.GetString(PlayerArg);
             IPlayer player = covalence.Players.FindPlayerById(playerId);
             if (player == null)
             {
@@ -159,7 +156,7 @@ namespace DiscordCorePlugin.Plugins
             }
         }
 
-        [DiscordAutoCompleteCommand(UserAppCommands.Command, UserAppCommands.User.Args.Player.Name, UserAppCommands.User.Command)]
+        [DiscordAutoCompleteCommand(UserAppCommands.Command, PlayerArg, UserAppCommands.UserCommand)]
         private void HandleNameAutoComplete(DiscordInteraction interaction, InteractionDataOption focused)
         {
             string search = (string)focused.Value;
@@ -168,7 +165,7 @@ namespace DiscordCorePlugin.Plugins
             interaction.CreateInteractionResponse(Client, response);
         }
 
-        [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.Leave.Command)]
+        [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.LeaveCommand)]
         private void DiscordLeaveCommand(DiscordInteraction interaction)
         {
             DiscordUser user = interaction.User;
@@ -182,7 +179,7 @@ namespace DiscordCorePlugin.Plugins
             _linkHandler.HandleUnlink(player, user, UnlinkedReason.Command, interaction);
         }
 
-        [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.Link.Command)]
+        [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.LinkCommand)]
         private void DiscordLinkCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
             DiscordUser user = interaction.User;
@@ -192,7 +189,7 @@ namespace DiscordCorePlugin.Plugins
                 return;
             }
             
-            string code = parsed.Args.GetString(UserAppCommands.Link.Args.Code.Name);
+            string code = parsed.Args.GetString(CodeArg);
             JoinData join = _joinHandler.FindByCode(code);
             if (join == null)
             {

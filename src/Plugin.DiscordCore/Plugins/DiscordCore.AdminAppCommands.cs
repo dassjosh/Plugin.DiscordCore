@@ -11,6 +11,8 @@ using Oxide.Ext.Discord.Entities.Interactions.ApplicationCommands;
 using Oxide.Ext.Discord.Entities.Permissions;
 using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Ext.Discord.Extensions;
+using Oxide.Ext.Discord.Libraries.Templates;
+using Oxide.Ext.Discord.Libraries.Templates.Commands;
 
 namespace DiscordCorePlugin.Plugins
 {
@@ -20,93 +22,78 @@ namespace DiscordCorePlugin.Plugins
         public void RegisterAdminApplicationCommands()
         {
             ApplicationCommandBuilder builder = new ApplicationCommandBuilder(AdminAppCommands.Command, "Discord Core Admin Commands", ApplicationCommandType.ChatInput)
-                                                .AddDefaultPermissions(PermissionFlags.None)
-                                                .AddNameLocalizations(this, AdminAppCommandKeys.Command)
-                                                .AddDescriptionLocalizations(this, AdminAppCommandKeys.Description);
+                .AddDefaultPermissions(PermissionFlags.None);
+            
             AddAdminLinkCommand(builder);
             AddAdminUnlinkCommand(builder);
             AddAdminSearchGroupCommand(builder);
 
-            Client.Bot.Application.CreateGlobalCommand(Client, builder.Build());
+            CommandCreate build = builder.Build();
+            DiscordCommandLocalization localization = builder.BuildCommandLocalization();
+
+            _local.RegisterCommandLocalization(this, "Admin", localization, new TemplateVersion(1, 0, 0)).OnSuccess(() =>
+            {
+                _local.ApplyCommandLocalizationsAsync(this, build, "Admin").OnSuccess(() =>
+                {
+                    Client.Bot.Application.CreateGlobalCommand(Client, build);
+                });
+            });
         }
 
         public void AddAdminLinkCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(AdminAppCommands.Link.Command, AdminAppCommands.Link.Description)
-                   .AddNameLocalizations(this, AdminAppCommandKeys.Link.Command)
-                   .AddDescriptionLocalizations(this, AdminAppCommandKeys.Link.Description)
+            builder.AddSubCommand(AdminAppCommands.LinkCommand,  "admin link player game account and Discord user")
 
-                   .AddOption(CommandOptionType.String, AdminAppCommands.Link.Args.Player.Name, AdminAppCommands.Link.Args.Player.Description)
+                   .AddOption(CommandOptionType.String, PlayerArg, "player to link")
                    .AutoComplete()
                    .Required()
-                   .AddNameLocalizations(this, AdminAppCommandKeys.Link.Args.Player.Name)
-                   .AddDescriptionLocalizations(this, AdminAppCommandKeys.Link.Args.Player.Description)
                    .Build()
 
-                   .AddOption(CommandOptionType.User, AdminAppCommands.Link.Args.User.Name, AdminAppCommands.Link.Args.User.Description)
+                   .AddOption(CommandOptionType.User, UserArg, "user to link")
                    .Required()
-                   .AddNameLocalizations(this, AdminAppCommandKeys.Link.Args.User.Name)
-                   .AddDescriptionLocalizations(this, AdminAppCommandKeys.Link.Args.User.Description)
                    .Build();
         }
 
         public void AddAdminUnlinkCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(AdminAppCommands.Unlink.Command, AdminAppCommands.Unlink.Description)
-                   .AddNameLocalizations(this, AdminAppCommandKeys.Unlink.Command)
-                   .AddDescriptionLocalizations(this, AdminAppCommandKeys.Unlink.Description)
+            builder.AddSubCommand(AdminAppCommands.UnlinkCommand, "admin unlink player game account and Discord user")
 
-                   .AddOption(CommandOptionType.String, AdminAppCommands.Unlink.Args.Player.Name, AdminAppCommands.Unlink.Args.Player.Description)
+                   .AddOption(CommandOptionType.String, PlayerArg, "player to unlink")
                    .AutoComplete()
-                   .AddNameLocalizations(this, AdminAppCommandKeys.Unlink.Args.Player.Name)
-                   .AddDescriptionLocalizations(this, AdminAppCommandKeys.Unlink.Args.Player.Description)
                    .Build()
 
-                   .AddOption(CommandOptionType.User, AdminAppCommands.Unlink.Args.User.Name, AdminAppCommands.Unlink.Args.User.Name)
-                   .AddNameLocalizations(this, AdminAppCommandKeys.Unlink.Args.User.Name)
-                   .AddDescriptionLocalizations(this, AdminAppCommandKeys.Unlink.Args.User.Description)
+                   .AddOption(CommandOptionType.User, UserArg, "user to unlink")
                    .Build();
         }
 
         public void AddAdminSearchGroupCommand(ApplicationCommandBuilder builder)
         {
-            SubCommandGroupBuilder group = builder.AddSubCommandGroup(AdminAppCommands.Search.Command, AdminAppCommands.Search.Description)
-                                                  .AddNameLocalizations(this, AdminAppCommandKeys.Search.Command)
-                                                  .AddDescriptionLocalizations(this, AdminAppCommandKeys.Search.CommandDescription);
+            SubCommandGroupBuilder group = builder.AddSubCommandGroup(AdminAppCommands.SearchCommand, "search linked accounts by discord or player");
+            
             AddAdminSearchByPlayerCommand(group);
             AddAdminSearchByUserCommand(group);
         }
 
         public void AddAdminSearchByPlayerCommand(SubCommandGroupBuilder builder)
         {
-            builder.AddSubCommand(AdminAppCommands.Search.SubCommand.Player.Command, AdminAppCommands.Search.SubCommand.Player.Description)
-                   .AddNameLocalizations(this, AdminAppCommandKeys.Search.SubCommand.Player.Command)
-                   .AddDescriptionLocalizations(this, AdminAppCommandKeys.Search.SubCommand.Player.Description)
-
-                   .AddOption(CommandOptionType.String, AdminAppCommands.Search.SubCommand.Player.Args.Players.Name, AdminAppCommands.Search.SubCommand.Player.Args.Players.Description)
+            builder.AddSubCommand(AdminAppCommands.PlayerCommand, "search by player")
+                   .AddOption(CommandOptionType.String, PlayerArg, "player to search")
                    .AutoComplete()
-                   .AddNameLocalizations(this, AdminAppCommandKeys.Search.SubCommand.Player.Args.Players.Name)
-                   .AddDescriptionLocalizations(this, AdminAppCommandKeys.Search.SubCommand.Player.Args.Players.Description)
                    .Build();
         }
         
         public void AddAdminSearchByUserCommand(SubCommandGroupBuilder builder)
         {
-            builder.AddSubCommand(AdminAppCommands.Search.SubCommand.User.Command, AdminAppCommands.Search.SubCommand.User.Description)
-                   .AddNameLocalizations(this, AdminAppCommandKeys.Search.SubCommand.User.Command)
-                   .AddDescriptionLocalizations(this, AdminAppCommandKeys.Search.SubCommand.User.Description)
-
-                   .AddOption(CommandOptionType.User, AdminAppCommands.Search.SubCommand.User.Args.Users.Name, AdminAppCommands.Search.SubCommand.User.Args.Users.Description)
-                   .AddNameLocalizations(this, AdminAppCommandKeys.Search.SubCommand.User.Args.Users.Name)
-                   .AddDescriptionLocalizations(this, AdminAppCommandKeys.Search.SubCommand.User.Args.Users.Description)
+            builder.AddSubCommand(AdminAppCommands.UserCommand, "search by user")
+                   .AddOption(CommandOptionType.User, UserArg, "user to search")
                    .Build();
         }
 
-        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.Link.Command)]
+        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.LinkCommand)]
         private void DiscordAdminLinkCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
-            string playerId = parsed.Args.GetString(AdminAppCommands.Link.Args.Player.Name);
-            DiscordUser user = parsed.Args.GetUser(AdminAppCommands.Link.Args.User.Name);
+            string playerId = parsed.Args.GetString(PlayerArg);
+            DiscordUser user = parsed.Args.GetUser(UserArg);
             IPlayer player = players.FindPlayerById(playerId);
             if (player == null)
             {
@@ -130,12 +117,12 @@ namespace DiscordCorePlugin.Plugins
             SendTemplateMessage(TemplateKeys.Commands.Admin.Link.Success, interaction, GetDefault(player, user));
         }
 
-        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.Unlink.Command)]
+        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.UnlinkCommand)]
         private void DiscordAdminUnlinkCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
-            string playerId = parsed.Args.GetString(AdminAppCommands.Unlink.Args.Player.Name);
+            string playerId = parsed.Args.GetString(PlayerArg);
             IPlayer player = players.FindPlayerById(playerId);
-            DiscordUser user = parsed.Args.GetUser(AdminAppCommands.Unlink.Args.User.Name);
+            DiscordUser user = parsed.Args.GetUser(UserArg);
 
             if (player == null && user == null)
             {
@@ -179,10 +166,10 @@ namespace DiscordCorePlugin.Plugins
             SendTemplateMessage(TemplateKeys.Commands.Admin.Unlink.Success, interaction, GetDefault(player, user));
         }
 
-        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.Search.SubCommand.Player.Command, AdminAppCommands.Search.Command)]
+        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.PlayerCommand, AdminAppCommands.SearchCommand)]
         private void DiscordAdminSearchByPlayer(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
-            string playerId = parsed.Args.GetString(AdminAppCommands.Search.SubCommand.Player.Args.Players.Name);
+            string playerId = parsed.Args.GetString(PlayerArg);
             IPlayer player = !string.IsNullOrEmpty(playerId) ? players.FindPlayerById(playerId) : null;
             if (player == null)
             {
@@ -194,10 +181,10 @@ namespace DiscordCorePlugin.Plugins
             SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Success, interaction, GetDefault(player, user));
         }
         
-        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.Search.SubCommand.User.Command, AdminAppCommands.Search.Command)]
+        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.UserCommand, AdminAppCommands.SearchCommand)]
         private void DiscordAdminSearchByUser(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
-            DiscordUser user = parsed.Args.GetUser(AdminAppCommands.Search.SubCommand.User.Args.Users.Name);
+            DiscordUser user = parsed.Args.GetUser(UserArg);
             IPlayer player = user.Player;
             SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Success, interaction, GetDefault(player, user));
         }

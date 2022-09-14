@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net461</TargetFrameworks>
+        <LangVersion>6</LangVersion>
+        <RootNamespace>DiscordCorePlugin</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Reference Include="Oxide.Core">
+        <HintPath>..\References\Oxide.Core.dll</HintPath>
+      </Reference>
+      <Reference Include="Oxide.CSharp">
+        <HintPath>..\References\Oxide.CSharp.dll</HintPath>
+      </Reference>
+      <Reference Include="Oxide.Ext.Discord">
+        <HintPath>..\References\Oxide.Ext.Discord.dll</HintPath>
+      </Reference>
+      <Reference Include="Oxide.References">
+        <HintPath>..\References\Oxide.References.dll</HintPath>
+      </Reference>
+      <Reference Include="Oxide.Unity">
+        <HintPath>..\References\Oxide.Unity.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\..\DiscordCore.cs">
+        <Link>DiscordCore.cs</Link>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\..\.gitignore">
+        <Link>.gitignore</Link>
+      </Content>
+    </ItemGroup>
+
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+      <Exec Command="plugin.merge -m -c -p ./merge.yml" />
+    </Target>
+
+</Project>

@@ -539,7 +539,7 @@ namespace Oxide.Plugins
                         }
                     }
                 }
-                else if (searchUser.Username.Equals(userName, StringComparison.OrdinalIgnoreCase) && searchUser.Discriminator.Equals(discriminator))
+                else if (searchUser.Username.Equals(userName, StringComparison.OrdinalIgnoreCase) && (searchUser.HasUpdatedUsername || searchUser.Discriminator.Equals(discriminator)))
                 {
                     user = searchUser;
                     break;

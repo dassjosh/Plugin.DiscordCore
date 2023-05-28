@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using DiscordCorePlugin.AppCommands;
 using DiscordCorePlugin.Localization;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Libraries.Placeholders;

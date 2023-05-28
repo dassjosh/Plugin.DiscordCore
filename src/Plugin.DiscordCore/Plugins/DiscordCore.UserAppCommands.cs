@@ -26,7 +26,7 @@ namespace DiscordCorePlugin.Plugins
         public void RegisterUserApplicationCommands()
         {
             ApplicationCommandBuilder builder = new ApplicationCommandBuilder(UserAppCommands.Command, "Discord Core Commands", ApplicationCommandType.ChatInput)
-                                                .AddDefaultPermissions(PermissionFlags.None);
+                .AddDefaultPermissions(PermissionFlags.Administrator);
 
             AddUserCodeCommand(builder);
             AddUserUserCommand(builder);
@@ -36,14 +36,14 @@ namespace DiscordCorePlugin.Plugins
             CommandCreate build = builder.Build();
             DiscordCommandLocalization localization = builder.BuildCommandLocalization();
             
-            _local.RegisterCommandLocalization(this, "User", localization, new TemplateVersion(1, 0, 0)).OnSuccess(() =>
+            _local.RegisterCommandLocalizationAsync(this, "User", localization, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0)).Then(() =>
             {
-                _local.ApplyCommandLocalizationsAsync(this, build, "User").OnSuccess(() =>
+                _local.ApplyCommandLocalizationsAsync(this, build, "User").Then(() =>
                 {
-                    Client.Bot.Application.CreateGlobalCommand(Client, build, command =>
+                    Client.Bot.Application.CreateGlobalCommand(Client, build).Then(command =>
                     {
                         _appCommand = command;
-                        command.GetPermissions(Client, Guild.Id, CreateAllowedChannels);
+                        command.GetPermissions(Client, Guild.Id).Then(CreateAllowedChannels);
                     });
                 });
             });
@@ -51,12 +51,12 @@ namespace DiscordCorePlugin.Plugins
 
         public void AddUserCodeCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(UserAppCommands.CodeCommand, "start the link between discord and the game server using a link code");
-        } 
+            builder.AddSubCommand(UserAppCommands.CodeCommand, "Start the link between discord and the game server using a link code");
+        }
         
         public void AddUserUserCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(UserAppCommands.UserCommand, "start the link between discord and the game server by game server player name")
+            builder.AddSubCommand(UserAppCommands.UserCommand, "Start the link between discord and the game server by game server player name")
                    .AddOption(CommandOptionType.String, PlayerArg, "Player name on the game server")
                    .Required()
                    .AutoComplete();
@@ -64,13 +64,13 @@ namespace DiscordCorePlugin.Plugins
         
         public void AddUserLeaveCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(UserAppCommands.LeaveCommand, "unlink your discord and game server accounts");
+            builder.AddSubCommand(UserAppCommands.LeaveCommand, "Unlink your discord and game server accounts");
         }
 
         public void AddUserLinkCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(UserAppCommands.LinkCommand, "complete the link using the given link code")
-                   .AddOption(CommandOptionType.String, CodeArg, "code to complete the link")
+            builder.AddSubCommand(UserAppCommands.LinkCommand, "Complete the link using the given link code")
+                   .AddOption(CommandOptionType.String, CodeArg, "Code to complete the link")
                    .Required()
                    .SetMinLength(_pluginConfig.LinkSettings.LinkCodeLength)
                    .SetMaxLength(_pluginConfig.LinkSettings.LinkCodeLength);
@@ -162,7 +162,7 @@ namespace DiscordCorePlugin.Plugins
             string search = (string)focused.Value;
             InteractionAutoCompleteBuilder response = interaction.GetAutoCompleteBuilder();
             response.AddAllOnlineFirstPlayers(search, StringComparison.OrdinalIgnoreCase, AutoCompleteSearchMode.Contains, AutoCompletePlayerSearchOptions.IncludeClanName);
-            interaction.CreateInteractionResponse(Client, response);
+            interaction.CreateResponse(Client, response);
         }
 
         [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.LeaveCommand)]

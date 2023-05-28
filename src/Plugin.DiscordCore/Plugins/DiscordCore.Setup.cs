@@ -5,6 +5,7 @@ using DiscordCorePlugin.Link;
 using DiscordCorePlugin.Localization;
 using Newtonsoft.Json;
 using Oxide.Core;
+using Oxide.Ext.Discord.Extensions;
 
 namespace DiscordCorePlugin.Plugins
 {
@@ -14,13 +15,14 @@ namespace DiscordCorePlugin.Plugins
         private void Init()
         {
             Instance = this;
+            _pool = this.GetPool();
             _pluginData = Interface.Oxide.DataFileSystem.ReadObject<PluginData>(Name);
 
             permission.RegisterPermission(UsePermission, this);
 
             _banHandler = new JoinBanHandler(_pluginConfig.LinkBanSettings);
             _linkHandler = new LinkHandler(_pluginData, _pluginConfig);
-            _joinHandler = new JoinHandler(_pluginConfig.LinkSettings, _linkHandler, _banHandler);
+            _joinHandler = new JoinHandler(_pluginConfig.LinkSettings, _linkHandler, _banHandler, _pool);
 
             _discordSettings.ApiToken = _pluginConfig.ApiKey;
             _discordSettings.LogLevel = _pluginConfig.ExtensionDebugging;

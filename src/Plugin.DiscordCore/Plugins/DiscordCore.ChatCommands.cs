@@ -168,10 +168,10 @@ namespace DiscordCorePlugin.Plugins
                 Limit = 1000
             };
 
-            Guild.SearchGuildMembers(Client, guildSearch, members =>
+            Guild.SearchMembers(Client, guildSearch).Then( members =>
             {
                 HandleChatJoinUserResults(player, members, userName, discriminator);
-            }, error =>
+            }).Catch(error =>
             {
                 Chat(player, ServerLang.Commands.User.Errors.SearchError, GetDefault(player));
             });
@@ -211,7 +211,7 @@ namespace DiscordCorePlugin.Plugins
                         }
                     }
                 }
-                else if (searchUser.Username.Equals(userName, StringComparison.OrdinalIgnoreCase) && searchUser.Discriminator.Equals(discriminator))
+                else if (searchUser.Username.Equals(userName, StringComparison.OrdinalIgnoreCase) && (searchUser.HasUpdatedUsername || searchUser.Discriminator.Equals(discriminator)))
                 {
                     user = searchUser;
                     break;

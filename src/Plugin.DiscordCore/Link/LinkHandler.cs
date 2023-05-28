@@ -205,7 +205,7 @@ namespace DiscordCorePlugin.Link
             for (int index = 0; index < _permissionSettings.LinkRoles.Count; index++)
             {
                 Snowflake role = _permissionSettings.LinkRoles[index];
-                DiscordCore.Instance.Guild.AddGuildMemberRole(_plugin.Client, user.Id, role);
+                DiscordCore.Instance.Guild.AddMemberRole(_plugin.Client, user.Id, role);
             }
         }
 
@@ -228,7 +228,7 @@ namespace DiscordCorePlugin.Link
                 for (int index = 0; index < _permissionSettings.UnlinkRoles.Count; index++)
                 {
                     Snowflake role = _permissionSettings.UnlinkRoles[index];
-                    DiscordCore.Instance.Guild.RemoveGuildMemberRole(_plugin.Client, user.Id, role);
+                    DiscordCore.Instance.Guild.RemoveMemberRole(_plugin.Client, user.Id, role);
                 }
             }
         }

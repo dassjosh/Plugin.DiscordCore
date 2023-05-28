@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using DiscordCorePlugin.Link;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Ext.Discord.Libraries.Placeholders;

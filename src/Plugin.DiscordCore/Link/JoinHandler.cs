@@ -19,13 +19,15 @@ namespace DiscordCorePlugin.Link
         private readonly LinkSettings _settings;
         private readonly LinkHandler _linkHandler;
         private readonly JoinBanHandler _ban;
+        private readonly DiscordPluginPool _pool;
         private readonly DiscordCore _plugin = DiscordCore.Instance;
 
-        public JoinHandler(LinkSettings settings, LinkHandler linkHandler, JoinBanHandler ban)
+        public JoinHandler(LinkSettings settings, LinkHandler linkHandler, JoinBanHandler ban, DiscordPluginPool pool)
         {
             _settings = settings;
             _linkHandler = linkHandler;
             _ban = ban;
+            _pool = pool;
         }
         
         public JoinData FindByCode(string code)
@@ -139,14 +141,14 @@ namespace DiscordCorePlugin.Link
         
         private string GenerateCode()
         {
-            StringBuilder sb = DiscordPool.GetStringBuilder();
+            StringBuilder sb = _pool.GetStringBuilder();
             for (int i = 0; i < _settings.LinkCodeLength; i++)
             {
                 sb.Append(_settings.LinkCodeCharacters[Oxide.Core.Random.Range(0, _settings.LinkCodeCharacters.Length)]);
             }
 
             string code = sb.ToString();
-            DiscordPool.FreeStringBuilder(ref sb);
+            _pool.FreeStringBuilder(sb);
             return code;
         }
 

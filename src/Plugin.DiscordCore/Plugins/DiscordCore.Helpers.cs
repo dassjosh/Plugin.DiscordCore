@@ -17,17 +17,17 @@ namespace DiscordCorePlugin.Plugins
 
         public void LogGuildLeaveUnlink(IPlayer player, DiscordUser user)
         {
-            Puts($"Player {player.Name}({player.Id}) Discord {user.GetFullUserName}({user.Id}) is no longer in the guild and has been unlinked.");
+            Puts($"Player {player.Name}({player.Id}) Discord {user.FullUserName}({user.Id}) is no longer in the guild and has been unlinked.");
         }
         
         public void LogServerInactiveUnlink(IPlayer player, DiscordUser user)
         {
-            Puts($"Player {player.Name}({player.Id}) Discord {user.GetFullUserName}({user.Id}) has been inactive for {{0}} days and has been unlinked.");
+            Puts($"Player {player.Name}({player.Id}) Discord {user.FullUserName}({user.Id}) has been inactive for {{0}} days and has been unlinked.");
         }
         
         public void LogApiUnlink(IPlayer player, DiscordUser user)
         {
-            Puts($"Player {player.Name}({player.Id}) Discord {user.GetFullUserName}({user.Id}) has been unlinked using through the API.");
+            Puts($"Player {player.Name}({player.Id}) Discord {user.FullUserName}({user.Id}) has been unlinked using through the API.");
         }
     }
 }

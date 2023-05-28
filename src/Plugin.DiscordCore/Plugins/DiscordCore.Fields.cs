@@ -2,27 +2,24 @@
 using DiscordCorePlugin.Configuration;
 using DiscordCorePlugin.Data;
 using DiscordCorePlugin.Link;
-using Oxide.Core;
 using Oxide.Ext.Discord;
-using Oxide.Ext.Discord.Attributes;
-using Oxide.Ext.Discord.Entities.Gatway;
+using Oxide.Ext.Discord.Entities.Gateway;
 using Oxide.Ext.Discord.Entities.Guilds;
 using Oxide.Ext.Discord.Entities.Interactions.ApplicationCommands;
 using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Ext.Discord.Libraries.Langs;
 using Oxide.Ext.Discord.Libraries.Linking;
 using Oxide.Ext.Discord.Libraries.Placeholders;
-using Oxide.Ext.Discord.Libraries.Templates;
 using Oxide.Ext.Discord.Libraries.Templates.Commands;
 using Oxide.Ext.Discord.Libraries.Templates.Messages;
+using Oxide.Ext.Discord.Pooling;
 
 namespace DiscordCorePlugin.Plugins
 {
     //Define:FileOrder=5
     public partial class DiscordCore
     {
-        [DiscordClient] 
-        public DiscordClient Client;
+        public DiscordClient Client { get; set; }
 
         private PluginData _pluginData;
         private PluginConfig _pluginConfig;
@@ -36,12 +33,14 @@ namespace DiscordCorePlugin.Plugins
             Intents = GatewayIntents.Guilds | GatewayIntents.GuildMembers
         };
         
-        private readonly DiscordLink _link = Interface.Oxide.GetLibrary<DiscordLink>();
-        private readonly DiscordMessageTemplates _templates = Interface.Oxide.GetLibrary<DiscordMessageTemplates>();
-        private readonly DiscordPlaceholders _placeholders = Interface.Oxide.GetLibrary<DiscordPlaceholders>();
-        private readonly DiscordLang _lang = Interface.Oxide.GetLibrary<DiscordLang>();
-        private readonly DiscordCommandLocalizations _local = Interface.Oxide.GetLibrary<DiscordCommandLocalizations>();
+        private readonly DiscordLink _link = GetLibrary<DiscordLink>();
+        private readonly DiscordMessageTemplates _templates = GetLibrary<DiscordMessageTemplates>();
+        private readonly DiscordPlaceholders _placeholders = GetLibrary<DiscordPlaceholders>();
+        private readonly DiscordLang _lang = GetLibrary<DiscordLang>();
+        private readonly DiscordCommandLocalizations _local = GetLibrary<DiscordCommandLocalizations>();
+        private DiscordPluginPool _pool;
         private readonly StringBuilder _sb = new StringBuilder();
+        
 
         private JoinHandler _joinHandler;
         private JoinBanHandler _banHandler;

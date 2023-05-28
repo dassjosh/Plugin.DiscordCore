@@ -1,13 +1,11 @@
 ﻿using System.Linq;
 using DiscordCorePlugin.Templates;
-using Oxide.Core.Libraries.Covalence;
 using Oxide.Core.Plugins;
 using Oxide.Ext.Discord.Constants;
 using Oxide.Ext.Discord.Entities;
 using Oxide.Ext.Discord.Entities.Applications;
-using Oxide.Ext.Discord.Entities.Gatway.Events;
+using Oxide.Ext.Discord.Entities.Gateway.Events;
 using Oxide.Ext.Discord.Entities.Guilds;
-using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Ext.Discord.Extensions;
 
 namespace DiscordCorePlugin.Plugins
@@ -49,7 +47,7 @@ namespace DiscordCorePlugin.Plugins
                 
             if (!app.HasApplicationFlag(ApplicationFlags.GatewayMessageContentLimited) && !app.HasApplicationFlag(ApplicationFlags.GatewayMessageContent))
             {
-                PrintWarning($"You will need to enable \"Message Content Intent\" for {_bot.GetFullUserName} @ https://discord.com/developers/applications\n by April 2022" +
+                PrintWarning($"You will need to enable \"Message Content Intent\" for {_bot.FullUserName} @ https://discord.com/developers/applications\n by April 2022" +
                              $"{Name} will stop function correctly after that date until that is fixed.");
             }
             

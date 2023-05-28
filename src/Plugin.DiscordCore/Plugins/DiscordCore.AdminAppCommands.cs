@@ -1,6 +1,5 @@
 ﻿using DiscordCorePlugin.AppCommands;
 using DiscordCorePlugin.Enums;
-using DiscordCorePlugin.Localization;
 using DiscordCorePlugin.Templates;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Attributes.ApplicationCommands;
@@ -22,7 +21,7 @@ namespace DiscordCorePlugin.Plugins
         public void RegisterAdminApplicationCommands()
         {
             ApplicationCommandBuilder builder = new ApplicationCommandBuilder(AdminAppCommands.Command, "Discord Core Admin Commands", ApplicationCommandType.ChatInput)
-                .AddDefaultPermissions(PermissionFlags.None);
+                .AddDefaultPermissions(PermissionFlags.Administrator);
             
             AddAdminLinkCommand(builder);
             AddAdminUnlinkCommand(builder);
@@ -31,9 +30,9 @@ namespace DiscordCorePlugin.Plugins
             CommandCreate build = builder.Build();
             DiscordCommandLocalization localization = builder.BuildCommandLocalization();
 
-            _local.RegisterCommandLocalization(this, "Admin", localization, new TemplateVersion(1, 0, 0)).OnSuccess(() =>
+            _local.RegisterCommandLocalizationAsync(this, "Admin", localization, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0)).Then(() =>
             {
-                _local.ApplyCommandLocalizationsAsync(this, build, "Admin").OnSuccess(() =>
+                _local.ApplyCommandLocalizationsAsync(this, build, "Admin").Then(() =>
                 {
                     Client.Bot.Application.CreateGlobalCommand(Client, build);
                 });
@@ -97,7 +96,7 @@ namespace DiscordCorePlugin.Plugins
             IPlayer player = players.FindPlayerById(playerId);
             if (player == null)
             {
-                SendTemplateMessage(TemplateKeys.Commands.Admin.Link.Error.PlayerNotFound, interaction, GetDefault(ServerPlayerCache.GetPlayer(playerId), user));
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Link.Error.PlayerNotFound, interaction, GetDefault(ServerPlayerCache.Instance.GetPlayer(playerId), user));
                 return;
             }
             
@@ -126,7 +125,7 @@ namespace DiscordCorePlugin.Plugins
 
             if (player == null && user == null)
             {
-                SendTemplateMessage(TemplateKeys.Commands.Admin.Unlink.Error.MustSpecifyOne, interaction, GetDefault(ServerPlayerCache.GetPlayer(playerId)));
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Unlink.Error.MustSpecifyOne, interaction, GetDefault(ServerPlayerCache.Instance.GetPlayer(playerId)));
                 return;
             }
             
@@ -173,7 +172,7 @@ namespace DiscordCorePlugin.Plugins
             IPlayer player = !string.IsNullOrEmpty(playerId) ? players.FindPlayerById(playerId) : null;
             if (player == null)
             {
-                SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Error.PlayerNotFound, interaction, GetDefault(ServerPlayerCache.GetPlayer(playerId)));
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Error.PlayerNotFound, interaction, GetDefault(ServerPlayerCache.Instance.GetPlayer(playerId)));
                 return;
             }
 

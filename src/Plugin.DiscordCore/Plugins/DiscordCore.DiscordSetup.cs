@@ -1,6 +1,7 @@
 ﻿using DiscordCorePlugin.Configuration;
 using DiscordCorePlugin.Data;
 using DiscordCorePlugin.Templates;
+using Oxide.Ext.Discord.Entities.Api;
 using Oxide.Ext.Discord.Entities.Channels;
 
 namespace DiscordCorePlugin.Plugins
@@ -35,13 +36,12 @@ namespace DiscordCorePlugin.Plugins
                 return;
             }
 
-            channel.GetChannelMessage(Client, _pluginData.MessageData.MessageId, message =>
+            channel.GetMessage(Client, _pluginData.MessageData.MessageId).Then(message =>
                 {
                     UpdateGuildTemplateMessage(TemplateKeys.WelcomeMessage.GuildWelcomeMessage, message);
-                },
-                error =>
+                }).Catch<ResponseError>(error =>
                 {
-                    if (error.HttpStatusCode == 404)
+                    if (error.HttpStatusCode == DiscordHttpStatusCode.NotFound)
                     {
                         error.SuppressErrorMessage();
                         PrintWarning("The previous link message has been removed. Recreating the message.");
@@ -52,7 +52,7 @@ namespace DiscordCorePlugin.Plugins
 
         private void CreateGuildWelcomeMessage(GuildLinkMessageSettings settings)
         {
-            SendGlobalTemplateMessage(TemplateKeys.WelcomeMessage.GuildWelcomeMessage, settings.ChannelId, null, null, null, message =>
+            SendGlobalTemplateMessage(TemplateKeys.WelcomeMessage.GuildWelcomeMessage, settings.ChannelId).Then(message =>
             {
                 _pluginData.MessageData = new LinkMessageData(message.ChannelId, message.Id);
             });

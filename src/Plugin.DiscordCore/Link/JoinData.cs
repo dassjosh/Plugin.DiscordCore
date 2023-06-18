@@ -9,9 +9,9 @@ namespace DiscordCorePlugin.Link
         public IPlayer Player { get; set; }
         public DiscordUser Discord { get; set; }
         public string Code { get; set; }
-        public JoinedFrom From { get; }
+        public JoinSource From { get; }
 
-        public JoinData(JoinedFrom from)
+        public JoinData(JoinSource from)
         {
             From = from;
         }

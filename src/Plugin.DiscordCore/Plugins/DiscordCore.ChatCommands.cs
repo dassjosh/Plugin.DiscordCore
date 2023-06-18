@@ -148,7 +148,7 @@ namespace DiscordCorePlugin.Plugins
                 return;
             }
 
-            int discriminatorIndex = search.IndexOf('#');
+            int discriminatorIndex = search.LastIndexOf('#');
             string userName;
             string discriminator;
             if (discriminatorIndex == -1)
@@ -249,7 +249,7 @@ namespace DiscordCorePlugin.Plugins
                 return;
             }
 
-            if (join.From == JoinedFrom.Server)
+            if (join.From == JoinSource.Server)
             {
                 Chat(player, ServerLang.Errors.MustBeCompletedInDiscord, GetDefault(player));
                 return;
@@ -292,7 +292,7 @@ namespace DiscordCorePlugin.Plugins
                 return;
             }
 
-            if (join.From == JoinedFrom.Server)
+            if (join.From == JoinSource.Server)
             {
                 Chat(player, ServerLang.Errors.MustBeCompletedInDiscord, GetDefault(player));
                 return;

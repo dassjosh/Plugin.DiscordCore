@@ -15,7 +15,6 @@ namespace DiscordCorePlugin.Plugins
         private void Init()
         {
             Instance = this;
-            _pool = this.GetPool();
             _pluginData = Interface.Oxide.DataFileSystem.ReadObject<PluginData>(Name);
 
             permission.RegisterPermission(UsePermission, this);
@@ -45,7 +44,7 @@ namespace DiscordCorePlugin.Plugins
         {
             config.LinkSettings = new LinkSettings(config.LinkSettings);
             config.WelcomeMessageSettings = new WelcomeMessageSettings(config.WelcomeMessageSettings);
-            config.LinkMessageSettings = new GuildLinkMessageSettings(config.LinkMessageSettings);
+            config.LinkMessageSettings = new GuildMessageSettings(config.LinkMessageSettings);
             config.PermissionSettings = new LinkPermissionSettings(config.PermissionSettings);
             config.LinkBanSettings = new LinkBanSettings(config.LinkBanSettings);
             return config;

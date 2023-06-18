@@ -2,13 +2,16 @@
 using DiscordCorePlugin.Configuration;
 using DiscordCorePlugin.Data;
 using DiscordCorePlugin.Link;
-using Oxide.Ext.Discord;
+using Oxide.Ext.Discord.Attributes.Pooling;
+using Oxide.Ext.Discord.Builders.Interactions.AutoComplete;
+using Oxide.Ext.Discord.Clients;
+using Oxide.Ext.Discord.Connections;
 using Oxide.Ext.Discord.Entities.Gateway;
 using Oxide.Ext.Discord.Entities.Guilds;
 using Oxide.Ext.Discord.Entities.Interactions.ApplicationCommands;
 using Oxide.Ext.Discord.Entities.Users;
-using Oxide.Ext.Discord.Libraries.Langs;
 using Oxide.Ext.Discord.Libraries.Linking;
+using Oxide.Ext.Discord.Libraries.Locale;
 using Oxide.Ext.Discord.Libraries.Placeholders;
 using Oxide.Ext.Discord.Libraries.Templates.Commands;
 using Oxide.Ext.Discord.Libraries.Templates.Messages;
@@ -28,20 +31,23 @@ namespace DiscordCorePlugin.Plugins
         
         public DiscordGuild Guild;
         
-        private readonly DiscordSettings _discordSettings = new DiscordSettings
+        private readonly BotConnection _discordSettings = new BotConnection
         {
             Intents = GatewayIntents.Guilds | GatewayIntents.GuildMembers
         };
         
+        [DiscordPool]
+        private DiscordPluginPool _pool;
+        
         private readonly DiscordLink _link = GetLibrary<DiscordLink>();
         private readonly DiscordMessageTemplates _templates = GetLibrary<DiscordMessageTemplates>();
         private readonly DiscordPlaceholders _placeholders = GetLibrary<DiscordPlaceholders>();
-        private readonly DiscordLang _lang = GetLibrary<DiscordLang>();
+        private readonly DiscordLocales _lang = GetLibrary<DiscordLocales>();
         private readonly DiscordCommandLocalizations _local = GetLibrary<DiscordCommandLocalizations>();
-        private DiscordPluginPool _pool;
         private readonly StringBuilder _sb = new StringBuilder();
         
-
+        private readonly PlayerNameFormatter _nameFormatter = PlayerNameFormatter.Create(PlayerDisplayNameMode.IncludeClanName);
+        
         private JoinHandler _joinHandler;
         private JoinBanHandler _banHandler;
         private LinkHandler _linkHandler;

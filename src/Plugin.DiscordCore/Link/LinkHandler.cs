@@ -98,7 +98,7 @@ namespace DiscordCorePlugin.Link
                 return;
             }
 
-            if (_settings.AutoRelinkInactive)
+            if (_settings.InactiveSettings.AutoRelinkInactive)
             {
                 info = _pluginData.InactivePlayerInfo[player.Id];
                 if (info != null)
@@ -164,7 +164,7 @@ namespace DiscordCorePlugin.Link
                     }
                 }
 
-                if (_settings.UnlinkInactive && info.LastOnline + TimeSpan.FromDays(_settings.UnlinkInactiveDays) < DateTime.UtcNow)
+                if (_settings.InactiveSettings.UnlinkInactive && info.LastOnline + TimeSpan.FromDays(_settings.InactiveSettings.UnlinkInactiveDays) < DateTime.UtcNow)
                 {
                     IPlayer player = _link.GetPlayer(info.DiscordId);
                     if (player != null)

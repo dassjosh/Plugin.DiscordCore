@@ -30,7 +30,7 @@ namespace DiscordCorePlugin.Configuration
         public WelcomeMessageSettings WelcomeMessageSettings { get; set; }
 
         [JsonProperty(PropertyName = "Guild Link Message Settings")]
-        public GuildLinkMessageSettings LinkMessageSettings { get; set; }
+        public GuildMessageSettings LinkMessageSettings { get; set; }
         
         [JsonProperty(PropertyName = "Link Permission Settings")]
         public LinkPermissionSettings PermissionSettings { get; set; }

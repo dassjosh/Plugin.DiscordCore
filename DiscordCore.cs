@@ -3,11 +3,14 @@ using Newtonsoft.Json.Converters;
 using Oxide.Core;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Core.Plugins;
-using Oxide.Ext.Discord;
 using Oxide.Ext.Discord.Attributes.ApplicationCommands;
+using Oxide.Ext.Discord.Attributes.Pooling;
 using Oxide.Ext.Discord.Builders.ApplicationCommands;
 using Oxide.Ext.Discord.Builders.Interactions;
+using Oxide.Ext.Discord.Builders.Interactions.AutoComplete;
 using Oxide.Ext.Discord.Cache;
+using Oxide.Ext.Discord.Clients;
+using Oxide.Ext.Discord.Connections;
 using Oxide.Ext.Discord.Constants;
 using Oxide.Ext.Discord.Entities;
 using Oxide.Ext.Discord.Entities.Api;
@@ -26,8 +29,8 @@ using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Ext.Discord.Extensions;
 using Oxide.Ext.Discord.Helpers;
 using Oxide.Ext.Discord.Interfaces.Promises;
-using Oxide.Ext.Discord.Libraries.Langs;
 using Oxide.Ext.Discord.Libraries.Linking;
+using Oxide.Ext.Discord.Libraries.Locale;
 using Oxide.Ext.Discord.Libraries.Placeholders;
 using Oxide.Ext.Discord.Libraries.Placeholders.Default;
 using Oxide.Ext.Discord.Libraries.Templates;
@@ -61,19 +64,22 @@ namespace Oxide.Plugins
         
         public DiscordGuild Guild;
         
-        private readonly DiscordSettings _discordSettings = new DiscordSettings
+        private readonly BotConnection _discordSettings = new BotConnection
         {
             Intents = GatewayIntents.Guilds | GatewayIntents.GuildMembers
         };
         
+        [DiscordPool]
+        private DiscordPluginPool _pool;
+        
         private readonly DiscordLink _link = GetLibrary<DiscordLink>();
         private readonly DiscordMessageTemplates _templates = GetLibrary<DiscordMessageTemplates>();
         private readonly DiscordPlaceholders _placeholders = GetLibrary<DiscordPlaceholders>();
-        private readonly DiscordLang _lang = GetLibrary<DiscordLang>();
+        private readonly DiscordLocales _lang = GetLibrary<DiscordLocales>();
         private readonly DiscordCommandLocalizations _local = GetLibrary<DiscordCommandLocalizations>();
-        private DiscordPluginPool _pool;
         private readonly StringBuilder _sb = new StringBuilder();
         
+        private readonly PlayerNameFormatter _nameFormatter = PlayerNameFormatter.Create(PlayerDisplayNameMode.IncludeClanName);
         
         private JoinHandler _joinHandler;
         private JoinBanHandler _banHandler;
@@ -97,7 +103,6 @@ namespace Oxide.Plugins
         private void Init()
         {
             Instance = this;
-            _pool = this.GetPool();
             _pluginData = Interface.Oxide.DataFileSystem.ReadObject<PluginData>(Name);
             
             permission.RegisterPermission(UsePermission, this);
@@ -127,7 +132,7 @@ namespace Oxide.Plugins
         {
             config.LinkSettings = new LinkSettings(config.LinkSettings);
             config.WelcomeMessageSettings = new WelcomeMessageSettings(config.WelcomeMessageSettings);
-            config.LinkMessageSettings = new GuildLinkMessageSettings(config.LinkMessageSettings);
+            config.LinkMessageSettings = new GuildMessageSettings(config.LinkMessageSettings);
             config.PermissionSettings = new LinkPermissionSettings(config.PermissionSettings);
             config.LinkBanSettings = new LinkBanSettings(config.LinkBanSettings);
             return config;
@@ -577,7 +582,7 @@ namespace Oxide.Plugins
                 return;
             }
             
-            if (join.From == JoinedFrom.Server)
+            if (join.From == JoinSource.Server)
             {
                 Chat(player, ServerLang.Errors.MustBeCompletedInDiscord, GetDefault(player));
                 return;
@@ -620,7 +625,7 @@ namespace Oxide.Plugins
                 return;
             }
             
-            if (join.From == JoinedFrom.Server)
+            if (join.From == JoinSource.Server)
             {
                 Chat(player, ServerLang.Errors.MustBeCompletedInDiscord, GetDefault(player));
                 return;
@@ -801,8 +806,8 @@ namespace Oxide.Plugins
             builder.AddSubCommand(UserAppCommands.LinkCommand, "Complete the link using the given link code")
             .AddOption(CommandOptionType.String, CodeArg, "Code to complete the link")
             .Required()
-            .SetMinLength(_pluginConfig.LinkSettings.LinkCodeLength)
-            .SetMaxLength(_pluginConfig.LinkSettings.LinkCodeLength);
+            .MinLength(_pluginConfig.LinkSettings.LinkCodeLength)
+            .MaxLength(_pluginConfig.LinkSettings.LinkCodeLength);
         }
         
         public void CreateAllowedChannels(GuildCommandPermissions permissions)
@@ -875,7 +880,7 @@ namespace Oxide.Plugins
                 return;
             }
             
-            _joinHandler.CreateActivation(player, user, JoinedFrom.Discord);
+            _joinHandler.CreateActivation(player, user, JoinSource.Discord);
             
             using (PlaceholderData data = GetDefault(player, user))
             {
@@ -888,9 +893,9 @@ namespace Oxide.Plugins
         [DiscordAutoCompleteCommand(UserAppCommands.Command, PlayerArg, UserAppCommands.UserCommand)]
         private void HandleNameAutoComplete(DiscordInteraction interaction, InteractionDataOption focused)
         {
-            string search = (string)focused.Value;
+            string search = focused.GetValue<string>();
             InteractionAutoCompleteBuilder response = interaction.GetAutoCompleteBuilder();
-            response.AddAllOnlineFirstPlayers(search, StringComparison.OrdinalIgnoreCase, AutoCompleteSearchMode.Contains, AutoCompletePlayerSearchOptions.IncludeClanName);
+            response.AddAllOnlineFirstPlayers(search, _nameFormatter);
             interaction.CreateResponse(Client, response);
         }
         
@@ -1086,7 +1091,7 @@ namespace Oxide.Plugins
             IPlayer player = players.FindPlayerById(playerId);
             if (player == null)
             {
-                SendTemplateMessage(TemplateKeys.Commands.Admin.Link.Error.PlayerNotFound, interaction, GetDefault(ServerPlayerCache.Instance.GetPlayer(playerId), user));
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Link.Error.PlayerNotFound, interaction, GetDefault(ServerPlayerCache.Instance.GetPlayerById(playerId), user));
                 return;
             }
             
@@ -1115,7 +1120,7 @@ namespace Oxide.Plugins
             
             if (player == null && user == null)
             {
-                SendTemplateMessage(TemplateKeys.Commands.Admin.Unlink.Error.MustSpecifyOne, interaction, GetDefault(ServerPlayerCache.Instance.GetPlayer(playerId)));
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Unlink.Error.MustSpecifyOne, interaction, GetDefault(ServerPlayerCache.Instance.GetPlayerById(playerId)));
                 return;
             }
             
@@ -1162,7 +1167,7 @@ namespace Oxide.Plugins
             IPlayer player = !string.IsNullOrEmpty(playerId) ? players.FindPlayerById(playerId) : null;
             if (player == null)
             {
-                SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Error.PlayerNotFound, interaction, GetDefault(ServerPlayerCache.Instance.GetPlayer(playerId)));
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Error.PlayerNotFound, interaction, GetDefault(ServerPlayerCache.Instance.GetPlayerById(playerId)));
                 return;
             }
             
@@ -1447,7 +1452,7 @@ namespace Oxide.Plugins
         public void SendTemplateMessage(string templateName, DiscordUser user, IPlayer player = null, PlaceholderData placeholders = null)
         {
             AddDefaultPlaceholders(ref placeholders, user, player);
-            user.SendTemplateDirectMessage(Client, this, templateName, _lang.GetPlayerLanguage(player), null, placeholders);
+            user.SendTemplateDirectMessage(Client, this, templateName, _lang.GetPlayerLanguage(player).Id, null, placeholders);
         }
         
         public void SendGlobalTemplateMessage(string templateName, DiscordUser user, IPlayer player = null, PlaceholderData placeholders = null)
@@ -1504,7 +1509,7 @@ namespace Oxide.Plugins
             UserPlaceholders.RegisterPlaceholders(this, "discordcore.other.user", OtherUserDataKey);
         }
         
-        private void InactiveDays(StringBuilder builder, PlaceholderState state) => PlaceholderFormatting.Replace(builder, state, _pluginConfig.LinkSettings.UnlinkInactiveDays);
+        private void InactiveDays(StringBuilder builder, PlaceholderState state) => PlaceholderFormatting.Replace(builder, state, _pluginConfig.LinkSettings.InactiveSettings.UnlinkInactiveDays);
         private static void BanDuration(StringBuilder builder, PlaceholderState state, TimeSpan duration) => PlaceholderFormatting.Replace(builder, state, duration.TotalHours);
         private static void Code(StringBuilder builder, PlaceholderState state, string code) => PlaceholderFormatting.Replace(builder, state, code);
         
@@ -1611,7 +1616,7 @@ namespace Oxide.Plugins
         //Define:FileOrder=25
         public void SetupGuildWelcomeMessage()
         {
-            GuildLinkMessageSettings settings = _pluginConfig.LinkMessageSettings;
+            GuildMessageSettings settings = _pluginConfig.LinkMessageSettings;
             if (!settings.Enabled)
             {
                 return;
@@ -1650,7 +1655,7 @@ namespace Oxide.Plugins
             });
         }
         
-        private void CreateGuildWelcomeMessage(GuildLinkMessageSettings settings)
+        private void CreateGuildWelcomeMessage(GuildMessageSettings settings)
         {
             SendGlobalTemplateMessage(TemplateKeys.WelcomeMessage.GuildWelcomeMessage, settings.ChannelId).Then(message =>
             {
@@ -1692,8 +1697,8 @@ namespace Oxide.Plugins
         }
         #endregion
 
-        #region Configuration\GuildLinkMessageSettings.cs
-        public class GuildLinkMessageSettings
+        #region Configuration\GuildMessageSettings.cs
+        public class GuildMessageSettings
         {
             [JsonProperty(PropertyName = "Enable Guild Link Message")]
             public bool Enabled { get; set; }
@@ -1701,10 +1706,31 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Message Channel ID")]
             public Snowflake ChannelId { get; set; }
             
-            public GuildLinkMessageSettings(GuildLinkMessageSettings settings)
+            public GuildMessageSettings(GuildMessageSettings settings)
             {
                 Enabled = settings?.Enabled ?? false;
                 ChannelId = settings?.ChannelId ?? default(Snowflake);
+            }
+        }
+        #endregion
+
+        #region Configuration\InactiveSettings.cs
+        public class InactiveSettings
+        {
+            [JsonProperty(PropertyName = "Automatically Unlink Inactive Players")]
+            public bool UnlinkInactive { get; set; }
+            
+            [JsonProperty(PropertyName = "Player Considered Inactive After X (Days)")]
+            public float UnlinkInactiveDays { get; set; }
+            
+            [JsonProperty(PropertyName = "Automatically Relink Inactive Players On Game Server Join")]
+            public bool AutoRelinkInactive { get; set; }
+            
+            public InactiveSettings(InactiveSettings settings)
+            {
+                UnlinkInactive = settings?.UnlinkInactive ?? false;
+                UnlinkInactiveDays = settings?.UnlinkInactiveDays ?? 90;
+                AutoRelinkInactive = settings?.AutoRelinkInactive ?? true;
             }
         }
         #endregion
@@ -1733,22 +1759,22 @@ namespace Oxide.Plugins
         #region Configuration\LinkPermissionSettings.cs
         public class LinkPermissionSettings
         {
-            [JsonProperty(PropertyName = "On Link Permissions To Add")]
+            [JsonProperty(PropertyName = "On Link Server Permissions To Add")]
             public List<string> LinkPermissions { get; set; }
             
-            [JsonProperty(PropertyName = "On Unlink Permissions To Remove")]
+            [JsonProperty(PropertyName = "On Unlink Server Permissions To Remove")]
             public List<string> UnlinkPermissions { get; set; }
             
-            [JsonProperty(PropertyName = "On Link Groups To Add")]
+            [JsonProperty(PropertyName = "On Link Server Groups To Add")]
             public List<string> LinkGroups { get; set; }
             
-            [JsonProperty(PropertyName = "On Unlink Groups To Remove")]
+            [JsonProperty(PropertyName = "On Unlink Server Groups To Remove")]
             public List<string> UnlinkGroups { get; set; }
             
-            [JsonProperty(PropertyName = "On Link Roles To Add")]
+            [JsonProperty(PropertyName = "On Link Discord Roles To Add")]
             public List<Snowflake> LinkRoles { get; set; }
             
-            [JsonProperty(PropertyName = "On Unlink Roles To Remove")]
+            [JsonProperty(PropertyName = "On Unlink Discord Roles To Remove")]
             public List<Snowflake> UnlinkRoles { get; set; }
             
             public LinkPermissionSettings(LinkPermissionSettings settings)
@@ -1778,14 +1804,8 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Automatically Relink A Player If They Leave And Rejoin The Discord Server")]
             public bool AutoRelinkPlayer { get; set; }
             
-            [JsonProperty(PropertyName = "Automatically Unlink Inactive Players After X Days")]
-            public bool UnlinkInactive { get; set; }
-            
-            [JsonProperty(PropertyName = "Consider Player Inactive After X (Days)")]
-            public float UnlinkInactiveDays { get; set; }
-            
-            [JsonProperty(PropertyName = "Automatically Relink Inactive Players If They Join The Game Server")]
-            public bool AutoRelinkInactive { get; set; }
+            [JsonProperty(PropertyName = "Inactive Settings")]
+            public InactiveSettings InactiveSettings { get; set; }
             
             public LinkSettings(LinkSettings settings)
             {
@@ -1797,9 +1817,7 @@ namespace Oxide.Plugins
                     LinkCodeLength = 6;
                 }
                 AutoRelinkPlayer = settings?.AutoRelinkPlayer ?? true;
-                UnlinkInactive = settings?.UnlinkInactive ?? false;
-                UnlinkInactiveDays = settings?.UnlinkInactiveDays ?? 90;
-                
+                InactiveSettings = new InactiveSettings(settings?.InactiveSettings);
             }
         }
         #endregion
@@ -1829,7 +1847,7 @@ namespace Oxide.Plugins
             public WelcomeMessageSettings WelcomeMessageSettings { get; set; }
             
             [JsonProperty(PropertyName = "Guild Link Message Settings")]
-            public GuildLinkMessageSettings LinkMessageSettings { get; set; }
+            public GuildMessageSettings LinkMessageSettings { get; set; }
             
             [JsonProperty(PropertyName = "Link Permission Settings")]
             public LinkPermissionSettings PermissionSettings { get; set; }
@@ -1915,8 +1933,8 @@ namespace Oxide.Plugins
         }
         #endregion
 
-        #region Enums\JoinedFrom.cs
-        public enum JoinedFrom
+        #region Enums\JoinSource.cs
+        public enum JoinSource
         {
             Server,
             Discord
@@ -2091,9 +2109,9 @@ namespace Oxide.Plugins
             public IPlayer Player { get; set; }
             public DiscordUser Discord { get; set; }
             public string Code { get; set; }
-            public JoinedFrom From { get; }
+            public JoinSource From { get; }
             
-            public JoinData(JoinedFrom from)
+            public JoinData(JoinSource from)
             {
                 From = from;
             }
@@ -2204,7 +2222,7 @@ namespace Oxide.Plugins
                 if (player == null) throw new ArgumentNullException(nameof(player));
                 
                 RemoveByPlayer(player);
-                JoinData activation = new JoinData(JoinedFrom.Server)
+                JoinData activation = new JoinData(JoinSource.Server)
                 {
                     Code = GenerateCode(),
                     Player = player
@@ -2218,7 +2236,7 @@ namespace Oxide.Plugins
                 if (user == null) throw new ArgumentNullException(nameof(user));
                 
                 RemoveByUser(user);
-                JoinData activation = new JoinData(JoinedFrom.Discord)
+                JoinData activation = new JoinData(JoinSource.Discord)
                 {
                     Code = GenerateCode(),
                     Discord = user
@@ -2227,7 +2245,7 @@ namespace Oxide.Plugins
                 return activation;
             }
             
-            public JoinData CreateActivation(IPlayer player, DiscordUser user, JoinedFrom from)
+            public JoinData CreateActivation(IPlayer player, DiscordUser user, JoinSource from)
             {
                 if (user == null) throw new ArgumentNullException(nameof(user));
                 
@@ -2271,14 +2289,14 @@ namespace Oxide.Plugins
             {
                 _activations.Remove(data);
                 
-                if (data.From == JoinedFrom.Server)
+                if (data.From == JoinSource.Server)
                 {
                     _ban.AddBan(data.Player);
                     RemoveByPlayer(data.Player);
                     _plugin.Chat(data.Player, ServerLang.Link.Declined.JoinWithUser, _plugin.GetDefault(data.Player, data.Discord));
                     _plugin.SendTemplateMessage(TemplateKeys.Link.Declined.JoinWithUser, interaction);
                 }
-                else if (data.From == JoinedFrom.Discord)
+                else if (data.From == JoinSource.Discord)
                 {
                     _ban.AddBan(data.Discord);
                     RemoveByUser(data.Discord);
@@ -2370,7 +2388,7 @@ namespace Oxide.Plugins
                     return;
                 }
                 
-                if (_settings.AutoRelinkInactive)
+                if (_settings.InactiveSettings.AutoRelinkInactive)
                 {
                     info = _pluginData.InactivePlayerInfo[player.Id];
                     if (info != null)
@@ -2436,7 +2454,7 @@ namespace Oxide.Plugins
                         }
                     }
                     
-                    if (_settings.UnlinkInactive && info.LastOnline + TimeSpan.FromDays(_settings.UnlinkInactiveDays) < DateTime.UtcNow)
+                    if (_settings.InactiveSettings.UnlinkInactive && info.LastOnline + TimeSpan.FromDays(_settings.InactiveSettings.UnlinkInactiveDays) < DateTime.UtcNow)
                     {
                         IPlayer player = _link.GetPlayer(info.DiscordId);
                         if (player != null)

@@ -17,15 +17,9 @@ namespace DiscordCorePlugin.Configuration
         [JsonProperty(PropertyName = "Automatically Relink A Player If They Leave And Rejoin The Discord Server")]
         public bool AutoRelinkPlayer { get; set; }
         
-        [JsonProperty(PropertyName = "Automatically Unlink Inactive Players After X Days")]
-        public bool UnlinkInactive { get; set; }
-        
-        [JsonProperty(PropertyName = "Consider Player Inactive After X (Days)")]
-        public float UnlinkInactiveDays { get; set; }
-        
-        [JsonProperty(PropertyName = "Automatically Relink Inactive Players If They Join The Game Server")]
-        public bool AutoRelinkInactive { get; set; }
-        
+        [JsonProperty(PropertyName = "Inactive Settings")]
+        public InactiveSettings InactiveSettings { get; set; }
+
         public LinkSettings(LinkSettings settings)
         {
             AnnouncementChannel = settings?.AnnouncementChannel ?? default(Snowflake);
@@ -36,9 +30,7 @@ namespace DiscordCorePlugin.Configuration
                 LinkCodeLength = 6;
             }
             AutoRelinkPlayer = settings?.AutoRelinkPlayer ?? true;
-            UnlinkInactive = settings?.UnlinkInactive ?? false;
-            UnlinkInactiveDays = settings?.UnlinkInactiveDays ?? 90;
-
+            InactiveSettings = new InactiveSettings(settings?.InactiveSettings);
         }
     }
 }

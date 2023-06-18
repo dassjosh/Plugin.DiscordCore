@@ -6,22 +6,22 @@ namespace DiscordCorePlugin.Configuration
 {
     public class LinkPermissionSettings
     {
-        [JsonProperty(PropertyName = "On Link Permissions To Add")]
+        [JsonProperty(PropertyName = "On Link Server Permissions To Add")]
         public List<string> LinkPermissions { get; set; }
         
-        [JsonProperty(PropertyName = "On Unlink Permissions To Remove")]
+        [JsonProperty(PropertyName = "On Unlink Server Permissions To Remove")]
         public List<string> UnlinkPermissions { get; set; }
         
-        [JsonProperty(PropertyName = "On Link Groups To Add")]
+        [JsonProperty(PropertyName = "On Link Server Groups To Add")]
         public List<string> LinkGroups { get; set; }
         
-        [JsonProperty(PropertyName = "On Unlink Groups To Remove")]
+        [JsonProperty(PropertyName = "On Unlink Server Groups To Remove")]
         public List<string> UnlinkGroups { get; set; }
         
-        [JsonProperty(PropertyName = "On Link Roles To Add")]
+        [JsonProperty(PropertyName = "On Link Discord Roles To Add")]
         public List<Snowflake> LinkRoles { get; set; }
         
-        [JsonProperty(PropertyName = "On Unlink Roles To Remove")]
+        [JsonProperty(PropertyName = "On Unlink Discord Roles To Remove")]
         public List<Snowflake> UnlinkRoles { get; set; }
 
         public LinkPermissionSettings(LinkPermissionSettings settings)

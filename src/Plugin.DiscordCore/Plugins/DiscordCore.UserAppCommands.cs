@@ -9,6 +9,7 @@ using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Attributes.ApplicationCommands;
 using Oxide.Ext.Discord.Builders.ApplicationCommands;
 using Oxide.Ext.Discord.Builders.Interactions;
+using Oxide.Ext.Discord.Builders.Interactions.AutoComplete;
 using Oxide.Ext.Discord.Entities.Interactions;
 using Oxide.Ext.Discord.Entities.Interactions.ApplicationCommands;
 using Oxide.Ext.Discord.Entities.Permissions;
@@ -72,8 +73,8 @@ namespace DiscordCorePlugin.Plugins
             builder.AddSubCommand(UserAppCommands.LinkCommand, "Complete the link using the given link code")
                    .AddOption(CommandOptionType.String, CodeArg, "Code to complete the link")
                    .Required()
-                   .SetMinLength(_pluginConfig.LinkSettings.LinkCodeLength)
-                   .SetMaxLength(_pluginConfig.LinkSettings.LinkCodeLength);
+                   .MinLength(_pluginConfig.LinkSettings.LinkCodeLength)
+                   .MaxLength(_pluginConfig.LinkSettings.LinkCodeLength);
         }
 
         public void CreateAllowedChannels(GuildCommandPermissions permissions)
@@ -146,7 +147,7 @@ namespace DiscordCorePlugin.Plugins
                 return;
             }
 
-            _joinHandler.CreateActivation(player, user, JoinedFrom.Discord);
+            _joinHandler.CreateActivation(player, user, JoinSource.Discord);
             
             using (PlaceholderData data = GetDefault(player, user))
             {
@@ -159,9 +160,9 @@ namespace DiscordCorePlugin.Plugins
         [DiscordAutoCompleteCommand(UserAppCommands.Command, PlayerArg, UserAppCommands.UserCommand)]
         private void HandleNameAutoComplete(DiscordInteraction interaction, InteractionDataOption focused)
         {
-            string search = (string)focused.Value;
+            string search = focused.GetValue<string>();
             InteractionAutoCompleteBuilder response = interaction.GetAutoCompleteBuilder();
-            response.AddAllOnlineFirstPlayers(search, StringComparison.OrdinalIgnoreCase, AutoCompleteSearchMode.Contains, AutoCompletePlayerSearchOptions.IncludeClanName);
+            response.AddAllOnlineFirstPlayers(search, _nameFormatter);
             interaction.CreateResponse(Client, response);
         }
 

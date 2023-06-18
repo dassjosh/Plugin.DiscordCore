@@ -11,7 +11,7 @@ namespace DiscordCorePlugin.Plugins
         //Define:FileOrder=25
         public void SetupGuildWelcomeMessage()
         {
-            GuildLinkMessageSettings settings = _pluginConfig.LinkMessageSettings;
+            GuildMessageSettings settings = _pluginConfig.LinkMessageSettings;
             if (!settings.Enabled)
             {
                 return;
@@ -50,7 +50,7 @@ namespace DiscordCorePlugin.Plugins
                 });
         }
 
-        private void CreateGuildWelcomeMessage(GuildLinkMessageSettings settings)
+        private void CreateGuildWelcomeMessage(GuildMessageSettings settings)
         {
             SendGlobalTemplateMessage(TemplateKeys.WelcomeMessage.GuildWelcomeMessage, settings.ChannelId).Then(message =>
             {

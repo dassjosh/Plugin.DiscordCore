@@ -32,7 +32,7 @@ namespace DiscordCorePlugin.Plugins
             UserPlaceholders.RegisterPlaceholders(this, "discordcore.other.user", OtherUserDataKey);
         }
         
-        private void InactiveDays(StringBuilder builder, PlaceholderState state) => PlaceholderFormatting.Replace(builder, state, _pluginConfig.LinkSettings.UnlinkInactiveDays);
+        private void InactiveDays(StringBuilder builder, PlaceholderState state) => PlaceholderFormatting.Replace(builder, state, _pluginConfig.LinkSettings.InactiveSettings.UnlinkInactiveDays);
         private static void BanDuration(StringBuilder builder, PlaceholderState state, TimeSpan duration) => PlaceholderFormatting.Replace(builder, state, duration.TotalHours);
         private static void Code(StringBuilder builder, PlaceholderState state, string code) => PlaceholderFormatting.Replace(builder, state, code);
 

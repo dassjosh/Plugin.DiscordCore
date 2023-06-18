@@ -1,6 +1,6 @@
 ﻿namespace DiscordCorePlugin.Enums
 {
-    public enum JoinedFrom
+    public enum JoinSource
     {
         Server,
         Discord

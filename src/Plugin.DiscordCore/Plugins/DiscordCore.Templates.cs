@@ -292,7 +292,7 @@ namespace DiscordCorePlugin.Plugins
         public void SendTemplateMessage(string templateName, DiscordUser user, IPlayer player = null, PlaceholderData placeholders = null)
         {
             AddDefaultPlaceholders(ref placeholders, user, player);
-            user.SendTemplateDirectMessage(Client, this, templateName, _lang.GetPlayerLanguage(player), null, placeholders);
+            user.SendTemplateDirectMessage(Client, this, templateName, _lang.GetPlayerLanguage(player).Id, null, placeholders);
         }
         
         public void SendGlobalTemplateMessage(string templateName, DiscordUser user, IPlayer player = null, PlaceholderData placeholders = null)

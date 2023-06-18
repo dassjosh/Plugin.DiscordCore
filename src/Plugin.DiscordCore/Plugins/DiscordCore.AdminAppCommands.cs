@@ -96,7 +96,7 @@ namespace DiscordCorePlugin.Plugins
             IPlayer player = players.FindPlayerById(playerId);
             if (player == null)
             {
-                SendTemplateMessage(TemplateKeys.Commands.Admin.Link.Error.PlayerNotFound, interaction, GetDefault(ServerPlayerCache.Instance.GetPlayer(playerId), user));
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Link.Error.PlayerNotFound, interaction, GetDefault(ServerPlayerCache.Instance.GetPlayerById(playerId), user));
                 return;
             }
             
@@ -125,7 +125,7 @@ namespace DiscordCorePlugin.Plugins
 
             if (player == null && user == null)
             {
-                SendTemplateMessage(TemplateKeys.Commands.Admin.Unlink.Error.MustSpecifyOne, interaction, GetDefault(ServerPlayerCache.Instance.GetPlayer(playerId)));
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Unlink.Error.MustSpecifyOne, interaction, GetDefault(ServerPlayerCache.Instance.GetPlayerById(playerId)));
                 return;
             }
             
@@ -172,7 +172,7 @@ namespace DiscordCorePlugin.Plugins
             IPlayer player = !string.IsNullOrEmpty(playerId) ? players.FindPlayerById(playerId) : null;
             if (player == null)
             {
-                SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Error.PlayerNotFound, interaction, GetDefault(ServerPlayerCache.Instance.GetPlayer(playerId)));
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Error.PlayerNotFound, interaction, GetDefault(ServerPlayerCache.Instance.GetPlayerById(playerId)));
                 return;
             }
 

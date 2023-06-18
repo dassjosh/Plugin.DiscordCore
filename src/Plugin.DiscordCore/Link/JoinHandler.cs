@@ -101,7 +101,7 @@ namespace DiscordCorePlugin.Link
             if (player == null) throw new ArgumentNullException(nameof(player));
             
             RemoveByPlayer(player);
-            JoinData activation = new JoinData(JoinedFrom.Server)
+            JoinData activation = new JoinData(JoinSource.Server)
             {
                 Code = GenerateCode(),
                 Player = player
@@ -115,7 +115,7 @@ namespace DiscordCorePlugin.Link
             if (user == null) throw new ArgumentNullException(nameof(user));
             
             RemoveByUser(user);
-            JoinData activation = new JoinData(JoinedFrom.Discord)
+            JoinData activation = new JoinData(JoinSource.Discord)
             {
                 Code = GenerateCode(),
                 Discord = user
@@ -124,7 +124,7 @@ namespace DiscordCorePlugin.Link
             return activation;
         }
         
-        public JoinData CreateActivation(IPlayer player, DiscordUser user, JoinedFrom from)
+        public JoinData CreateActivation(IPlayer player, DiscordUser user, JoinSource from)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             
@@ -168,14 +168,14 @@ namespace DiscordCorePlugin.Link
         {
             _activations.Remove(data);
 
-            if (data.From == JoinedFrom.Server)
+            if (data.From == JoinSource.Server)
             {
                 _ban.AddBan(data.Player);
                 RemoveByPlayer(data.Player);
                 _plugin.Chat(data.Player, ServerLang.Link.Declined.JoinWithUser, _plugin.GetDefault(data.Player, data.Discord));
                 _plugin.SendTemplateMessage(TemplateKeys.Link.Declined.JoinWithUser, interaction);
             }
-            else if (data.From == JoinedFrom.Discord)
+            else if (data.From == JoinSource.Discord)
             {
                 _ban.AddBan(data.Discord);
                 RemoveByUser(data.Discord);

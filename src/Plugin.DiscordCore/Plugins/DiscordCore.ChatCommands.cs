@@ -168,7 +168,7 @@ namespace DiscordCorePlugin.Plugins
                 Limit = 1000
             };
 
-            Guild.SearchMembers(Client, guildSearch).Then( members =>
+            Guild.SearchMembers(Client, guildSearch).Then(members =>
             {
                 HandleChatJoinUserResults(player, members, userName, discriminator);
             }).Catch(error =>

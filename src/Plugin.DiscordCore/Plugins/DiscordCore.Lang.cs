@@ -111,7 +111,7 @@ namespace DiscordCorePlugin.Plugins
                 
                 [ServerLang.Commands.Code.LinkInfo] = $"To complete your activation please open Discord use the following command: <color=#{AccentColor}>/{{plugin.lang:{ServerLang.Discord.DiscordCommand}}} {{plugin.lang:{ServerLang.Discord.LinkCommand}}} {{discordcore.link.code}}</color>.\n",
                 [ServerLang.Commands.Code.LinkServer] = $"In order to use this command you must be in the <color=#{AccentColor}>{{guild.name}}</color> discord server. " +
-                                                        $"You can join @ <color=#{DiscordSuccess}>discord.gg/{{discordcore.invite.code}}</color>.\n",
+                                                        $"You can join @ <color=#{Success}>discord.gg/{{discordcore.invite.code}}</color>.\n",
                 [ServerLang.Commands.Code.LinkInGuild] = "This command can be used in the following guild channels {dc.command.channels} .\n",
                 [ServerLang.Commands.Code.LinkInDm] = "This command can be used in the following in a direct message to {user.fullname} bot",
                 
@@ -160,8 +160,8 @@ namespace DiscordCorePlugin.Plugins
                                                    "Your ban will end in {discordcore.join.banned.duration:d} days {discordcore.join.banned.duration:h} hours {discordcore.join.banned.duration:m} minutes {discordcore.join.banned.duration:s} Seconds.",
 
                 [ServerLang.Join.ByPlayer] = "{user.fullname} is trying to link their Discord account with your game account. " +
-                                             $"If you wish to [#{DiscordSuccess}]accept[/#] this link please type [#{DiscordSuccess}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.AcceptCommand}}}[/#]. " +
-                                             $"If you wish to [#{DiscordDanger}]decline[/#] this link please type [#{DiscordDanger}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.DeclineCommand}}}[/#]",
+                                             $"If you wish to [#{Success}]accept[/#] this link please type [#{Success}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.AcceptCommand}}}[/#]. " +
+                                             $"If you wish to [#{Danger}]decline[/#] this link please type [#{Danger}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.DeclineCommand}}}[/#]",
                 [ServerLang.Discord.DiscordCommand] = "dc",
                 [ServerLang.Discord.LinkCommand] = "link",
 

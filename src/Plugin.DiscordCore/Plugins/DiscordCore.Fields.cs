@@ -45,17 +45,15 @@ namespace DiscordCorePlugin.Plugins
         private readonly DiscordLocales _lang = GetLibrary<DiscordLocales>();
         private readonly DiscordCommandLocalizations _local = GetLibrary<DiscordCommandLocalizations>();
         private readonly StringBuilder _sb = new StringBuilder();
-        
-        private readonly PlayerNameFormatter _nameFormatter = PlayerNameFormatter.Create(PlayerDisplayNameMode.IncludeClanName);
-        
+
         private JoinHandler _joinHandler;
         private JoinBanHandler _banHandler;
         private LinkHandler _linkHandler;
 
         private const string UsePermission = "discordcore.use";
         private const string AccentColor = "de8732";
-        private const string DiscordSuccess = "43b581";
-        private const string DiscordDanger = "f04747";
+        private const string Success = "43b581";
+        private const string Danger = "f04747";
         private const string PlayerArg = "player";
         private const string UserArg = "user";
         private const string CodeArg = "code";

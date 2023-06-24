@@ -25,16 +25,15 @@ namespace DiscordCorePlugin.Plugins
             _placeholders.RegisterPlaceholder(this, "discordcore.invite.code", _pluginConfig.InviteCode);
             _placeholders.RegisterPlaceholder(this, "discordcore.server.link.arg", ServerLinkArgument);
             _placeholders.RegisterPlaceholder(this, "discordcore.inactive.duration", InactiveDays);
-            _placeholders.RegisterPlaceholder<TimeSpan>(this, "discordcore.join.banned.duration", BanDurationKey, BanDuration);
-            _placeholders.RegisterPlaceholder<string>(this, "discordcore.link.code", CodeKey, Code);
-            _placeholders.RegisterPlaceholder<string>(this, "discordcore.error.invalid.code", CodeKey, Code);
+            _placeholders.RegisterPlaceholder<TimeSpan, double>(this, "discordcore.join.banned.duration", BanDurationKey, BanDuration);
+            _placeholders.RegisterPlaceholder<string>(this, "discordcore.link.code", CodeKey);
+            _placeholders.RegisterPlaceholder<string>(this, "discordcore.error.invalid.code", CodeKey);
             PlayerPlaceholders.RegisterPlaceholders(this, "discordcore.other.player", OtherPlayerDataKey);
             UserPlaceholders.RegisterPlaceholders(this, "discordcore.other.user", OtherUserDataKey);
         }
-        
-        private void InactiveDays(StringBuilder builder, PlaceholderState state) => PlaceholderFormatting.Replace(builder, state, _pluginConfig.LinkSettings.InactiveSettings.UnlinkInactiveDays);
-        private static void BanDuration(StringBuilder builder, PlaceholderState state, TimeSpan duration) => PlaceholderFormatting.Replace(builder, state, duration.TotalHours);
-        private static void Code(StringBuilder builder, PlaceholderState state, string code) => PlaceholderFormatting.Replace(builder, state, code);
+
+        private float InactiveDays() => _pluginConfig.LinkSettings.InactiveSettings.UnlinkInactiveDays;
+        private static double BanDuration(TimeSpan duration) => duration.TotalHours;
 
         public string LangPlaceholder(string key, PlaceholderData data)
         {

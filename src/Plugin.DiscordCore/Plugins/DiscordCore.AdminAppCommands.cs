@@ -41,51 +41,51 @@ namespace DiscordCorePlugin.Plugins
 
         public void AddAdminLinkCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(AdminAppCommands.LinkCommand,  "admin link player game account and Discord user")
+            builder.AddSubCommand(AdminAppCommands.LinkCommand, "admin link player game account and Discord user", sub =>
+            {
+                sub.AddOption(CommandOptionType.String, PlayerArg, "player to link",
+                    options => options.AutoComplete().Required());
 
-                   .AddOption(CommandOptionType.String, PlayerArg, "player to link")
-                   .AutoComplete()
-                   .Required()
-                   .Build()
-
-                   .AddOption(CommandOptionType.User, UserArg, "user to link")
-                   .Required()
-                   .Build();
+                sub.AddOption(CommandOptionType.User, UserArg, "user to link",
+                    options => options.Required());
+            });
         }
 
         public void AddAdminUnlinkCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(AdminAppCommands.UnlinkCommand, "admin unlink player game account and Discord user")
+            builder.AddSubCommand(AdminAppCommands.UnlinkCommand, "admin unlink player game account and Discord user", sub =>
+            {
+                sub.AddOption(CommandOptionType.String, PlayerArg, "player to unlink",
+                    options => options.AutoComplete());
 
-                   .AddOption(CommandOptionType.String, PlayerArg, "player to unlink")
-                   .AutoComplete()
-                   .Build()
-
-                   .AddOption(CommandOptionType.User, UserArg, "user to unlink")
-                   .Build();
+                sub.AddOption(CommandOptionType.User, UserArg, "user to unlink");
+            });
         }
 
         public void AddAdminSearchGroupCommand(ApplicationCommandBuilder builder)
         {
-            SubCommandGroupBuilder group = builder.AddSubCommandGroup(AdminAppCommands.SearchCommand, "search linked accounts by discord or player");
-            
-            AddAdminSearchByPlayerCommand(group);
-            AddAdminSearchByUserCommand(group);
+            builder.AddSubCommandGroup(AdminAppCommands.SearchCommand, "search linked accounts by discord or player", group =>
+            {
+                AddAdminSearchByPlayerCommand(group);
+                AddAdminSearchByUserCommand(group);
+            });
         }
 
-        public void AddAdminSearchByPlayerCommand(SubCommandGroupBuilder builder)
+        public void AddAdminSearchByPlayerCommand( ApplicationCommandGroupBuilder builder)
         {
-            builder.AddSubCommand(AdminAppCommands.PlayerCommand, "search by player")
-                   .AddOption(CommandOptionType.String, PlayerArg, "player to search")
-                   .AutoComplete()
-                   .Build();
+            builder.AddSubCommand(AdminAppCommands.PlayerCommand, "search by player", sub =>
+            {
+                sub.AddOption(CommandOptionType.String, PlayerArg, "player to search",
+                    options => options.AutoComplete());
+            });
         }
         
-        public void AddAdminSearchByUserCommand(SubCommandGroupBuilder builder)
+        public void AddAdminSearchByUserCommand( ApplicationCommandGroupBuilder builder)
         {
-            builder.AddSubCommand(AdminAppCommands.UserCommand, "search by user")
-                   .AddOption(CommandOptionType.User, UserArg, "user to search")
-                   .Build();
+            builder.AddSubCommand(AdminAppCommands.UserCommand, "search by user", sub =>
+            {
+                sub.AddOption(CommandOptionType.User, UserArg, "user to search");
+            });
         }
 
         [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.LinkCommand)]

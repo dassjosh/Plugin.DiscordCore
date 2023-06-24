@@ -57,10 +57,11 @@ namespace DiscordCorePlugin.Plugins
         
         public void AddUserUserCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(UserAppCommands.UserCommand, "Start the link between discord and the game server by game server player name")
-                   .AddOption(CommandOptionType.String, PlayerArg, "Player name on the game server")
-                   .Required()
-                   .AutoComplete();
+            builder.AddSubCommand(UserAppCommands.UserCommand, "Start the link between discord and the game server by game server player name", sub =>
+            {
+                sub.AddOption(CommandOptionType.String, PlayerArg, "Player name on the game server",
+                    options => options.AutoComplete().Required());
+            });
         }
         
         public void AddUserLeaveCommand(ApplicationCommandBuilder builder)
@@ -70,11 +71,13 @@ namespace DiscordCorePlugin.Plugins
 
         public void AddUserLinkCommand(ApplicationCommandBuilder builder)
         {
-            builder.AddSubCommand(UserAppCommands.LinkCommand, "Complete the link using the given link code")
-                   .AddOption(CommandOptionType.String, CodeArg, "Code to complete the link")
-                   .Required()
-                   .MinLength(_pluginConfig.LinkSettings.LinkCodeLength)
-                   .MaxLength(_pluginConfig.LinkSettings.LinkCodeLength);
+            builder.AddSubCommand(UserAppCommands.LinkCommand, "Complete the link using the given link code", sub =>
+            {
+                sub.AddOption(CommandOptionType.String, CodeArg, "Code to complete the link",
+                    options => options.Required()
+                                      .MinLength(_pluginConfig.LinkSettings.LinkCodeLength)
+                                      .MaxLength(_pluginConfig.LinkSettings.LinkCodeLength));
+            });
         }
 
         public void CreateAllowedChannels(GuildCommandPermissions permissions)
@@ -160,9 +163,9 @@ namespace DiscordCorePlugin.Plugins
         [DiscordAutoCompleteCommand(UserAppCommands.Command, PlayerArg, UserAppCommands.UserCommand)]
         private void HandleNameAutoComplete(DiscordInteraction interaction, InteractionDataOption focused)
         {
-            string search = focused.GetValue<string>();
+            string search = focused.GetString();
             InteractionAutoCompleteBuilder response = interaction.GetAutoCompleteBuilder();
-            response.AddAllOnlineFirstPlayers(search, _nameFormatter);
+            response.AddAllOnlineFirstPlayers(search, PlayerNameFormatter.ClanName);
             interaction.CreateResponse(Client, response);
         }
 

@@ -3,7 +3,6 @@ using DiscordCorePlugin.Configuration;
 using DiscordCorePlugin.Data;
 using DiscordCorePlugin.Link;
 using Oxide.Ext.Discord.Attributes.Pooling;
-using Oxide.Ext.Discord.Builders.Interactions.AutoComplete;
 using Oxide.Ext.Discord.Clients;
 using Oxide.Ext.Discord.Connections;
 using Oxide.Ext.Discord.Entities.Gateway;

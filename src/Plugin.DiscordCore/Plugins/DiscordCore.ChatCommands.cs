@@ -10,6 +10,7 @@ using Oxide.Ext.Discord.Entities.Guilds;
 using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Ext.Discord.Extensions;
 using Oxide.Ext.Discord.Libraries.Placeholders;
+using Oxide.Plugins.Placeholders;
 
 namespace DiscordCorePlugin.Plugins
 {
@@ -92,7 +93,7 @@ namespace DiscordCorePlugin.Plugins
             }
 
             JoinData join = _joinHandler.CreateActivation(player);
-            using (PlaceholderData data = GetDefault(player).AddUser(_bot).Add(CodeKey, join.Code))
+            using (PlaceholderData data = GetDefault(player).AddUser(_bot).Add(PlaceholderKeys.Data.CodeKey, join.Code))
             {
                 data.ManualPool();
                 _sb.Clear();
@@ -122,7 +123,7 @@ namespace DiscordCorePlugin.Plugins
 
             if (_banHandler.IsBanned(player))
             {
-                Chat(player, ServerLang.Banned.IsUserBanned, GetDefault(player));
+                Chat(player, ServerLang.Banned.IsUserBanned, GetDefault(player).AddTimeSpan(_banHandler.GetRemainingBan(player)));
                 return;
             }
 

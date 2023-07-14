@@ -768,7 +768,7 @@ namespace Oxide.Plugins
             CommandCreate build = builder.Build();
             DiscordCommandLocalization localization = builder.BuildCommandLocalization();
             
-            _local.RegisterCommandLocalizationAsync(this, "User", localization, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0)).Then(() =>
+            _local.RegisterCommandLocalizationAsync(this, "User", localization, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0)).Then(_ =>
             {
                 _local.ApplyCommandLocalizationsAsync(this, build, "User").Then(() =>
                 {
@@ -832,7 +832,7 @@ namespace Oxide.Plugins
         }
         
         [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.CodeCommand)]
-        private void DiscordCodeCommand(DiscordInteraction interaction)
+        private void DiscordCodeCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
             DiscordUser user = interaction.User;
             if (user.IsLinked())
@@ -901,7 +901,7 @@ namespace Oxide.Plugins
         }
         
         [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.LeaveCommand)]
-        private void DiscordLeaveCommand(DiscordInteraction interaction)
+        private void DiscordLeaveCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
             DiscordUser user = interaction.User;
             if (!user.IsLinked())
@@ -1026,7 +1026,7 @@ namespace Oxide.Plugins
             CommandCreate build = builder.Build();
             DiscordCommandLocalization localization = builder.BuildCommandLocalization();
             
-            _local.RegisterCommandLocalizationAsync(this, "Admin", localization, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0)).Then(() =>
+            _local.RegisterCommandLocalizationAsync(this, "Admin", localization, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0)).Then(_ =>
             {
                 _local.ApplyCommandLocalizationsAsync(this, build, "Admin").Then(() =>
                 {

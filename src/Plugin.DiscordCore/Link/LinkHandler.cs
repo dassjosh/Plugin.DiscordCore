@@ -14,6 +14,7 @@ using Oxide.Ext.Discord.Entities.Interactions;
 using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Ext.Discord.Extensions;
 using Oxide.Ext.Discord.Libraries.Linking;
+using Oxide.Ext.Discord.Libraries.Placeholders;
 using Oxide.Plugins;
 
 namespace DiscordCorePlugin.Link
@@ -55,7 +56,8 @@ namespace DiscordCorePlugin.Link
             _pluginData.LeftPlayerInfo.Remove(user.Id);
             _pluginData.PlayerDiscordInfo[player.Id] = new DiscordInfo(player, user);
             _link.OnLinked(_plugin, player, user);
-            _linkMessages[reason]?.SendMessages(player, user, interaction);
+            PlaceholderData data = _plugin.GetDefault(player, user);
+            _linkMessages[reason]?.SendMessages(player, user, interaction, data);
             AddPermissions(player, user);
             _plugin.SaveData();
         }
@@ -73,6 +75,7 @@ namespace DiscordCorePlugin.Link
                 return;
             }
 
+            PlaceholderData data = _plugin.GetDefault(player, user);
             if (reason == UnlinkedReason.LeftGuild)
             {
                 _pluginData.LeftPlayerInfo[info.DiscordId] = info;
@@ -80,11 +83,12 @@ namespace DiscordCorePlugin.Link
             else if (reason == UnlinkedReason.Inactive)
             {
                 _pluginData.InactivePlayerInfo[info.PlayerId] = info;
+                data.AddTimeSpan(TimeSpan.FromDays(_settings.InactiveSettings.UnlinkInactiveDays));
             }
 
             _pluginData.PlayerDiscordInfo.Remove(player.Id);
             _link.OnUnlinked(_plugin, player, user);
-            _unlinkMessages[reason]?.SendMessages(player, user, interaction);
+            _unlinkMessages[reason]?.SendMessages(player, user, interaction, data);
             RemovePermissions(player, user, reason);
             _plugin.SaveData();
         }

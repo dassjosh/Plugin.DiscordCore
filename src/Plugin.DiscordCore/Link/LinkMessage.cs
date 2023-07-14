@@ -26,9 +26,9 @@ namespace DiscordCorePlugin.Link
             _link = link;
         }
 
-        public void SendMessages(IPlayer player, DiscordUser user, DiscordInteraction interaction)
+        public void SendMessages(IPlayer player, DiscordUser user, DiscordInteraction interaction, PlaceholderData data)
         {
-            using (PlaceholderData data = _plugin.GetDefault(player, user))
+            using (data)
             {
                 data.ManualPool();
                 _plugin.BroadcastMessage(_chatAnnouncement, data);

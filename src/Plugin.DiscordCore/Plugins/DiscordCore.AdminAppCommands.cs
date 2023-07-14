@@ -30,7 +30,7 @@ namespace DiscordCorePlugin.Plugins
             CommandCreate build = builder.Build();
             DiscordCommandLocalization localization = builder.BuildCommandLocalization();
 
-            _local.RegisterCommandLocalizationAsync(this, "Admin", localization, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0)).Then(() =>
+            _local.RegisterCommandLocalizationAsync(this, "Admin", localization, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0)).Then(_ =>
             {
                 _local.ApplyCommandLocalizationsAsync(this, build, "Admin").Then(() =>
                 {
@@ -148,7 +148,7 @@ namespace DiscordCorePlugin.Plugins
             if (player != null && user != null && linkedUser.Id != user.Id)
             {
                 IPlayer otherPlayer = user.Player;
-                SendTemplateMessage(TemplateKeys.Commands.Admin.Unlink.Error.LinkNotSame, interaction, GetDefault(player, user).Add(OtherPlayerDataKey, otherPlayer).Add(OtherUserDataKey, linkedUser));
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Unlink.Error.LinkNotSame, interaction, GetDefault(player, user).AddTarget(otherPlayer).AddUserTarget(linkedUser));
                 return;
             }
 

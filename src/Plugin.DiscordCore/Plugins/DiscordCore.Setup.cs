@@ -5,7 +5,6 @@ using DiscordCorePlugin.Link;
 using DiscordCorePlugin.Localization;
 using Newtonsoft.Json;
 using Oxide.Core;
-using Oxide.Ext.Discord.Extensions;
 
 namespace DiscordCorePlugin.Plugins
 {

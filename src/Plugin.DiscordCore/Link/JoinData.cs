@@ -16,19 +16,10 @@ namespace DiscordCorePlugin.Link
             From = from;
         }
         
-        public bool IsCompleted()
-        {
-            return Player != null && Discord != null && Discord.Id.IsValid();
-        }
+        public bool IsCompleted() => Player != null && Discord != null && Discord.Id.IsValid();
 
-        public bool IsMatch(IPlayer player)
-        {
-            return Player != null && player != null && Player.Id == player.Id;
-        }
-        
-        public bool IsMatch(DiscordUser user)
-        {
-            return Discord != null && user != null && Discord.Id == user.Id;
-        }
+        public bool IsMatch(IPlayer player) => Player != null && player != null && Player.Id == player.Id;
+
+        public bool IsMatch(DiscordUser user) => Discord != null && user != null && Discord.Id == user.Id;
     }
 }

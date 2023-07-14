@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using DiscordCorePlugin.AppCommands;
 using DiscordCorePlugin.Enums;
 using DiscordCorePlugin.Link;
@@ -18,6 +17,7 @@ using Oxide.Ext.Discord.Extensions;
 using Oxide.Ext.Discord.Libraries.Placeholders;
 using Oxide.Ext.Discord.Libraries.Templates;
 using Oxide.Ext.Discord.Libraries.Templates.Commands;
+using Oxide.Plugins.Placeholders;
 
 namespace DiscordCorePlugin.Plugins
 {
@@ -37,7 +37,7 @@ namespace DiscordCorePlugin.Plugins
             CommandCreate build = builder.Build();
             DiscordCommandLocalization localization = builder.BuildCommandLocalization();
             
-            _local.RegisterCommandLocalizationAsync(this, "User", localization, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0)).Then(() =>
+            _local.RegisterCommandLocalizationAsync(this, "User", localization, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0)).Then(_ =>
             {
                 _local.ApplyCommandLocalizationsAsync(this, build, "User").Then(() =>
                 {
@@ -101,7 +101,7 @@ namespace DiscordCorePlugin.Plugins
         }
 
         [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.CodeCommand)]
-        private void DiscordCodeCommand(DiscordInteraction interaction)
+        private void DiscordCodeCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
             DiscordUser user = interaction.User;
             if (user.IsLinked())
@@ -111,7 +111,7 @@ namespace DiscordCorePlugin.Plugins
             }
 
             JoinData join = _joinHandler.CreateActivation(user);
-            SendTemplateMessage(TemplateKeys.Commands.Code.Success, interaction, GetDefault(user).Add(CodeKey, join.Code));
+            SendTemplateMessage(TemplateKeys.Commands.Code.Success, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, join.Code));
         }
 
         [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.UserCommand)]
@@ -126,7 +126,7 @@ namespace DiscordCorePlugin.Plugins
 
             if (_banHandler.IsBanned(user))
             {
-                SendTemplateMessage(TemplateKeys.Banned.PlayerBanned, interaction,GetDefault(user).Add(BanDurationKey, _banHandler.GetRemainingBan(user)));
+                SendTemplateMessage(TemplateKeys.Banned.PlayerBanned, interaction,GetDefault(user).AddTimestamp(_banHandler.GetRemainingBan(user)));
                 return;
             }
 
@@ -170,7 +170,7 @@ namespace DiscordCorePlugin.Plugins
         }
 
         [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.LeaveCommand)]
-        private void DiscordLeaveCommand(DiscordInteraction interaction)
+        private void DiscordLeaveCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
             DiscordUser user = interaction.User;
             if (!user.IsLinked())
@@ -197,7 +197,7 @@ namespace DiscordCorePlugin.Plugins
             JoinData join = _joinHandler.FindByCode(code);
             if (join == null)
             {
-                SendTemplateMessage(TemplateKeys.Errors.CodActivationNotFound, interaction, GetDefault(user).Add(CodeKey, code));
+                SendTemplateMessage(TemplateKeys.Errors.CodActivationNotFound, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, code));
                 return;
             }
 

@@ -4,6 +4,7 @@ using Oxide.Ext.Discord.Attributes.ApplicationCommands;
 using Oxide.Ext.Discord.Entities.Interactions;
 using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Ext.Discord.Extensions;
+using Oxide.Plugins.Placeholders;
 
 namespace DiscordCorePlugin.Plugins
 {
@@ -26,7 +27,7 @@ namespace DiscordCorePlugin.Plugins
             }
 
             JoinData join = _joinHandler.CreateActivation(user);
-            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.DmLinkAccounts, interaction, GetDefault(user).Add(CodeKey, join.Code));
+            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.DmLinkAccounts, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, join.Code));
         }
         
         [DiscordMessageComponentCommand(GuildWelcomeMessageLinkAccountsButtonId)]
@@ -40,7 +41,7 @@ namespace DiscordCorePlugin.Plugins
             }
             
             JoinData join = _joinHandler.CreateActivation(user);
-            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.GuildLinkAccounts, interaction, GetDefault(user).Add(CodeKey, join.Code));
+            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.GuildLinkAccounts, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, join.Code));
         }
 
         [DiscordMessageComponentCommand(AcceptLinkButtonId)]

@@ -81,8 +81,8 @@ namespace DiscordCorePlugin.Link
             
             return _playerBans[player.Id]?.GetRemainingBan() ?? TimeSpan.Zero;
         }
-        
-        public TimeSpan GetRemainingBan(DiscordUser user)
+
+        public TimeSpan GetRemainingDuration(DiscordUser user)
         {
             if (!_settings.EnableLinkBanning)
             {
@@ -90,6 +90,11 @@ namespace DiscordCorePlugin.Link
             }
             
             return _discordBans[user.Id]?.GetRemainingBan() ?? TimeSpan.Zero;
+        }
+        
+        public DateTimeOffset GetRemainingBan(DiscordUser user)
+        {
+            return DateTimeOffset.UtcNow + GetRemainingDuration(user);
         }
 
         private JoinBanData GetBan(IPlayer player)

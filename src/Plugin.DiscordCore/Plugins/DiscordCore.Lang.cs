@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DiscordCorePlugin.Localization;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Libraries.Placeholders;
+using Oxide.Plugins.Placeholders;
 
 namespace DiscordCorePlugin.Plugins
 {
@@ -84,11 +85,12 @@ namespace DiscordCorePlugin.Plugins
 
         public void RegisterChatLangCommand(string command, string langKey)
         {
+            HashSet<string> registeredCommands = new HashSet<string>();
             foreach (string langType in lang.GetLanguages(this))
             {
                 Dictionary<string, string> langKeys = lang.GetMessages(langType, this);
                 string commandValue;
-                if (langKeys.TryGetValue(langKey, out commandValue) && !string.IsNullOrEmpty(commandValue))
+                if (langKeys.TryGetValue(langKey, out commandValue) && !string.IsNullOrEmpty(commandValue) && registeredCommands.Add(commandValue))
                 {
                     AddCovalenceCommand(commandValue, command);
                 }
@@ -111,7 +113,7 @@ namespace DiscordCorePlugin.Plugins
                 
                 [ServerLang.Commands.Code.LinkInfo] = $"To complete your activation please open Discord use the following command: <color=#{AccentColor}>/{{plugin.lang:{ServerLang.Discord.DiscordCommand}}} {{plugin.lang:{ServerLang.Discord.LinkCommand}}} {{discordcore.link.code}}</color>.\n",
                 [ServerLang.Commands.Code.LinkServer] = $"In order to use this command you must be in the <color=#{AccentColor}>{{guild.name}}</color> discord server. " +
-                                                        $"You can join @ <color=#{Success}>discord.gg/{{discordcore.invite.code}}</color>.\n",
+                                                        $"You can join @ <color=#{Success}>discord.gg/{{{PlaceholderKeys.InviteCode}}}</color>.\n",
                 [ServerLang.Commands.Code.LinkInGuild] = "This command can be used in the following guild channels {dc.command.channels} .\n",
                 [ServerLang.Commands.Code.LinkInDm] = "This command can be used in the following in a direct message to {user.fullname} bot",
                 
@@ -137,7 +139,7 @@ namespace DiscordCorePlugin.Plugins
                 [ServerLang.Announcements.Unlink.Admin] = "{player.name} has successfully been unlinked by and admin from discord user {user.fullname}.",
                 [ServerLang.Announcements.Unlink.Api] = "{player.name} has successfully unlinked their game account from their discord user {user.fullname}.",
                 [ServerLang.Announcements.Unlink.LeftGuild] = "{player.name} has been unlinked from discord user {user.fullname} they left the {guild.name} Discord server",
-                [ServerLang.Announcements.Unlink.Inactive] = "{player.name} has been unlinked from discord user {user.fullname} because they haven't been active on {server.name} game server for {discordcore.inactive.duration} days",
+                [ServerLang.Announcements.Unlink.Inactive] = "{player.name} has been unlinked from discord user {user.fullname} because they haven't been active on {server.name} game server for {timespan.days} days",
                 
                 [ServerLang.Link.Completed.Command] = "You have successfully linked your player {player.name} with discord user {user.fullname}",
                 [ServerLang.Link.Completed.Admin] = "You have been successfully linked by an admin with player {player.name} and discord user {user.fullname}",
@@ -154,10 +156,10 @@ namespace DiscordCorePlugin.Plugins
                 
                 [ServerLang.Link.Errors.InvalidSyntax] = "Invalid Link Syntax. Please type the command you were given in Discord. " +
                                                          "Command should be in the following format:" +
-                                                         $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{discordcore.server.link.arg}} {{code}}[/#] where {{code}} is the code sent to you in Discord.",
+                                                         $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{{PlaceholderKeys.ServerLinkArg}}} {{code}}[/#] where {{code}} is the code sent to you in Discord.",
 
                 [ServerLang.Banned.IsUserBanned] = "You have been banned from joining by Discord user due to multiple declined join attempts. " +
-                                                   "Your ban will end in {discordcore.join.banned.duration:d} days {discordcore.join.banned.duration:h} hours {discordcore.join.banned.duration:m} minutes {discordcore.join.banned.duration:s} Seconds.",
+                                                   "Your ban will end in {timespan.days} days {timespan.hours} hours {timespan.minutes} minutes {timespan.seconds} Seconds.",
 
                 [ServerLang.Join.ByPlayer] = "{user.fullname} is trying to link their Discord account with your game account. " +
                                              $"If you wish to [#{Success}]accept[/#] this link please type [#{Success}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.AcceptCommand}}}[/#]. " +
@@ -177,7 +179,7 @@ namespace DiscordCorePlugin.Plugins
                 [ServerLang.Errors.ConsolePlayerNotSupported] = "This command cannot be ran in the server console. ",
                 
                 [ServerLang.Commands.HelpMessage] = "Allows players to link their player and discord accounts together. " +
-                                                    $"Players must first join the {{guild.name}} Discord @ [#{AccentColor}]discord.gg/{{discordcore.invite.code}}[/#]\n" +
+                                                    $"Players must first join the {{guild.name}} Discord @ [#{AccentColor}]discord.gg/{{{PlaceholderKeys.InviteCode}[/#]\n" +
                                                     $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.CodeCommand}}}[/#] to start the link process using a code\n" +
                                                     $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.UserCommand}}} username#discriminator[/#] to start the link process by your discord username\n" +
                                                     $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.UserCommand}}} userid[/#] to start the link process by your discord user ID\n" +

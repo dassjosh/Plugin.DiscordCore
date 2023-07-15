@@ -11,6 +11,7 @@ namespace DiscordCorePlugin.Plugins
     //Define:FileOrder=10
     public partial class DiscordCore
     {
+        // ReSharper disable once UnusedMember.Local
         private void Init()
         {
             Instance = this;
@@ -49,6 +50,7 @@ namespace DiscordCorePlugin.Plugins
             return config;
         }
 
+        // ReSharper disable once UnusedMember.Local
         private void OnServerInitialized()
         {
             RegisterChatLangCommand(nameof(DiscordCoreChatCommand), ServerLang.Commands.DcCommand);
@@ -73,6 +75,7 @@ namespace DiscordCorePlugin.Plugins
             Client.Connect(_discordSettings);
         }
 
+        // ReSharper disable once UnusedMember.Local
         private void Unload()
         {
             SaveData();

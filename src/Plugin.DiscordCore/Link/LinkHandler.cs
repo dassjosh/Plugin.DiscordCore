@@ -164,7 +164,7 @@ namespace DiscordCorePlugin.Link
                     if (player != null)
                     {
                         DiscordUser user = player.GetDiscordUser();
-                        HandleUnlink(player, user, UnlinkedReason.LeftGuild, null);;
+                        HandleUnlink(player, user, UnlinkedReason.LeftGuild, null);
                     }
                 }
 

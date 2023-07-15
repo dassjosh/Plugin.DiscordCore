@@ -1,4 +1,4 @@
-﻿namespace Oxide.Plugins.Placeholders
+﻿namespace DiscordCorePlugin.Placeholders
 {
     public class PlaceholderKeys
     {

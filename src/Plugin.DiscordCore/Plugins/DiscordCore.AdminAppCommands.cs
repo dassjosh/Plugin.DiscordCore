@@ -88,6 +88,8 @@ namespace DiscordCorePlugin.Plugins
             });
         }
 
+        
+        // ReSharper disable once UnusedMember.Local
         [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.LinkCommand)]
         private void DiscordAdminLinkCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
@@ -116,6 +118,7 @@ namespace DiscordCorePlugin.Plugins
             SendTemplateMessage(TemplateKeys.Commands.Admin.Link.Success, interaction, GetDefault(player, user));
         }
 
+        // ReSharper disable once UnusedMember.Local
         [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.UnlinkCommand)]
         private void DiscordAdminUnlinkCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
@@ -165,6 +168,7 @@ namespace DiscordCorePlugin.Plugins
             SendTemplateMessage(TemplateKeys.Commands.Admin.Unlink.Success, interaction, GetDefault(player, user));
         }
 
+        // ReSharper disable once UnusedMember.Local
         [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.PlayerCommand, AdminAppCommands.SearchCommand)]
         private void DiscordAdminSearchByPlayer(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
@@ -180,6 +184,7 @@ namespace DiscordCorePlugin.Plugins
             SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Success, interaction, GetDefault(player, user));
         }
         
+        // ReSharper disable once UnusedMember.Local
         [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.UserCommand, AdminAppCommands.SearchCommand)]
         private void DiscordAdminSearchByUser(DiscordInteraction interaction, InteractionDataParsed parsed)
         {

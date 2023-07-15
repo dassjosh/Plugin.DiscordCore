@@ -36,7 +36,9 @@ namespace DiscordCorePlugin.Plugins
         };
         
         [DiscordPool]
+#pragma warning disable CS0649
         private DiscordPluginPool _pool;
+#pragma warning restore CS0649
         
         private readonly DiscordLink _link = GetLibrary<DiscordLink>();
         private readonly DiscordMessageTemplates _templates = GetLibrary<DiscordMessageTemplates>();

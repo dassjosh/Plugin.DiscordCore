@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DiscordCorePlugin.Enums;
 using DiscordCorePlugin.Link;
 using DiscordCorePlugin.Localization;
+using DiscordCorePlugin.Placeholders;
 using DiscordCorePlugin.Templates;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Entities;
@@ -10,7 +11,6 @@ using Oxide.Ext.Discord.Entities.Guilds;
 using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Ext.Discord.Extensions;
 using Oxide.Ext.Discord.Libraries.Placeholders;
-using Oxide.Plugins.Placeholders;
 
 namespace DiscordCorePlugin.Plugins
 {
@@ -19,6 +19,7 @@ namespace DiscordCorePlugin.Plugins
     {
         private const string ServerLinkArgument = "link";
         
+        // ReSharper disable once UnusedParameter.Local
         private void DiscordCoreChatCommand(IPlayer player, string cmd, string[] args)
         {
             if (!player.HasPermission(UsePermission))
@@ -212,7 +213,9 @@ namespace DiscordCorePlugin.Plugins
                         }
                     }
                 }
+#pragma warning disable CS0618
                 else if (searchUser.Username.Equals(userName, StringComparison.OrdinalIgnoreCase) && (searchUser.HasUpdatedUsername || searchUser.Discriminator.Equals(discriminator)))
+#pragma warning restore CS0618
                 {
                     user = searchUser;
                     break;

@@ -3,6 +3,7 @@ using DiscordCorePlugin.AppCommands;
 using DiscordCorePlugin.Enums;
 using DiscordCorePlugin.Link;
 using DiscordCorePlugin.Localization;
+using DiscordCorePlugin.Placeholders;
 using DiscordCorePlugin.Templates;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Attributes.ApplicationCommands;
@@ -17,7 +18,6 @@ using Oxide.Ext.Discord.Extensions;
 using Oxide.Ext.Discord.Libraries.Placeholders;
 using Oxide.Ext.Discord.Libraries.Templates;
 using Oxide.Ext.Discord.Libraries.Templates.Commands;
-using Oxide.Plugins.Placeholders;
 
 namespace DiscordCorePlugin.Plugins
 {
@@ -100,6 +100,8 @@ namespace DiscordCorePlugin.Plugins
             _placeholders.RegisterPlaceholder(this, "dc.command.channels", _allowedChannels);
         }
 
+        // ReSharper disable once UnusedMember.Local
+        // ReSharper disable once UnusedParameter.Local
         [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.CodeCommand)]
         private void DiscordCodeCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
@@ -114,6 +116,7 @@ namespace DiscordCorePlugin.Plugins
             SendTemplateMessage(TemplateKeys.Commands.Code.Success, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, join.Code));
         }
 
+        // ReSharper disable once UnusedMember.Local
         [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.UserCommand)]
         private void DiscordUserCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
@@ -160,6 +163,7 @@ namespace DiscordCorePlugin.Plugins
             }
         }
 
+        // ReSharper disable once UnusedMember.Local
         [DiscordAutoCompleteCommand(UserAppCommands.Command, PlayerArg, UserAppCommands.UserCommand)]
         private void HandleNameAutoComplete(DiscordInteraction interaction, InteractionDataOption focused)
         {
@@ -169,6 +173,8 @@ namespace DiscordCorePlugin.Plugins
             interaction.CreateResponse(Client, response);
         }
 
+        // ReSharper disable once UnusedMember.Local
+        // ReSharper disable once UnusedParameter.Local
         [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.LeaveCommand)]
         private void DiscordLeaveCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
@@ -183,6 +189,7 @@ namespace DiscordCorePlugin.Plugins
             _linkHandler.HandleUnlink(player, user, UnlinkedReason.Command, interaction);
         }
 
+        // ReSharper disable once UnusedMember.Local
         [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.LinkCommand)]
         private void DiscordLinkCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {

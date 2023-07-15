@@ -32,7 +32,6 @@ using Oxide.Ext.Discord.Interfaces.Promises;
 using Oxide.Ext.Discord.Libraries.Linking;
 using Oxide.Ext.Discord.Libraries.Locale;
 using Oxide.Ext.Discord.Libraries.Placeholders;
-using Oxide.Ext.Discord.Libraries.Placeholders.Default;
 using Oxide.Ext.Discord.Libraries.Templates;
 using Oxide.Ext.Discord.Libraries.Templates.Commands;
 using Oxide.Ext.Discord.Libraries.Templates.Components;
@@ -50,7 +49,7 @@ using System.Text;
 //DiscordCore created with PluginMerge v(1.0.5.0) by MJSU @ https://github.com/dassjosh/Plugin.Merge
 namespace Oxide.Plugins
 {
-    [Info("Discord Core", "MJSU", "2.5.0")]
+    [Info("Discord Core", "MJSU", "3.0.0")]
     [Description("Creates a link between a player and discord")]
     public partial class DiscordCore : CovalencePlugin, IDiscordLinkPlugin
     {
@@ -70,7 +69,9 @@ namespace Oxide.Plugins
         };
         
         [DiscordPool]
+        #pragma warning disable CS0649
         private DiscordPluginPool _pool;
+        #pragma warning restore CS0649
         
         private readonly DiscordLink _link = GetLibrary<DiscordLink>();
         private readonly DiscordMessageTemplates _templates = GetLibrary<DiscordMessageTemplates>();
@@ -98,6 +99,7 @@ namespace Oxide.Plugins
         #endregion
 
         #region Plugins\DiscordCore.Setup.cs
+        // ReSharper disable once UnusedMember.Local
         private void Init()
         {
             Instance = this;
@@ -136,6 +138,7 @@ namespace Oxide.Plugins
             return config;
         }
         
+        // ReSharper disable once UnusedMember.Local
         private void OnServerInitialized()
         {
             RegisterChatLangCommand(nameof(DiscordCoreChatCommand), ServerLang.Commands.DcCommand);
@@ -160,6 +163,7 @@ namespace Oxide.Plugins
             Client.Connect(_discordSettings);
         }
         
+        // ReSharper disable once UnusedMember.Local
         private void Unload()
         {
             SaveData();
@@ -243,11 +247,12 @@ namespace Oxide.Plugins
         
         public void RegisterChatLangCommand(string command, string langKey)
         {
+            HashSet<string> registeredCommands = new HashSet<string>();
             foreach (string langType in lang.GetLanguages(this))
             {
                 Dictionary<string, string> langKeys = lang.GetMessages(langType, this);
                 string commandValue;
-                if (langKeys.TryGetValue(langKey, out commandValue) && !string.IsNullOrEmpty(commandValue))
+                if (langKeys.TryGetValue(langKey, out commandValue) && !string.IsNullOrEmpty(commandValue) && registeredCommands.Add(commandValue))
                 {
                     AddCovalenceCommand(commandValue, command);
                 }
@@ -270,7 +275,7 @@ namespace Oxide.Plugins
                 
                 [ServerLang.Commands.Code.LinkInfo] = $"To complete your activation please open Discord use the following command: <color=#{AccentColor}>/{{plugin.lang:{ServerLang.Discord.DiscordCommand}}} {{plugin.lang:{ServerLang.Discord.LinkCommand}}} {{discordcore.link.code}}</color>.\n",
                 [ServerLang.Commands.Code.LinkServer] = $"In order to use this command you must be in the <color=#{AccentColor}>{{guild.name}}</color> discord server. " +
-                $"You can join @ <color=#{Success}>discord.gg/{{discordcore.invite.code}}</color>.\n",
+                $"You can join @ <color=#{Success}>discord.gg/{{{PlaceholderKeys.InviteCode}}}</color>.\n",
                 [ServerLang.Commands.Code.LinkInGuild] = "This command can be used in the following guild channels {dc.command.channels} .\n",
                 [ServerLang.Commands.Code.LinkInDm] = "This command can be used in the following in a direct message to {user.fullname} bot",
                 
@@ -296,7 +301,7 @@ namespace Oxide.Plugins
                 [ServerLang.Announcements.Unlink.Admin] = "{player.name} has successfully been unlinked by and admin from discord user {user.fullname}.",
                 [ServerLang.Announcements.Unlink.Api] = "{player.name} has successfully unlinked their game account from their discord user {user.fullname}.",
                 [ServerLang.Announcements.Unlink.LeftGuild] = "{player.name} has been unlinked from discord user {user.fullname} they left the {guild.name} Discord server",
-                [ServerLang.Announcements.Unlink.Inactive] = "{player.name} has been unlinked from discord user {user.fullname} because they haven't been active on {server.name} game server for {discordcore.inactive.duration} days",
+                [ServerLang.Announcements.Unlink.Inactive] = "{player.name} has been unlinked from discord user {user.fullname} because they haven't been active on {server.name} game server for {timespan.days} days",
                 
                 [ServerLang.Link.Completed.Command] = "You have successfully linked your player {player.name} with discord user {user.fullname}",
                 [ServerLang.Link.Completed.Admin] = "You have been successfully linked by an admin with player {player.name} and discord user {user.fullname}",
@@ -313,10 +318,10 @@ namespace Oxide.Plugins
                 
                 [ServerLang.Link.Errors.InvalidSyntax] = "Invalid Link Syntax. Please type the command you were given in Discord. " +
                 "Command should be in the following format:" +
-                $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{discordcore.server.link.arg}} {{code}}[/#] where {{code}} is the code sent to you in Discord.",
+                $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{{PlaceholderKeys.ServerLinkArg}}} {{code}}[/#] where {{code}} is the code sent to you in Discord.",
                 
                 [ServerLang.Banned.IsUserBanned] = "You have been banned from joining by Discord user due to multiple declined join attempts. " +
-                "Your ban will end in {discordcore.join.banned.duration:d} days {discordcore.join.banned.duration:h} hours {discordcore.join.banned.duration:m} minutes {discordcore.join.banned.duration:s} Seconds.",
+                "Your ban will end in {timespan.days} days {timespan.hours} hours {timespan.minutes} minutes {timespan.seconds} Seconds.",
                 
                 [ServerLang.Join.ByPlayer] = "{user.fullname} is trying to link their Discord account with your game account. " +
                 $"If you wish to [#{Success}]accept[/#] this link please type [#{Success}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.AcceptCommand}}}[/#]. " +
@@ -336,7 +341,7 @@ namespace Oxide.Plugins
                 [ServerLang.Errors.ConsolePlayerNotSupported] = "This command cannot be ran in the server console. ",
                 
                 [ServerLang.Commands.HelpMessage] = "Allows players to link their player and discord accounts together. " +
-                $"Players must first join the {{guild.name}} Discord @ [#{AccentColor}]discord.gg/{{discordcore.invite.code}}[/#]\n" +
+                $"Players must first join the {{guild.name}} Discord @ [#{AccentColor}]discord.gg/{{{PlaceholderKeys.InviteCode}[/#]\n" +
                 $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.CodeCommand}}}[/#] to start the link process using a code\n" +
                 $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.UserCommand}}} username#discriminator[/#] to start the link process by your discord username\n" +
                 $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.UserCommand}}} userid[/#] to start the link process by your discord user ID\n" +
@@ -349,6 +354,7 @@ namespace Oxide.Plugins
         #region Plugins\DiscordCore.ChatCommands.cs
         private const string ServerLinkArgument = "link";
         
+        // ReSharper disable once UnusedParameter.Local
         private void DiscordCoreChatCommand(IPlayer player, string cmd, string[] args)
         {
             if (!player.HasPermission(UsePermission))
@@ -423,7 +429,7 @@ namespace Oxide.Plugins
             }
             
             JoinData join = _joinHandler.CreateActivation(player);
-            using (PlaceholderData data = GetDefault(player).AddUser(_bot).Add(CodeKey, join.Code))
+            using (PlaceholderData data = GetDefault(player).AddUser(_bot).Add(PlaceholderKeys.Data.CodeKey, join.Code))
             {
                 data.ManualPool();
                 _sb.Clear();
@@ -453,7 +459,7 @@ namespace Oxide.Plugins
             
             if (_banHandler.IsBanned(player))
             {
-                Chat(player, ServerLang.Banned.IsUserBanned, GetDefault(player));
+                Chat(player, ServerLang.Banned.IsUserBanned, GetDefault(player).AddTimeSpan(_banHandler.GetRemainingBan(player)));
                 return;
             }
             
@@ -542,7 +548,9 @@ namespace Oxide.Plugins
                         }
                     }
                 }
+                #pragma warning disable CS0618
                 else if (searchUser.Username.Equals(userName, StringComparison.OrdinalIgnoreCase) && (searchUser.HasUpdatedUsername || searchUser.Discriminator.Equals(discriminator)))
+                #pragma warning restore CS0618
                 {
                     user = searchUser;
                     break;
@@ -641,6 +649,7 @@ namespace Oxide.Plugins
         #endregion
 
         #region Plugins\DiscordCore.Hooks.cs
+        // ReSharper disable once UnusedMember.Local
         private void OnUserConnected(IPlayer player)
         {
             _linkHandler.OnUserConnected(player);
@@ -648,6 +657,7 @@ namespace Oxide.Plugins
         #endregion
 
         #region Plugins\DiscordCore.DiscordHooks.cs
+        // ReSharper disable once UnusedMember.Local
         [HookMethod(DiscordExtHooks.OnDiscordGatewayReady)]
         private void OnDiscordGatewayReady(GatewayReadyEvent ready)
         {
@@ -689,6 +699,7 @@ namespace Oxide.Plugins
             Puts($"Connected to bot: {_bot.Username}");
         }
         
+        // ReSharper disable once UnusedMember.Local
         [HookMethod(DiscordExtHooks.OnDiscordBotFullyLoaded)]
         private void OnDiscordBotFullyLoaded()
         {
@@ -699,6 +710,7 @@ namespace Oxide.Plugins
             SetupGuildWelcomeMessage();
         }
         
+        // ReSharper disable once UnusedMember.Local
         [HookMethod(DiscordExtHooks.OnDiscordGuildMemberAdded)]
         private void OnDiscordGuildMemberAdded(GuildMemberAddedEvent member, DiscordGuild guild)
         {
@@ -721,6 +733,7 @@ namespace Oxide.Plugins
             SendTemplateMessage(TemplateKeys.WelcomeMessage.PmWelcomeMessage, member.User);
         }
         
+        // ReSharper disable once UnusedMember.Local
         [HookMethod(DiscordExtHooks.OnDiscordGuildMemberRemoved)]
         private void OnDiscordGuildMemberRemoved(GuildMemberRemovedEvent member, DiscordGuild guild)
         {
@@ -732,6 +745,7 @@ namespace Oxide.Plugins
             _linkHandler.OnGuildMemberLeft(member.User);
         }
         
+        // ReSharper disable once UnusedMember.Local
         [HookMethod(DiscordExtHooks.OnDiscordGuildMemberRoleAdded)]
         private void OnDiscordGuildMemberRoleAdded(GuildMember member, Snowflake roleId, DiscordGuild guild)
         {
@@ -831,6 +845,8 @@ namespace Oxide.Plugins
             _placeholders.RegisterPlaceholder(this, "dc.command.channels", _allowedChannels);
         }
         
+        // ReSharper disable once UnusedMember.Local
+        // ReSharper disable once UnusedParameter.Local
         [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.CodeCommand)]
         private void DiscordCodeCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
@@ -842,9 +858,10 @@ namespace Oxide.Plugins
             }
             
             JoinData join = _joinHandler.CreateActivation(user);
-            SendTemplateMessage(TemplateKeys.Commands.Code.Success, interaction, GetDefault(user).Add(CodeKey, join.Code));
+            SendTemplateMessage(TemplateKeys.Commands.Code.Success, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, join.Code));
         }
         
+        // ReSharper disable once UnusedMember.Local
         [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.UserCommand)]
         private void DiscordUserCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
@@ -857,7 +874,7 @@ namespace Oxide.Plugins
             
             if (_banHandler.IsBanned(user))
             {
-                SendTemplateMessage(TemplateKeys.Banned.PlayerBanned, interaction,GetDefault(user).Add(BanDurationKey, _banHandler.GetRemainingBan(user)));
+                SendTemplateMessage(TemplateKeys.Banned.PlayerBanned, interaction,GetDefault(user).AddTimestamp(_banHandler.GetRemainingBan(user)));
                 return;
             }
             
@@ -891,6 +908,7 @@ namespace Oxide.Plugins
             }
         }
         
+        // ReSharper disable once UnusedMember.Local
         [DiscordAutoCompleteCommand(UserAppCommands.Command, PlayerArg, UserAppCommands.UserCommand)]
         private void HandleNameAutoComplete(DiscordInteraction interaction, InteractionDataOption focused)
         {
@@ -900,6 +918,8 @@ namespace Oxide.Plugins
             interaction.CreateResponse(Client, response);
         }
         
+        // ReSharper disable once UnusedMember.Local
+        // ReSharper disable once UnusedParameter.Local
         [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.LeaveCommand)]
         private void DiscordLeaveCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
@@ -914,6 +934,7 @@ namespace Oxide.Plugins
             _linkHandler.HandleUnlink(player, user, UnlinkedReason.Command, interaction);
         }
         
+        // ReSharper disable once UnusedMember.Local
         [DiscordApplicationCommand(UserAppCommands.Command, UserAppCommands.LinkCommand)]
         private void DiscordLinkCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
@@ -928,7 +949,7 @@ namespace Oxide.Plugins
             JoinData join = _joinHandler.FindByCode(code);
             if (join == null)
             {
-                SendTemplateMessage(TemplateKeys.Errors.CodActivationNotFound, interaction, GetDefault(user).Add(CodeKey, code));
+                SendTemplateMessage(TemplateKeys.Errors.CodActivationNotFound, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, code));
                 return;
             }
             
@@ -944,6 +965,7 @@ namespace Oxide.Plugins
         private const string AcceptLinkButtonId = nameof(DiscordCore) + "_AcceptLink";
         private const string DeclineLinkButtonId = nameof(DiscordCore) + "_DeclineLink";
         
+        // ReSharper disable once UnusedMember.Local
         [DiscordMessageComponentCommand(WelcomeMessageLinkAccountsButtonId)]
         private void HandleWelcomeMessageLinkAccounts(DiscordInteraction interaction)
         {
@@ -955,9 +977,10 @@ namespace Oxide.Plugins
             }
             
             JoinData join = _joinHandler.CreateActivation(user);
-            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.DmLinkAccounts, interaction, GetDefault(user).Add(CodeKey, join.Code));
+            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.DmLinkAccounts, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, join.Code));
         }
         
+        // ReSharper disable once UnusedMember.Local
         [DiscordMessageComponentCommand(GuildWelcomeMessageLinkAccountsButtonId)]
         private void HandleGuildWelcomeMessageLinkAccounts(DiscordInteraction interaction)
         {
@@ -969,9 +992,10 @@ namespace Oxide.Plugins
             }
             
             JoinData join = _joinHandler.CreateActivation(user);
-            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.GuildLinkAccounts, interaction, GetDefault(user).Add(CodeKey, join.Code));
+            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.GuildLinkAccounts, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, join.Code));
         }
         
+        // ReSharper disable once UnusedMember.Local
         [DiscordMessageComponentCommand(AcceptLinkButtonId)]
         private void HandleAcceptLinkButton(DiscordInteraction interaction)
         {
@@ -992,6 +1016,7 @@ namespace Oxide.Plugins
             _joinHandler.CompleteLink(join, interaction);
         }
         
+        // ReSharper disable once UnusedMember.Local
         [DiscordMessageComponentCommand(DeclineLinkButtonId)]
         private void HandleDeclineLinkButton(DiscordInteraction interaction)
         {
@@ -1084,6 +1109,8 @@ namespace Oxide.Plugins
             });
         }
         
+        
+        // ReSharper disable once UnusedMember.Local
         [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.LinkCommand)]
         private void DiscordAdminLinkCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
@@ -1112,6 +1139,7 @@ namespace Oxide.Plugins
             SendTemplateMessage(TemplateKeys.Commands.Admin.Link.Success, interaction, GetDefault(player, user));
         }
         
+        // ReSharper disable once UnusedMember.Local
         [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.UnlinkCommand)]
         private void DiscordAdminUnlinkCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
@@ -1144,7 +1172,7 @@ namespace Oxide.Plugins
             if (player != null && user != null && linkedUser.Id != user.Id)
             {
                 IPlayer otherPlayer = user.Player;
-                SendTemplateMessage(TemplateKeys.Commands.Admin.Unlink.Error.LinkNotSame, interaction, GetDefault(player, user).Add(OtherPlayerDataKey, otherPlayer).Add(OtherUserDataKey, linkedUser));
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Unlink.Error.LinkNotSame, interaction, GetDefault(player, user).AddTarget(otherPlayer).AddUserTarget(linkedUser));
                 return;
             }
             
@@ -1161,6 +1189,7 @@ namespace Oxide.Plugins
             SendTemplateMessage(TemplateKeys.Commands.Admin.Unlink.Success, interaction, GetDefault(player, user));
         }
         
+        // ReSharper disable once UnusedMember.Local
         [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.PlayerCommand, AdminAppCommands.SearchCommand)]
         private void DiscordAdminSearchByPlayer(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
@@ -1176,6 +1205,7 @@ namespace Oxide.Plugins
             SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Success, interaction, GetDefault(player, user));
         }
         
+        // ReSharper disable once UnusedMember.Local
         [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.UserCommand, AdminAppCommands.SearchCommand)]
         private void DiscordAdminSearchByUser(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
@@ -1230,7 +1260,7 @@ namespace Oxide.Plugins
             DiscordMessageTemplate unlinkLeftGuild = CreateTemplateEmbed($"Player {{player.name}}({{player.id}}) has {DiscordFormatting.Bold("unlinked")} from discord {{user.fullname}}({{user.id}}) because they left the {DiscordFormatting.Bold("{guild.name}")} Discord server", DiscordColor.Danger);
             _templates.RegisterGlobalTemplateAsync(this, TemplateKeys.Announcements.Unlink.LeftGuild, unlinkLeftGuild, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate unlinkInactive = CreateTemplateEmbed($"Player {{player.name}}({{player.id}}) has {DiscordFormatting.Bold("unlinked")} from discord {{user.fullname}}({{user.id}}) because they were inactive for {{discordcore.inactive.duration}} days", DiscordColor.Danger);
+            DiscordMessageTemplate unlinkInactive = CreateTemplateEmbed($"Player {{player.name}}({{player.id}}) has {DiscordFormatting.Bold("unlinked")} from discord {{user.fullname}}({{user.id}}) because they were inactive since {{timestamp.longdatetime}}", DiscordColor.Danger);
             _templates.RegisterGlobalTemplateAsync(this, TemplateKeys.Announcements.Unlink.Inactive, unlinkInactive, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
         }
         
@@ -1261,7 +1291,7 @@ namespace Oxide.Plugins
         
         public void RegisterCommandMessages()
         {
-            DiscordMessageTemplate codeSuccess = CreateTemplateEmbed($"Please join the {DiscordFormatting.Bold("{server.name}")} game server and type {DiscordFormatting.Bold($"/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {ServerLinkArgument} {{discordcore.link.code}}")} in server chat.", DiscordColor.Success);
+            DiscordMessageTemplate codeSuccess = CreateTemplateEmbed($"Please join the {DiscordFormatting.Bold("{server.name}")} game server and type {DiscordFormatting.Bold($"/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {ServerLinkArgument} {{{PlaceholderKeys.LinkCode}}}")} in server chat.", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Code.Success, codeSuccess, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
             DiscordMessageTemplate userSuccess = CreateTemplateEmbed($"We have sent a message to {DiscordFormatting.Bold("{player.name}")} on the {DiscordFormatting.Bold("{server.name}")} server. Please follow the directions to complete your link.", DiscordColor.Success);
@@ -1301,8 +1331,8 @@ namespace Oxide.Plugins
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unlink.Error.UserIsNotLinked, unlinkUserNotLinked, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
             DiscordMessageTemplate unlinkNotSame = CreateTemplateEmbed($"Failed to unlink. The specified player and user are not linked to each other.\n" +
-            $"Player '{DiscordFormatting.Bold("{player.name}({player.id})")}' is linked to {{discordcore.other.user.mention}}.\n" +
-            $"User {{user.mention}} is linked to '{DiscordFormatting.Bold("{discordcore.other.player.name}({discordcore.other.player.id})")}'", DiscordColor.Danger);
+            $"Player '{DiscordFormatting.Bold("{player.name}({player.id})")}' is linked to {{user.target.mention}}.\n" +
+            $"User {{user.mention}} is linked to '{DiscordFormatting.Bold("{target.name}({target.id})")}'", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unlink.Error.LinkNotSame, unlinkNotSame, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
             DiscordMessageTemplate adminUnlinkSuccess = CreateTemplateEmbed($"You have successfully unlink Player '{DiscordFormatting.Bold("{player.name}({player.id})")}' from {{user.mention}}", DiscordColor.Success);
@@ -1362,7 +1392,7 @@ namespace Oxide.Plugins
             DiscordMessageTemplate unlinkApi = CreateTemplateEmbed($"You have successfully unlinked {DiscordFormatting.Bold("{player.name}")} from your Discord user {{user.mention}}", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Unlink.Completed.Api, unlinkApi, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate unlinkInactive = CreateTemplateEmbed($"You have been successfully unlinked from {DiscordFormatting.Bold("{player.name}")} and Discord user {{user.mention}} because you have been inactive for {{discordcore.inactive.duration}} days", DiscordColor.Success);
+            DiscordMessageTemplate unlinkInactive = CreateTemplateEmbed($"You have been successfully unlinked from {DiscordFormatting.Bold("{player.name}")} and Discord user {{user.mention}} because you have been inactive since {{timestamp.longdatetime}}", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Unlink.Completed.Inactive, unlinkInactive, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
             DiscordMessageTemplate declineUser = CreateTemplateEmbed("We have successfully declined the link request from {player.name}. We're sorry for the inconvenience.", DiscordColor.Danger);
@@ -1371,16 +1401,16 @@ namespace Oxide.Plugins
             DiscordMessageTemplate declinePlayer = CreateTemplateEmbed("{player.name} has declined your link request. Repeated declined attempts may result in a link ban.", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Link.Declined.JoinWithPlayer, declinePlayer, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate dmLinkAccounts = CreateTemplateEmbed($"To complete the link process please join the {DiscordFormatting.Bold("{server.name}")} game server and type {DiscordFormatting.Bold($"/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {ServerLinkArgument} {{discordcore.link.code}}")} in server chat.", DiscordColor.Success);
+            DiscordMessageTemplate dmLinkAccounts = CreateTemplateEmbed($"To complete the link process please join the {DiscordFormatting.Bold("{server.name}")} game server and type {DiscordFormatting.Bold($"/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {ServerLinkArgument} {{{PlaceholderKeys.LinkCode}}}")} in server chat.", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Link.WelcomeMessage.DmLinkAccounts, dmLinkAccounts, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate guildLinkAccounts = CreateTemplateEmbed($"To complete the link process please join the {DiscordFormatting.Bold("{server.name}")} game server and type {DiscordFormatting.Bold($"/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {ServerLinkArgument} {{discordcore.link.code}}")} in server chat.", DiscordColor.Success);
+            DiscordMessageTemplate guildLinkAccounts = CreateTemplateEmbed($"To complete the link process please join the {DiscordFormatting.Bold("{server.name}")} game server and type {DiscordFormatting.Bold($"/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {ServerLinkArgument} {{{PlaceholderKeys.LinkCode}}}")} in server chat.", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Link.WelcomeMessage.GuildLinkAccounts, guildLinkAccounts, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
         }
         
         public void RegisterBanMessages()
         {
-            DiscordMessageTemplate banned = CreateTemplateEmbed($"You have been banned from making any more player link requests for {{discordcore.join.banned.duration:0.##}} hours due to multiple declined requests.", DiscordColor.Danger);
+            DiscordMessageTemplate banned = CreateTemplateEmbed($"You have been banned from making any more player link requests for until {{timestamp.longdatetime}} due to multiple declined requests.", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Banned.PlayerBanned, banned, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
         }
         
@@ -1405,7 +1435,7 @@ namespace Oxide.Plugins
             DiscordMessageTemplate playerAlreadyLinked = CreateTemplateEmbed($"You are unable to link to player {DiscordFormatting.Bold("{player.name}")} because they are already linked", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Errors.PlayerAlreadyLinked, playerAlreadyLinked, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate codeActivationNotFound = CreateTemplateEmbed($"We failed to find a pending link activation for the code {DiscordFormatting.Bold("{discordcore.error.invalid.code}")}. Please confirm you have the correct code and try again.", DiscordColor.Danger);
+            DiscordMessageTemplate codeActivationNotFound = CreateTemplateEmbed($"We failed to find a pending link activation for the code {DiscordFormatting.Bold(PlaceholderKeys.LinkCode)}. Please confirm you have the correct code and try again.", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Errors.CodActivationNotFound, codeActivationNotFound, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
             DiscordMessageTemplate lookupActivationNotFound = CreateTemplateEmbed($"We failed to find a pending link activation for the code {DiscordFormatting.Bold("{user.fullname}")}. Please confirm you have started that activation from the game server for this user.", DiscordColor.Danger);
@@ -1429,7 +1459,6 @@ namespace Oxide.Plugins
         
         public void SendTemplateMessage(string templateName, DiscordInteraction interaction, PlaceholderData placeholders = null)
         {
-            Puts($"Keys: {placeholders?.GetKeys()}");
             InteractionCallbackData response = new InteractionCallbackData();
             if (interaction.GuildId.HasValue)
             {
@@ -1477,11 +1506,6 @@ namespace Oxide.Plugins
         #endregion
 
         #region Plugins\DiscordCore.Placeholders.cs
-        private const string BanDurationKey = "ban.duration";
-        private const string CodeKey = "dc.code";
-        private const string OtherPlayerDataKey = "discordcore.other.player";
-        private const string OtherUserDataKey = "discordcore.other.user";
-        
         public void RegisterPlaceholders()
         {
             if (!string.IsNullOrEmpty(_pluginConfig.ServerNameOverride))
@@ -1489,18 +1513,10 @@ namespace Oxide.Plugins
                 _placeholders.RegisterPlaceholder(this, "guild.name", _pluginConfig.ServerNameOverride);
             }
             
-            _placeholders.RegisterPlaceholder(this, "discordcore.invite.code", _pluginConfig.InviteCode);
-            _placeholders.RegisterPlaceholder(this, "discordcore.server.link.arg", ServerLinkArgument);
-            _placeholders.RegisterPlaceholder(this, "discordcore.inactive.duration", InactiveDays);
-            _placeholders.RegisterPlaceholder<TimeSpan, double>(this, "discordcore.join.banned.duration", BanDurationKey, BanDuration);
-            _placeholders.RegisterPlaceholder<string>(this, "discordcore.link.code", CodeKey);
-            _placeholders.RegisterPlaceholder<string>(this, "discordcore.error.invalid.code", CodeKey);
-            PlayerPlaceholders.RegisterPlaceholders(this, "discordcore.other.player", OtherPlayerDataKey);
-            UserPlaceholders.RegisterPlaceholders(this, "discordcore.other.user", OtherUserDataKey);
+            _placeholders.RegisterPlaceholder(this, PlaceholderKeys.InviteCode, _pluginConfig.InviteCode);
+            _placeholders.RegisterPlaceholder(this, PlaceholderKeys.ServerLinkArg, ServerLinkArgument);
+            _placeholders.RegisterPlaceholder<string>(this, PlaceholderKeys.LinkCode, PlaceholderKeys.Data.CodeKey);
         }
-        
-        private float InactiveDays() => _pluginConfig.LinkSettings.InactiveSettings.UnlinkInactiveDays;
-        private static double BanDuration(TimeSpan duration) => duration.TotalHours;
         
         public string LangPlaceholder(string key, PlaceholderData data)
         {
@@ -1541,6 +1557,42 @@ namespace Oxide.Plugins
         }
         #endregion
 
+        #region Plugins\DiscordCore.API.cs
+        // ReSharper disable once UnusedMember.Local
+        private string API_Link(IPlayer player, DiscordUser user)
+        {
+            if (player.IsLinked())
+            {
+                return ApiErrorCodes.PlayerIsLinked;
+            }
+            
+            if (user.IsLinked())
+            {
+                return  ApiErrorCodes.UserIsLinked;
+            }
+            
+            _linkHandler.HandleLink(player, user, LinkReason.Api, null);
+            return null;
+        }
+        
+        // ReSharper disable once UnusedMember.Local
+        private string API_Unlink(IPlayer player, DiscordUser user)
+        {
+            if (!player.IsLinked())
+            {
+                return  ApiErrorCodes.PlayerIsNotLinked;
+            }
+            
+            if (!user.IsLinked())
+            {
+                return ApiErrorCodes.UserIsNotLinked;
+            }
+            
+            _linkHandler.HandleUnlink(player, user, UnlinkedReason.Api, null);
+            return null;
+        }
+        #endregion
+
         #region Plugins\DiscordCore.Helpers.cs
         public void SaveData()
         {
@@ -1563,41 +1615,6 @@ namespace Oxide.Plugins
         public void LogApiUnlink(IPlayer player, DiscordUser user)
         {
             Puts($"Player {player.Name}({player.Id}) Discord {user.FullUserName}({user.Id}) has been unlinked using through the API.");
-        }
-        #endregion
-
-        #region Plugins\DiscordCore.API.cs
-        //Define:FileOrder=65
-        private string API_Link(IPlayer player, DiscordUser user)
-        {
-            if (player.IsLinked())
-            {
-                return ApiErrorCodes.PlayerIsLinked;
-            }
-            
-            if (user.IsLinked())
-            {
-                return  ApiErrorCodes.UserIsLinked;
-            }
-            
-            _linkHandler.HandleLink(player, user, LinkReason.Api, null);
-            return null;
-        }
-        
-        private string API_Unlink(IPlayer player, DiscordUser user)
-        {
-            if (!player.IsLinked())
-            {
-                return  ApiErrorCodes.PlayerIsNotLinked;
-            }
-            
-            if (!user.IsLinked())
-            {
-                return ApiErrorCodes.UserIsNotLinked;
-            }
-            
-            _linkHandler.HandleUnlink(player, user, UnlinkedReason.Api, null);
-            return null;
         }
         #endregion
 
@@ -2056,7 +2073,7 @@ namespace Oxide.Plugins
                 return _playerBans[player.Id]?.GetRemainingBan() ?? TimeSpan.Zero;
             }
             
-            public TimeSpan GetRemainingBan(DiscordUser user)
+            public TimeSpan GetRemainingDuration(DiscordUser user)
             {
                 if (!_settings.EnableLinkBanning)
                 {
@@ -2064,6 +2081,11 @@ namespace Oxide.Plugins
                 }
                 
                 return _discordBans[user.Id]?.GetRemainingBan() ?? TimeSpan.Zero;
+            }
+            
+            public DateTimeOffset GetRemainingBan(DiscordUser user)
+            {
+                return DateTimeOffset.UtcNow + GetRemainingDuration(user);
             }
             
             private JoinBanData GetBan(IPlayer player)
@@ -2105,20 +2127,11 @@ namespace Oxide.Plugins
                 From = from;
             }
             
-            public bool IsCompleted()
-            {
-                return Player != null && Discord != null && Discord.Id.IsValid();
-            }
+            public bool IsCompleted() => Player != null && Discord != null && Discord.Id.IsValid();
             
-            public bool IsMatch(IPlayer player)
-            {
-                return Player != null && player != null && Player.Id == player.Id;
-            }
+            public bool IsMatch(IPlayer player) => Player != null && player != null && Player.Id == player.Id;
             
-            public bool IsMatch(DiscordUser user)
-            {
-                return Discord != null && user != null && Discord.Id == user.Id;
-            }
+            public bool IsMatch(DiscordUser user) => Discord != null && user != null && Discord.Id == user.Id;
         }
         #endregion
 
@@ -2334,7 +2347,8 @@ namespace Oxide.Plugins
                 _pluginData.LeftPlayerInfo.Remove(user.Id);
                 _pluginData.PlayerDiscordInfo[player.Id] = new DiscordInfo(player, user);
                 _link.OnLinked(_plugin, player, user);
-                _linkMessages[reason]?.SendMessages(player, user, interaction);
+                PlaceholderData data = _plugin.GetDefault(player, user);
+                _linkMessages[reason]?.SendMessages(player, user, interaction, data);
                 AddPermissions(player, user);
                 _plugin.SaveData();
             }
@@ -2352,6 +2366,7 @@ namespace Oxide.Plugins
                     return;
                 }
                 
+                PlaceholderData data = _plugin.GetDefault(player, user);
                 if (reason == UnlinkedReason.LeftGuild)
                 {
                     _pluginData.LeftPlayerInfo[info.DiscordId] = info;
@@ -2359,11 +2374,12 @@ namespace Oxide.Plugins
                 else if (reason == UnlinkedReason.Inactive)
                 {
                     _pluginData.InactivePlayerInfo[info.PlayerId] = info;
+                    data.AddTimeSpan(TimeSpan.FromDays(_settings.InactiveSettings.UnlinkInactiveDays));
                 }
                 
                 _pluginData.PlayerDiscordInfo.Remove(player.Id);
                 _link.OnUnlinked(_plugin, player, user);
-                _unlinkMessages[reason]?.SendMessages(player, user, interaction);
+                _unlinkMessages[reason]?.SendMessages(player, user, interaction, data);
                 RemovePermissions(player, user, reason);
                 _plugin.SaveData();
             }
@@ -2439,7 +2455,7 @@ namespace Oxide.Plugins
                         if (player != null)
                         {
                             DiscordUser user = player.GetDiscordUser();
-                            HandleUnlink(player, user, UnlinkedReason.LeftGuild, null);;
+                            HandleUnlink(player, user, UnlinkedReason.LeftGuild, null);
                         }
                     }
                     
@@ -2534,9 +2550,9 @@ namespace Oxide.Plugins
                 _link = link;
             }
             
-            public void SendMessages(IPlayer player, DiscordUser user, DiscordInteraction interaction)
+            public void SendMessages(IPlayer player, DiscordUser user, DiscordInteraction interaction, PlaceholderData data)
             {
-                using (PlaceholderData data = _plugin.GetDefault(player, user))
+                using (data)
                 {
                     data.ManualPool();
                     _plugin.BroadcastMessage(_chatAnnouncement, data);
@@ -2727,6 +2743,22 @@ namespace Oxide.Plugins
                 public const string ActivationNotFound = Base + nameof(ActivationNotFound);
                 public const string MustBeCompletedInDiscord = Base + nameof(MustBeCompletedInDiscord);
                 public const string ConsolePlayerNotSupported = Base + nameof(ConsolePlayerNotSupported);
+            }
+        }
+        #endregion
+
+        #region Placeholders\PlaceholderKeys.cs
+        public class PlaceholderKeys
+        {
+            private const string Base = "dicordcore.";
+            
+            public const string InviteCode = Base + "invite.code";
+            public const string ServerLinkArg = Base + "server.link.arg";
+            public const string LinkCode = Base + "link.code";
+            
+            public class Data
+            {
+                public const string CodeKey = "dc.code";
             }
         }
         #endregion

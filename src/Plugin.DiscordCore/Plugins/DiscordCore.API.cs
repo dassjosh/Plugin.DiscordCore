@@ -6,9 +6,10 @@ using Oxide.Ext.Discord.Extensions;
 
 namespace DiscordCorePlugin.Plugins
 {
+    //Define:FileOrder=65
     public partial class DiscordCore
     {
-        //Define:FileOrder=65
+        // ReSharper disable once UnusedMember.Local
         private string API_Link(IPlayer player, DiscordUser user)
         {
             if (player.IsLinked())
@@ -25,6 +26,7 @@ namespace DiscordCorePlugin.Plugins
             return null;
         }
         
+        // ReSharper disable once UnusedMember.Local
         private string API_Unlink(IPlayer player, DiscordUser user)
         {
             if (!player.IsLinked())

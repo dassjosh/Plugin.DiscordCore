@@ -13,6 +13,7 @@ namespace DiscordCorePlugin.Plugins
     //Define:FileOrder=30
     public partial class DiscordCore
     {
+        // ReSharper disable once UnusedMember.Local
         [HookMethod(DiscordExtHooks.OnDiscordGatewayReady)]
         private void OnDiscordGatewayReady(GatewayReadyEvent ready)
         {
@@ -54,6 +55,7 @@ namespace DiscordCorePlugin.Plugins
             Puts($"Connected to bot: {_bot.Username}");
         }
 
+        // ReSharper disable once UnusedMember.Local
         [HookMethod(DiscordExtHooks.OnDiscordBotFullyLoaded)]
         private void OnDiscordBotFullyLoaded()
         {
@@ -64,6 +66,7 @@ namespace DiscordCorePlugin.Plugins
             SetupGuildWelcomeMessage();
         }
 
+        // ReSharper disable once UnusedMember.Local
         [HookMethod(DiscordExtHooks.OnDiscordGuildMemberAdded)]
         private void OnDiscordGuildMemberAdded(GuildMemberAddedEvent member, DiscordGuild guild)
         {
@@ -86,6 +89,7 @@ namespace DiscordCorePlugin.Plugins
             SendTemplateMessage(TemplateKeys.WelcomeMessage.PmWelcomeMessage, member.User);
         }
         
+        // ReSharper disable once UnusedMember.Local
         [HookMethod(DiscordExtHooks.OnDiscordGuildMemberRemoved)]
         private void OnDiscordGuildMemberRemoved(GuildMemberRemovedEvent member, DiscordGuild guild)
         {
@@ -97,6 +101,7 @@ namespace DiscordCorePlugin.Plugins
             _linkHandler.OnGuildMemberLeft(member.User);
         }
 
+        // ReSharper disable once UnusedMember.Local
         [HookMethod(DiscordExtHooks.OnDiscordGuildMemberRoleAdded)]
         private void OnDiscordGuildMemberRoleAdded(GuildMember member, Snowflake roleId, DiscordGuild guild)
         {

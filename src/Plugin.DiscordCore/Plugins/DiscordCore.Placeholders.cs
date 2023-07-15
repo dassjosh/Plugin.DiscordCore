@@ -1,8 +1,7 @@
-﻿using System;
+﻿using DiscordCorePlugin.Placeholders;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Ext.Discord.Libraries.Placeholders;
-using Oxide.Plugins.Placeholders;
 
 namespace DiscordCorePlugin.Plugins
 {
@@ -20,8 +19,6 @@ namespace DiscordCorePlugin.Plugins
             _placeholders.RegisterPlaceholder(this, PlaceholderKeys.ServerLinkArg, ServerLinkArgument);
             _placeholders.RegisterPlaceholder<string>(this, PlaceholderKeys.LinkCode, PlaceholderKeys.Data.CodeKey);
         }
-
-        private float InactiveDays() => _pluginConfig.LinkSettings.InactiveSettings.UnlinkInactiveDays;
 
         public string LangPlaceholder(string key, PlaceholderData data)
         {

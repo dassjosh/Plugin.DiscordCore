@@ -1,10 +1,10 @@
 ﻿using DiscordCorePlugin.Link;
+using DiscordCorePlugin.Placeholders;
 using DiscordCorePlugin.Templates;
 using Oxide.Ext.Discord.Attributes.ApplicationCommands;
 using Oxide.Ext.Discord.Entities.Interactions;
 using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Ext.Discord.Extensions;
-using Oxide.Plugins.Placeholders;
 
 namespace DiscordCorePlugin.Plugins
 {
@@ -16,6 +16,7 @@ namespace DiscordCorePlugin.Plugins
         private const string AcceptLinkButtonId = nameof(DiscordCore) + "_AcceptLink";
         private const string DeclineLinkButtonId = nameof(DiscordCore) + "_DeclineLink";
 
+        // ReSharper disable once UnusedMember.Local
         [DiscordMessageComponentCommand(WelcomeMessageLinkAccountsButtonId)]
         private void HandleWelcomeMessageLinkAccounts(DiscordInteraction interaction)
         {
@@ -30,6 +31,7 @@ namespace DiscordCorePlugin.Plugins
             SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.DmLinkAccounts, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, join.Code));
         }
         
+        // ReSharper disable once UnusedMember.Local
         [DiscordMessageComponentCommand(GuildWelcomeMessageLinkAccountsButtonId)]
         private void HandleGuildWelcomeMessageLinkAccounts(DiscordInteraction interaction)
         {
@@ -44,6 +46,7 @@ namespace DiscordCorePlugin.Plugins
             SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.GuildLinkAccounts, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, join.Code));
         }
 
+        // ReSharper disable once UnusedMember.Local
         [DiscordMessageComponentCommand(AcceptLinkButtonId)]
         private void HandleAcceptLinkButton(DiscordInteraction interaction)
         {
@@ -64,6 +67,7 @@ namespace DiscordCorePlugin.Plugins
             _joinHandler.CompleteLink(join, interaction);
         }
         
+        // ReSharper disable once UnusedMember.Local
         [DiscordMessageComponentCommand(DeclineLinkButtonId)]
         private void HandleDeclineLinkButton(DiscordInteraction interaction)
         {

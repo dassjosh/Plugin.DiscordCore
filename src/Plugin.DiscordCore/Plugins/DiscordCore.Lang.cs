@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using DiscordCorePlugin.Localization;
+using DiscordCorePlugin.Placeholders;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Libraries.Placeholders;
-using Oxide.Plugins.Placeholders;
 
 namespace DiscordCorePlugin.Plugins
 {

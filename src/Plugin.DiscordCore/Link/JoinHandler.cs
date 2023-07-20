@@ -9,6 +9,7 @@ using DiscordCorePlugin.Templates;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Entities.Interactions;
 using Oxide.Ext.Discord.Entities.Users;
+using Oxide.Ext.Discord.Libraries.Placeholders;
 using Oxide.Ext.Discord.Pooling;
 
 namespace DiscordCorePlugin.Link
@@ -19,15 +20,14 @@ namespace DiscordCorePlugin.Link
         private readonly LinkSettings _settings;
         private readonly LinkHandler _linkHandler;
         private readonly JoinBanHandler _ban;
-        private readonly DiscordPluginPool _pool;
         private readonly DiscordCore _plugin = DiscordCore.Instance;
+        private readonly StringBuilder _sb = new StringBuilder();
 
-        public JoinHandler(LinkSettings settings, LinkHandler linkHandler, JoinBanHandler ban, DiscordPluginPool pool)
+        public JoinHandler(LinkSettings settings, LinkHandler linkHandler, JoinBanHandler ban)
         {
             _settings = settings;
             _linkHandler = linkHandler;
             _ban = ban;
-            _pool = pool;
         }
         
         public JoinData FindByCode(string code)
@@ -141,15 +141,13 @@ namespace DiscordCorePlugin.Link
         
         private string GenerateCode()
         {
-            StringBuilder sb = _pool.GetStringBuilder();
+            _sb.Clear();
             for (int i = 0; i < _settings.LinkCodeLength; i++)
             {
-                sb.Append(_settings.LinkCodeCharacters[Oxide.Core.Random.Range(0, _settings.LinkCodeCharacters.Length)]);
+                _sb.Append(_settings.LinkCodeCharacters[Oxide.Core.Random.Range(0, _settings.LinkCodeCharacters.Length)]);
             }
 
-            string code = sb.ToString();
-            _pool.FreeStringBuilder(sb);
-            return code;
+            return _sb.ToString();
         }
 
         public void CompleteLink(JoinData data, DiscordInteraction interaction)
@@ -179,8 +177,12 @@ namespace DiscordCorePlugin.Link
             {
                 _ban.AddBan(data.Discord);
                 RemoveByUser(data.Discord);
-                _plugin.Chat(data.Player, ServerLang.Link.Declined.JoinWithPlayer, _plugin.GetDefault(data.Player, data.Discord));
-                _plugin.SendTemplateMessage(TemplateKeys.Link.Declined.JoinWithPlayer, interaction);
+                using (PlaceholderData placeholders = _plugin.GetDefault(data.Player, data.Discord))
+                {
+                    placeholders.ManualPool();
+                    _plugin.Chat(data.Player, ServerLang.Link.Declined.JoinWithPlayer, placeholders);
+                    _plugin.SendTemplateMessage(TemplateKeys.Link.Declined.JoinWithPlayer, data.Discord, data.Player, placeholders);
+                }
             }
         }
     }

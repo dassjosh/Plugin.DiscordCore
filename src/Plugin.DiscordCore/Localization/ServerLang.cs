@@ -59,6 +59,8 @@
             {
                 private const string Base = Commands.Base + nameof(User) + ".";
 
+                public const string MatchFound = Base + nameof(MatchFound);
+
                 public static class Errors
                 {
                     private const string Base = User.Base + nameof(Errors) + ".";

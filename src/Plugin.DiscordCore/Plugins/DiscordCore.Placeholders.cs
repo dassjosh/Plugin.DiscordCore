@@ -2,6 +2,7 @@
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Ext.Discord.Libraries.Placeholders;
+using Oxide.Ext.Discord.Libraries.Placeholders.Keys;
 
 namespace DiscordCorePlugin.Plugins
 {
@@ -12,12 +13,13 @@ namespace DiscordCorePlugin.Plugins
         {
             if (!string.IsNullOrEmpty(_pluginConfig.ServerNameOverride))
             {
-                _placeholders.RegisterPlaceholder(this, "guild.name", _pluginConfig.ServerNameOverride);
+                _placeholders.RegisterPlaceholder(this, new PlaceholderKey("guild.name"), _pluginConfig.ServerNameOverride);
             }
 
             _placeholders.RegisterPlaceholder(this, PlaceholderKeys.InviteCode, _pluginConfig.InviteCode);
             _placeholders.RegisterPlaceholder(this, PlaceholderKeys.ServerLinkArg, ServerLinkArgument);
-            _placeholders.RegisterPlaceholder<string>(this, PlaceholderKeys.LinkCode, PlaceholderKeys.Data.CodeKey);
+            _placeholders.RegisterPlaceholder<string>(this, PlaceholderKeys.LinkCode, PlaceholderDataKeys.Code);
+            _placeholders.RegisterPlaceholder<string>(this, PlaceholderKeys.NotFound, PlaceholderDataKeys.NotFound);
         }
 
         public string LangPlaceholder(string key, PlaceholderData data)

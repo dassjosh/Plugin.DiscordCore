@@ -21,7 +21,7 @@ namespace DiscordCorePlugin.Plugins
 
             _banHandler = new JoinBanHandler(_pluginConfig.LinkBanSettings);
             _linkHandler = new LinkHandler(_pluginData, _pluginConfig);
-            _joinHandler = new JoinHandler(_pluginConfig.LinkSettings, _linkHandler, _banHandler, _pool);
+            _joinHandler = new JoinHandler(_pluginConfig.LinkSettings, _linkHandler, _banHandler);
 
             _discordSettings.ApiToken = _pluginConfig.ApiKey;
             _discordSettings.LogLevel = _pluginConfig.ExtensionDebugging;

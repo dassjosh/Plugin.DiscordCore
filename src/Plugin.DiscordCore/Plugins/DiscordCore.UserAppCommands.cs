@@ -5,6 +5,7 @@ using DiscordCorePlugin.Link;
 using DiscordCorePlugin.Localization;
 using DiscordCorePlugin.Placeholders;
 using DiscordCorePlugin.Templates;
+using Newtonsoft.Json;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Attributes.ApplicationCommands;
 using Oxide.Ext.Discord.Builders.ApplicationCommands;
@@ -97,7 +98,7 @@ namespace DiscordCorePlugin.Plugins
             }
 
             _allowedChannels = string.Join(", ", channels);
-            _placeholders.RegisterPlaceholder(this, "dc.command.channels", _allowedChannels);
+            _placeholders.RegisterPlaceholder(this, PlaceholderKeys.CommandChannels, _allowedChannels);
         }
 
         // ReSharper disable once UnusedMember.Local
@@ -113,7 +114,7 @@ namespace DiscordCorePlugin.Plugins
             }
 
             JoinData join = _joinHandler.CreateActivation(user);
-            SendTemplateMessage(TemplateKeys.Commands.Code.Success, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, join.Code));
+            SendTemplateMessage(TemplateKeys.Commands.Code.Success, interaction, GetDefault(user).Add(PlaceholderDataKeys.Code, join.Code));
         }
 
         // ReSharper disable once UnusedMember.Local
@@ -158,7 +159,7 @@ namespace DiscordCorePlugin.Plugins
             using (PlaceholderData data = GetDefault(player, user))
             {
                 data.ManualPool();
-                Chat(player, ServerLang.Join.ByPlayer, GetDefault(player, user), data);
+                Chat(player, ServerLang.Join.ByPlayer, data);
                 SendTemplateMessage(TemplateKeys.Commands.User.Success, interaction, data);
             }
         }
@@ -204,7 +205,7 @@ namespace DiscordCorePlugin.Plugins
             JoinData join = _joinHandler.FindByCode(code);
             if (join == null)
             {
-                SendTemplateMessage(TemplateKeys.Errors.CodActivationNotFound, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, code));
+                SendTemplateMessage(TemplateKeys.Errors.CodActivationNotFound, interaction, GetDefault(user).Add(PlaceholderDataKeys.Code, code));
                 return;
             }
 

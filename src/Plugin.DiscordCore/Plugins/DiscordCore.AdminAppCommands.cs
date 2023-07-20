@@ -4,6 +4,8 @@ using DiscordCorePlugin.Templates;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Attributes.ApplicationCommands;
 using Oxide.Ext.Discord.Builders.ApplicationCommands;
+using Oxide.Ext.Discord.Builders.Interactions;
+using Oxide.Ext.Discord.Builders.Interactions.AutoComplete;
 using Oxide.Ext.Discord.Cache;
 using Oxide.Ext.Discord.Entities.Interactions;
 using Oxide.Ext.Discord.Entities.Interactions.ApplicationCommands;
@@ -87,7 +89,6 @@ namespace DiscordCorePlugin.Plugins
                 sub.AddOption(CommandOptionType.User, UserArg, "user to search");
             });
         }
-
         
         // ReSharper disable once UnusedMember.Local
         [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.LinkCommand)]
@@ -191,6 +192,18 @@ namespace DiscordCorePlugin.Plugins
             DiscordUser user = parsed.Args.GetUser(UserArg);
             IPlayer player = user.Player;
             SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Success, interaction, GetDefault(player, user));
+        }
+        
+        // ReSharper disable once UnusedMember.Local
+        [DiscordAutoCompleteCommand(AdminAppCommands.Command, PlayerArg, AdminAppCommands.PlayerCommand, AdminAppCommands.SearchCommand)]
+        [DiscordAutoCompleteCommand(AdminAppCommands.Command, PlayerArg, AdminAppCommands.LinkCommand)]
+        [DiscordAutoCompleteCommand(AdminAppCommands.Command, PlayerArg, AdminAppCommands.UnlinkCommand)]
+        private void HandleAdminNameAutoComplete(DiscordInteraction interaction, InteractionDataOption focused)
+        {
+            string search = focused.GetString();
+            InteractionAutoCompleteBuilder response = interaction.GetAutoCompleteBuilder();
+            response.AddAllOnlineFirstPlayers(search, PlayerNameFormatter.All);
+            interaction.CreateResponse(Client, response);
         }
     }
 }

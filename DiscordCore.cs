@@ -32,6 +32,7 @@ using Oxide.Ext.Discord.Interfaces.Promises;
 using Oxide.Ext.Discord.Libraries.Linking;
 using Oxide.Ext.Discord.Libraries.Locale;
 using Oxide.Ext.Discord.Libraries.Placeholders;
+using Oxide.Ext.Discord.Libraries.Placeholders.Keys;
 using Oxide.Ext.Discord.Libraries.Templates;
 using Oxide.Ext.Discord.Libraries.Templates.Commands;
 using Oxide.Ext.Discord.Libraries.Templates.Components;
@@ -67,11 +68,6 @@ namespace Oxide.Plugins
         {
             Intents = GatewayIntents.Guilds | GatewayIntents.GuildMembers
         };
-        
-        [DiscordPool]
-        #pragma warning disable CS0649
-        private DiscordPluginPool _pool;
-        #pragma warning restore CS0649
         
         private readonly DiscordLink _link = GetLibrary<DiscordLink>();
         private readonly DiscordMessageTemplates _templates = GetLibrary<DiscordMessageTemplates>();
@@ -109,7 +105,7 @@ namespace Oxide.Plugins
             
             _banHandler = new JoinBanHandler(_pluginConfig.LinkBanSettings);
             _linkHandler = new LinkHandler(_pluginData, _pluginConfig);
-            _joinHandler = new JoinHandler(_pluginConfig.LinkSettings, _linkHandler, _banHandler, _pool);
+            _joinHandler = new JoinHandler(_pluginConfig.LinkSettings, _linkHandler, _banHandler);
             
             _discordSettings.ApiToken = _pluginConfig.ApiKey;
             _discordSettings.LogLevel = _pluginConfig.ExtensionDebugging;
@@ -172,45 +168,11 @@ namespace Oxide.Plugins
         #endregion
 
         #region Plugins\DiscordCore.Lang.cs
-        public void Chat(IPlayer player, string key)
+        public void Chat(IPlayer player, string key, PlaceholderData data = null)
         {
             if (player.IsConnected)
             {
-                player.Reply(Lang(ServerLang.Format, player, Lang(key, player)));
-            }
-        }
-        
-        public void Chat(IPlayer player, string key, params object[] args)
-        {
-            if (player.IsConnected)
-            {
-                player.Reply(Lang(ServerLang.Format, player, Lang(key, player, args)));
-            }
-        }
-        
-        public void Chat(IPlayer player, string key, PlaceholderData data)
-        {
-            if (player.IsConnected)
-            {
-                player.Reply(Lang(ServerLang.Format, player, _placeholders.ProcessPlaceholders(Lang(key, player), data)));
-            }
-        }
-        
-        public void Chat(IPlayer player, string key, PlaceholderData data, params object[] args)
-        {
-            if (!player.IsConnected) return;
-            
-            try
-            {
-                string placeholder = Lang(key, player);
-                placeholder = _placeholders.ProcessPlaceholders(placeholder, data);
-                placeholder = string.Format(placeholder, args);
-                player.Reply(Lang(ServerLang.Format, player, placeholder));
-            }
-            catch (Exception ex)
-            {
-                PrintError($"Placeholder Lang Key '{key}' threw exception\n:{ex}");
-                throw;
+                player.Reply(string.Format(Lang(ServerLang.Format, player), Lang(key, player, data)));
             }
         }
         
@@ -223,26 +185,19 @@ namespace Oxide.Plugins
                 return;
             }
             
-            message = Lang(ServerLang.Format, null, message);
+            message = string.Format(Lang(ServerLang.Format), message);
             server.Broadcast(message);
         }
         
-        public string Lang(string key, IPlayer player = null)
+        public string Lang(string key, IPlayer player = null, PlaceholderData data = null)
         {
-            return lang.GetMessage(key, this, player?.Id);
-        }
-        
-        public string Lang(string key, IPlayer player = null, params object[] args)
-        {
-            try
+            string message = lang.GetMessage(key, this, player?.Id);
+            if (data != null)
             {
-                return string.Format(Lang(key, player), args);
+                message = _placeholders.ProcessPlaceholders(message, data);
             }
-            catch(Exception ex)
-            {
-                PrintError($"Lang Key '{key}' threw exception\n:{ex}");
-                throw;
-            }
+            
+            return message;
         }
         
         public void RegisterChatLangCommand(string command, string langKey)
@@ -273,18 +228,21 @@ namespace Oxide.Plugins
                 [ServerLang.Commands.AcceptCommand] = "accept",
                 [ServerLang.Commands.DeclineCommand] = "decline",
                 
-                [ServerLang.Commands.Code.LinkInfo] = $"To complete your activation please open Discord use the following command: <color=#{AccentColor}>/{{plugin.lang:{ServerLang.Discord.DiscordCommand}}} {{plugin.lang:{ServerLang.Discord.LinkCommand}}} {{discordcore.link.code}}</color>.\n",
-                [ServerLang.Commands.Code.LinkServer] = $"In order to use this command you must be in the <color=#{AccentColor}>{{guild.name}}</color> discord server. " +
-                $"You can join @ <color=#{Success}>discord.gg/{{{PlaceholderKeys.InviteCode}}}</color>.\n",
-                [ServerLang.Commands.Code.LinkInGuild] = "This command can be used in the following guild channels {dc.command.channels} .\n",
-                [ServerLang.Commands.Code.LinkInDm] = "This command can be used in the following in a direct message to {user.fullname} bot",
+                [ServerLang.Commands.Code.LinkInfo] = $"To complete your activation please open Discord use the following command: [#{AccentColor}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Discord.DiscordCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Discord.LinkCommand)} {PlaceholderKeys.LinkCode}[/#].\n",
+                [ServerLang.Commands.Code.LinkServer] = $"In order to use this command you must be in the [#{AccentColor}]{DefaultKeys.Guild.Name}[/#] discord server. " +
+                $"You can join @ [#{Success}]discord.gg/{PlaceholderKeys.InviteCode}[/#].\n",
+                [ServerLang.Commands.Code.LinkInGuild] = $"This command can be used in the following guild channels {PlaceholderKeys.CommandChannels}.\n",
+                [ServerLang.Commands.Code.LinkInDm] = $"This command can be used in the following in a direct message to {DefaultKeys.User.Fullname} bot",
                 
+                [ServerLang.Commands.User.MatchFound] = $"We found a match by username. " +
+                $"We have a sent a discord message to [#{AccentColor}]{DefaultKeys.User.Fullname}[/#] to complete the link.\n" +
+                $"If you haven't received a message make sure you allow DM's from [#{AccentColor}]{DefaultKeys.Bot.Fullname}[/#].",
                 [ServerLang.Commands.User.Errors.InvalidSyntax] = "Invalid User Join Syntax\n. " +
-                $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.UserCommand}}} username#discriminator[/#] to start the link process by your discord username\n" +
-                $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.UserCommand}}} userid[/#] to start the link process by your discord user ID",
-                [ServerLang.Commands.User.Errors.UserIdNotFound] = "Failed to find a discord user in the {guild.name} Discord server with user ID {snowflake.id}",
-                [ServerLang.Commands.User.Errors.UserNotFound] = "Failed to find a any discord users in the {guild.name} Discord server with the username {0}",
-                [ServerLang.Commands.User.Errors.MultipleUsersFound] = "Multiple discord users found in the the {guild.name} Discord server matching {0}. " +
+                $"[#{AccentColor}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.UserCommand)} username#discriminator[/#] to start the link process by your discord username\n" +
+                $"[#{AccentColor}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.UserCommand)} userid[/#] to start the link process by your discord user ID",
+                [ServerLang.Commands.User.Errors.UserIdNotFound] = $"Failed to find a discord user in the {DefaultKeys.Guild.Name} Discord server with user ID {DefaultKeys.Snowflake.Id}",
+                [ServerLang.Commands.User.Errors.UserNotFound] = $"Failed to find a any discord users in the {DefaultKeys.Guild.Name} Discord server with the username {PlaceholderKeys.NotFound}",
+                [ServerLang.Commands.User.Errors.MultipleUsersFound] = $"Multiple discord users found in the the {DefaultKeys.Guild.Name} Discord server matching {PlaceholderKeys.NotFound}. " +
                 "Please include more of the username and/or the discriminator in your search.",
                 [ServerLang.Commands.User.Errors.SearchError] = "An error occured while trying to search by username. " +
                 "Please try a different username or try again later. " +
@@ -292,61 +250,61 @@ namespace Oxide.Plugins
                 
                 [ServerLang.Commands.Leave.Errors.NotLinked] = "We were unable to unlink your account as you do not appear to have been linked.",
                 
-                [ServerLang.Announcements.Link.Command] = "{player.name} has successfully linked their game account with their discord user {user.fullname}. If you would would like to be linked type /dc to learn more.",
-                [ServerLang.Announcements.Link.Admin] = "{player.name} has successfully been unlinked by and admin from discord user {user.fullname}.",
-                [ServerLang.Announcements.Link.Api] = "{player.name} has successfully linked their game account with their discord user {user.fullname}. If you would would like to be linked type /dc to learn more.",
-                [ServerLang.Announcements.Link.GuildRejoin] = "{player.name} has been relinked with discord user {user.fullname} for rejoining the {guild.name} discord server",
-                [ServerLang.Announcements.Link.InactiveRejoin] = "{player.name} has been relinked with discord user {user.fullname} for rejoining the {server.name} game server",
-                [ServerLang.Announcements.Unlink.Command] = "{player.name} has successfully unlinked their game account from their discord user {user.fullname}.",
-                [ServerLang.Announcements.Unlink.Admin] = "{player.name} has successfully been unlinked by and admin from discord user {user.fullname}.",
-                [ServerLang.Announcements.Unlink.Api] = "{player.name} has successfully unlinked their game account from their discord user {user.fullname}.",
-                [ServerLang.Announcements.Unlink.LeftGuild] = "{player.name} has been unlinked from discord user {user.fullname} they left the {guild.name} Discord server",
-                [ServerLang.Announcements.Unlink.Inactive] = "{player.name} has been unlinked from discord user {user.fullname} because they haven't been active on {server.name} game server for {timespan.days} days",
+                [ServerLang.Announcements.Link.Command] = $"{DefaultKeys.Player.Name} has successfully linked their game account with their discord user {DefaultKeys.User.Fullname}. If you would would like to be linked type /dc to learn more.",
+                [ServerLang.Announcements.Link.Admin] = $"{DefaultKeys.Player.Name} has successfully been unlinked by and admin from discord user {DefaultKeys.User.Fullname}.",
+                [ServerLang.Announcements.Link.Api] = $"{DefaultKeys.Player.Name} has successfully linked their game account with their discord user {DefaultKeys.User.Fullname}. If you would would like to be linked type /dc to learn more.",
+                [ServerLang.Announcements.Link.GuildRejoin] = $"{DefaultKeys.Player.Name} has been relinked with discord user {DefaultKeys.User.Fullname} for rejoining the {DefaultKeys.Guild.Name} discord server",
+                [ServerLang.Announcements.Link.InactiveRejoin] = $"{DefaultKeys.Player.Name} has been relinked with discord user {DefaultKeys.User.Fullname} for rejoining the {DefaultKeys.Server.Name} game server",
+                [ServerLang.Announcements.Unlink.Command] = $"{DefaultKeys.Player.Name} has successfully unlinked their game account from their discord user {DefaultKeys.User.Fullname}.",
+                [ServerLang.Announcements.Unlink.Admin] = $"{DefaultKeys.Player.Name} has successfully been unlinked by and admin from discord user {DefaultKeys.User.Fullname}.",
+                [ServerLang.Announcements.Unlink.Api] = $"{DefaultKeys.Player.Name} has successfully unlinked their game account from their discord user {DefaultKeys.User.Fullname}.",
+                [ServerLang.Announcements.Unlink.LeftGuild] = $"{DefaultKeys.Player.Name} has been unlinked from discord user {DefaultKeys.User.Fullname} they left the {DefaultKeys.Guild.Name} Discord server",
+                [ServerLang.Announcements.Unlink.Inactive] = $"{DefaultKeys.Player.Name} has been unlinked from discord user {DefaultKeys.User.Fullname} because they haven't been active on {DefaultKeys.Server.Name} game server for {DefaultKeys.Timespan.TotalDays} days",
                 
-                [ServerLang.Link.Completed.Command] = "You have successfully linked your player {player.name} with discord user {user.fullname}",
-                [ServerLang.Link.Completed.Admin] = "You have been successfully linked by an admin with player {player.name} and discord user {user.fullname}",
-                [ServerLang.Link.Completed.Api] = "You have successfully linked your player {player.name} with discord user {user.fullname}",
-                [ServerLang.Link.Completed.GuildRejoin] = "Your player {player.name} has been relinked with discord user {user.fullname} because rejoined the {guild.name} Discord server",
-                [ServerLang.Link.Completed.InactiveRejoin] = "Your player {player.name} has been relinked with discord user {user.fullname} because rejoined {server.name} server",
-                [ServerLang.Unlink.Completed.Command] = "You have successfully unlinked your player {player.name} from discord user {user.fullname}",
-                [ServerLang.Unlink.Completed.Admin] = "You have been successfully unlinked by an admin from discord user {user.fullname}",
-                [ServerLang.Unlink.Completed.Api] = "You have successfully unlinked your player {player.name} from discord user {user.fullname}",
-                [ServerLang.Unlink.Completed.LeftGuild] = "Your player {player.name} has been unlinked from discord user {user.fullname} because you left the {guild.name} Discord server",
+                [ServerLang.Link.Completed.Command] = $"You have successfully linked your player {DefaultKeys.Player.Name} with discord user {DefaultKeys.User.Fullname}",
+                [ServerLang.Link.Completed.Admin] = $"You have been successfully linked by an admin with player {DefaultKeys.Player.Name} and discord user {DefaultKeys.User.Fullname}",
+                [ServerLang.Link.Completed.Api] = $"You have successfully linked your player {DefaultKeys.Player.Name} with discord user {DefaultKeys.User.Fullname}",
+                [ServerLang.Link.Completed.GuildRejoin] = $"Your player {DefaultKeys.Player.Name} has been relinked with discord user {DefaultKeys.User.Fullname} because rejoined the {DefaultKeys.Guild.Name} Discord server",
+                [ServerLang.Link.Completed.InactiveRejoin] = $"Your player {DefaultKeys.Player.Name} has been relinked with discord user {DefaultKeys.User.Fullname} because rejoined {DefaultKeys.Server.Name} server",
+                [ServerLang.Unlink.Completed.Command] = $"You have successfully unlinked your player {DefaultKeys.Player.Name} from discord user {DefaultKeys.User.Fullname}",
+                [ServerLang.Unlink.Completed.Admin] = $"You have been successfully unlinked by an admin from discord user {DefaultKeys.User.Fullname}",
+                [ServerLang.Unlink.Completed.Api] = $"You have successfully unlinked your player {DefaultKeys.Player.Name} from discord user {DefaultKeys.User.Fullname}",
+                [ServerLang.Unlink.Completed.LeftGuild] = $"Your player {DefaultKeys.Player.Name} has been unlinked from discord user {DefaultKeys.User.Fullname} because you left the {DefaultKeys.Guild.Name} Discord server",
                 
-                [ServerLang.Link.Declined.JoinWithPlayer] = "We have declined the discord link between {player.name} and {user.fullname}",
-                [ServerLang.Link.Declined.JoinWithUser] = "{user.fullname} has declined your link to {player.name}",
+                [ServerLang.Link.Declined.JoinWithPlayer] = $"We have declined the discord link between {DefaultKeys.Player.Name} and {DefaultKeys.User.Fullname}",
+                [ServerLang.Link.Declined.JoinWithUser] = $"{DefaultKeys.User.Fullname} has declined your link to {DefaultKeys.Player.Name}",
                 
                 [ServerLang.Link.Errors.InvalidSyntax] = "Invalid Link Syntax. Please type the command you were given in Discord. " +
                 "Command should be in the following format:" +
-                $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{{PlaceholderKeys.ServerLinkArg}}} {{code}}[/#] where {{code}} is the code sent to you in Discord.",
+                $"[#{AccentColor}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {PlaceholderKeys.ServerLinkArg} {{code}}[/#] where {{code}} is the code sent to you in Discord.",
                 
                 [ServerLang.Banned.IsUserBanned] = "You have been banned from joining by Discord user due to multiple declined join attempts. " +
-                "Your ban will end in {timespan.days} days {timespan.hours} hours {timespan.minutes} minutes {timespan.seconds} Seconds.",
+                $"Your ban will end in {DefaultKeys.Timespan.Days} days {DefaultKeys.Timespan.Hours} hours {DefaultKeys.Timespan.Minutes} minutes {DefaultKeys.Timespan.Seconds} Seconds.",
                 
-                [ServerLang.Join.ByPlayer] = "{user.fullname} is trying to link their Discord account with your game account. " +
-                $"If you wish to [#{Success}]accept[/#] this link please type [#{Success}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.AcceptCommand}}}[/#]. " +
-                $"If you wish to [#{Danger}]decline[/#] this link please type [#{Danger}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.DeclineCommand}}}[/#]",
+                [ServerLang.Join.ByPlayer] = $"{DefaultKeys.User.Fullname} is trying to link their Discord account with your game account. " +
+                $"If you wish to [#{Success}]accept[/#] this link please type [#{Success}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.AcceptCommand)}[/#]. " +
+                $"If you wish to [#{Danger}]decline[/#] this link please type [#{Danger}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DeclineCommand)}[/#]",
                 [ServerLang.Discord.DiscordCommand] = "dc",
                 [ServerLang.Discord.LinkCommand] = "link",
                 
                 [ServerLang.Join.Errors.PlayerJoinActivationNotFound] = "There are no pending joins in progress for this game account. Please start the link in Discord and try again.",
                 
-                [ServerLang.Errors.PlayerAlreadyLinked] = "This player is already linked to Discord user {user.fullname}. " +
-                $"If you wish to link yourself to another account please type [#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.LeaveCommand}}}[/#]",
-                [ServerLang.Errors.DiscordAlreadyLinked] = "This Discord user is already linked to player {player.name}. " +
-                $"If you wish to link yourself to another account please type [#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.LeaveCommand}}}[/#]",
-                [ServerLang.Errors.ActivationNotFound] = $"We failed to find any pending joins with code [#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}}[/#]. " +
+                [ServerLang.Errors.PlayerAlreadyLinked] = $"This player is already linked to Discord user {DefaultKeys.User.Fullname}. " +
+                $"If you wish to link yourself to another account please type [#{AccentColor}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.LeaveCommand)}[/#]",
+                [ServerLang.Errors.DiscordAlreadyLinked] = $"This Discord user is already linked to player {DefaultKeys.Player.Name}. " +
+                $"If you wish to link yourself to another account please type [#{AccentColor}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.LeaveCommand)}[/#]",
+                [ServerLang.Errors.ActivationNotFound] = $"We failed to find any pending joins with code [#{AccentColor}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)}[/#]. " +
                 "Please verify the code is correct and try again.",
                 [ServerLang.Errors.MustBeCompletedInDiscord] = "You need to complete the steps provided in Discord since you started the link from the game server.",
                 [ServerLang.Errors.ConsolePlayerNotSupported] = "This command cannot be ran in the server console. ",
                 
                 [ServerLang.Commands.HelpMessage] = "Allows players to link their player and discord accounts together. " +
-                $"Players must first join the {{guild.name}} Discord @ [#{AccentColor}]discord.gg/{{{PlaceholderKeys.InviteCode}[/#]\n" +
-                $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.CodeCommand}}}[/#] to start the link process using a code\n" +
-                $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.UserCommand}}} username#discriminator[/#] to start the link process by your discord username\n" +
-                $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.UserCommand}}} userid[/#] to start the link process by your discord user ID\n" +
-                $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {{plugin.lang:{ServerLang.Commands.LeaveCommand}}}[/#] to to unlink yourself from discord\n" +
-                $"[#{AccentColor}]/{{plugin.lang:{ServerLang.Commands.DcCommand}}}[/#] to see this message again",
+                $"Players must first join the {DefaultKeys.Guild.Name} Discord @ [#{AccentColor}]discord.gg/{PlaceholderKeys.InviteCode}[/#]\n" +
+                $"[#{AccentColor}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.CodeCommand)}[/#] to start the link process using a code\n" +
+                $"[#{AccentColor}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.UserCommand)} username#discriminator[/#] to start the link process by your discord username\n" +
+                $"[#{AccentColor}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.UserCommand)} userid[/#] to start the link process by your discord user ID\n" +
+                $"[#{AccentColor}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.LeaveCommand)}[/#] to to unlink yourself from discord\n" +
+                $"[#{AccentColor}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)}[/#] to see this message again",
             }, this);
         }
         #endregion
@@ -429,7 +387,7 @@ namespace Oxide.Plugins
             }
             
             JoinData join = _joinHandler.CreateActivation(player);
-            using (PlaceholderData data = GetDefault(player).AddUser(_bot).Add(PlaceholderKeys.Data.CodeKey, join.Code))
+            using (PlaceholderData data = GetDefault(player).AddUser(_bot).Add(PlaceholderKeys.Data.Code, join.Code))
             {
                 data.ManualPool();
                 _sb.Clear();
@@ -481,7 +439,7 @@ namespace Oxide.Plugins
                     return;
                 }
                 
-                SendTemplateMessage(TemplateKeys.Join.ByUsername, member.User, player);
+                UserSearchMatchFound(player, member.User);
                 return;
             }
             
@@ -519,13 +477,13 @@ namespace Oxide.Plugins
             if (members.Count == 0)
             {
                 string name = !string.IsNullOrEmpty(discriminator) ? $"{userName}#{discriminator}" : userName;
-                Chat(player, ServerLang.Commands.User.Errors.UserNotFound, GetDefault(player), name);
+                Chat(player, ServerLang.Commands.User.Errors.UserNotFound, GetDefault(player).Add(PlaceholderKeys.Data.NotFound, name));
                 return;
             }
             
             if (members.Count == 1)
             {
-                SendTemplateMessage(TemplateKeys.Join.ByUsername, members[0].User, player);
+                UserSearchMatchFound(player, members[0].User);
                 return;
             }
             
@@ -560,11 +518,22 @@ namespace Oxide.Plugins
             if (user == null || count > 1)
             {
                 string name = !string.IsNullOrEmpty(discriminator) ? $"{userName}#{discriminator}" : userName;
-                Chat(player, ServerLang.Commands.User.Errors.MultipleUsersFound, GetDefault(player), name);
+                Chat(player, ServerLang.Commands.User.Errors.MultipleUsersFound, GetDefault(player).Add(PlaceholderKeys.Data.NotFound, name));
                 return;
             }
             
-            SendTemplateMessage(TemplateKeys.Join.ByUsername, user, player);
+            UserSearchMatchFound(player, user);
+        }
+        
+        public void UserSearchMatchFound(IPlayer player, DiscordUser user)
+        {
+            _joinHandler.CreateActivation(player, user, JoinSource.Server);
+            using (PlaceholderData data = GetDefault(player, user))
+            {
+                data.ManualPool();
+                Chat(player, ServerLang.Commands.User.MatchFound, data);
+                SendTemplateMessage(TemplateKeys.Join.CompleteLink, user, player, data);
+            }
         }
         
         public void HandleServerLeave(IPlayer player)
@@ -842,7 +811,7 @@ namespace Oxide.Plugins
             }
             
             _allowedChannels = string.Join(", ", channels);
-            _placeholders.RegisterPlaceholder(this, "dc.command.channels", _allowedChannels);
+            _placeholders.RegisterPlaceholder(this, PlaceholderKeys.CommandChannels, _allowedChannels);
         }
         
         // ReSharper disable once UnusedMember.Local
@@ -858,7 +827,7 @@ namespace Oxide.Plugins
             }
             
             JoinData join = _joinHandler.CreateActivation(user);
-            SendTemplateMessage(TemplateKeys.Commands.Code.Success, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, join.Code));
+            SendTemplateMessage(TemplateKeys.Commands.Code.Success, interaction, GetDefault(user).Add(PlaceholderKeys.Data.Code, join.Code));
         }
         
         // ReSharper disable once UnusedMember.Local
@@ -903,7 +872,7 @@ namespace Oxide.Plugins
             using (PlaceholderData data = GetDefault(player, user))
             {
                 data.ManualPool();
-                Chat(player, ServerLang.Join.ByPlayer, GetDefault(player, user), data);
+                Chat(player, ServerLang.Join.ByPlayer, data);
                 SendTemplateMessage(TemplateKeys.Commands.User.Success, interaction, data);
             }
         }
@@ -949,7 +918,7 @@ namespace Oxide.Plugins
             JoinData join = _joinHandler.FindByCode(code);
             if (join == null)
             {
-                SendTemplateMessage(TemplateKeys.Errors.CodActivationNotFound, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, code));
+                SendTemplateMessage(TemplateKeys.Errors.CodActivationNotFound, interaction, GetDefault(user).Add(PlaceholderKeys.Data.Code, code));
                 return;
             }
             
@@ -977,7 +946,7 @@ namespace Oxide.Plugins
             }
             
             JoinData join = _joinHandler.CreateActivation(user);
-            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.DmLinkAccounts, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, join.Code));
+            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.DmLinkAccounts, interaction, GetDefault(user).Add(PlaceholderKeys.Data.Code, join.Code));
         }
         
         // ReSharper disable once UnusedMember.Local
@@ -992,7 +961,7 @@ namespace Oxide.Plugins
             }
             
             JoinData join = _joinHandler.CreateActivation(user);
-            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.GuildLinkAccounts, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, join.Code));
+            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.GuildLinkAccounts, interaction, GetDefault(user).Add(PlaceholderKeys.Data.Code, join.Code));
         }
         
         // ReSharper disable once UnusedMember.Local
@@ -1109,7 +1078,6 @@ namespace Oxide.Plugins
             });
         }
         
-        
         // ReSharper disable once UnusedMember.Local
         [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.LinkCommand)]
         private void DiscordAdminLinkCommand(DiscordInteraction interaction, InteractionDataParsed parsed)
@@ -1213,6 +1181,18 @@ namespace Oxide.Plugins
             IPlayer player = user.Player;
             SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Success, interaction, GetDefault(player, user));
         }
+        
+        // ReSharper disable once UnusedMember.Local
+        [DiscordAutoCompleteCommand(AdminAppCommands.Command, PlayerArg, AdminAppCommands.PlayerCommand, AdminAppCommands.SearchCommand)]
+        [DiscordAutoCompleteCommand(AdminAppCommands.Command, PlayerArg, AdminAppCommands.LinkCommand)]
+        [DiscordAutoCompleteCommand(AdminAppCommands.Command, PlayerArg, AdminAppCommands.UnlinkCommand)]
+        private void HandleAdminNameAutoComplete(DiscordInteraction interaction, InteractionDataOption focused)
+        {
+            string search = focused.GetString();
+            InteractionAutoCompleteBuilder response = interaction.GetAutoCompleteBuilder();
+            response.AddAllOnlineFirstPlayers(search, PlayerNameFormatter.All);
+            interaction.CreateResponse(Client, response);
+        }
         #endregion
 
         #region Plugins\DiscordCore.Templates.cs
@@ -1233,40 +1213,40 @@ namespace Oxide.Plugins
         
         public void RegisterAnnouncements()
         {
-            DiscordMessageTemplate linkCommand = CreateTemplateEmbed($"Player {{player.name}}({{player.id}}) has {DiscordFormatting.Bold("linked")} with discord {{user.mention}}", DiscordColor.Success);
+            DiscordMessageTemplate linkCommand = CreateTemplateEmbed($"Player {DefaultKeys.Player.NamePlayerId} has {DiscordFormatting.Bold("linked")} with discord {DefaultKeys.User.Mention}", DiscordColor.Success);
             _templates.RegisterGlobalTemplateAsync(this, TemplateKeys.Announcements.Link.Command, linkCommand, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate linkAdmin = CreateTemplateEmbed($"Player {{player.name}}({{player.id}}) was {DiscordFormatting.Bold("linked")} with discord {{user.mention}} by an admin", DiscordColor.Success);
+            DiscordMessageTemplate linkAdmin = CreateTemplateEmbed($"Player {DefaultKeys.Player.NamePlayerId} was {DiscordFormatting.Bold("linked")} with discord {DefaultKeys.User.Mention} by an admin", DiscordColor.Success);
             _templates.RegisterGlobalTemplateAsync(this, TemplateKeys.Announcements.Link.Admin, linkAdmin, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate linkApi = CreateTemplateEmbed($"Player {{player.name}}({{player.id}}) has {DiscordFormatting.Bold("linked")} with discord {{user.mention}}", DiscordColor.Success);
+            DiscordMessageTemplate linkApi = CreateTemplateEmbed($"Player {DefaultKeys.Player.NamePlayerId} has {DiscordFormatting.Bold("linked")} with discord {DefaultKeys.User.Mention}", DiscordColor.Success);
             _templates.RegisterGlobalTemplateAsync(this, TemplateKeys.Announcements.Link.Api, linkApi, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate linkGuildRejoin = CreateTemplateEmbed($"Player {{player.name}}({{player.id}}) has {DiscordFormatting.Bold("linked")} with discord {{user.mention}} because they rejoined the {DiscordFormatting.Bold("{guild.name}")} Discord server", DiscordColor.Success);
+            DiscordMessageTemplate linkGuildRejoin = CreateTemplateEmbed($"Player {DefaultKeys.Player.NamePlayerId} has {DiscordFormatting.Bold("linked")} with discord {DefaultKeys.User.Mention} because they rejoined the {DiscordFormatting.Bold(DefaultKeys.Guild.Name)} Discord server", DiscordColor.Success);
             _templates.RegisterGlobalTemplateAsync(this, TemplateKeys.Announcements.Link.GuildRejoin, linkGuildRejoin, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate linkInactiveRejoin = CreateTemplateEmbed($"Player {{player.name}}({{player.id}}) has {DiscordFormatting.Bold("linked")} with discord {{user.mention}} because they rejoined the {DiscordFormatting.Bold("{server.name}")} game server", DiscordColor.Success);
+            DiscordMessageTemplate linkInactiveRejoin = CreateTemplateEmbed($"Player {DefaultKeys.Player.NamePlayerId} has {DiscordFormatting.Bold("linked")} with discord {DefaultKeys.User.Mention} because they rejoined the {DiscordFormatting.Bold(DefaultKeys.Guild.Name)} game server", DiscordColor.Success);
             _templates.RegisterGlobalTemplateAsync(this, TemplateKeys.Announcements.Link.InactiveRejoin, linkInactiveRejoin, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate unlinkCommand = CreateTemplateEmbed($"Player {{player.name}}({{player.id}}) has {DiscordFormatting.Bold("unlinked")} from discord {{user.mention}}", DiscordColor.Danger);
+            DiscordMessageTemplate unlinkCommand = CreateTemplateEmbed($"Player {DefaultKeys.Player.NamePlayerId} has {DiscordFormatting.Bold("unlinked")} from discord {DefaultKeys.User.Mention}", DiscordColor.Danger);
             _templates.RegisterGlobalTemplateAsync(this, TemplateKeys.Announcements.Unlink.Command, unlinkCommand, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate unlinkAdmin = CreateTemplateEmbed($"Player {{player.name}}({{player.id}}) was {DiscordFormatting.Bold("unlinked")} from discord {{user.mention}} by an admin", DiscordColor.Danger);
+            DiscordMessageTemplate unlinkAdmin = CreateTemplateEmbed($"Player {DefaultKeys.Player.NamePlayerId} was {DiscordFormatting.Bold("unlinked")} from discord {DefaultKeys.User.Mention} by an admin", DiscordColor.Danger);
             _templates.RegisterGlobalTemplateAsync(this, TemplateKeys.Announcements.Unlink.Admin, unlinkAdmin, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate unlinkApi = CreateTemplateEmbed($"Player {{player.name}}({{player.id}}) has {DiscordFormatting.Bold("unlinked")} from discord {{user.mention}}", DiscordColor.Danger);
+            DiscordMessageTemplate unlinkApi = CreateTemplateEmbed($"Player {DefaultKeys.Player.NamePlayerId}has {DiscordFormatting.Bold("unlinked")} from discord {DefaultKeys.User.Mention}", DiscordColor.Danger);
             _templates.RegisterGlobalTemplateAsync(this, TemplateKeys.Announcements.Unlink.Api, unlinkApi, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate unlinkLeftGuild = CreateTemplateEmbed($"Player {{player.name}}({{player.id}}) has {DiscordFormatting.Bold("unlinked")} from discord {{user.fullname}}({{user.id}}) because they left the {DiscordFormatting.Bold("{guild.name}")} Discord server", DiscordColor.Danger);
+            DiscordMessageTemplate unlinkLeftGuild = CreateTemplateEmbed($"Player {DefaultKeys.Player.NamePlayerId} has {DiscordFormatting.Bold("unlinked")} from discord {DefaultKeys.User.Fullname}({DefaultKeys.User.Id}) because they left the {DiscordFormatting.Bold(DefaultKeys.Guild.Name)} Discord server", DiscordColor.Danger);
             _templates.RegisterGlobalTemplateAsync(this, TemplateKeys.Announcements.Unlink.LeftGuild, unlinkLeftGuild, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate unlinkInactive = CreateTemplateEmbed($"Player {{player.name}}({{player.id}}) has {DiscordFormatting.Bold("unlinked")} from discord {{user.fullname}}({{user.id}}) because they were inactive since {{timestamp.longdatetime}}", DiscordColor.Danger);
+            DiscordMessageTemplate unlinkInactive = CreateTemplateEmbed($"Player {DefaultKeys.Player.NamePlayerId} has {DiscordFormatting.Bold("unlinked")} from discord {DefaultKeys.User.Fullname}({DefaultKeys.User.Id}) because they were inactive since {DefaultKeys.Timestamp.LongDateTime}", DiscordColor.Danger);
             _templates.RegisterGlobalTemplateAsync(this, TemplateKeys.Announcements.Unlink.Inactive, unlinkInactive, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
         }
         
         public void RegisterWelcomeMessages()
         {
-            DiscordMessageTemplate pmWelcomeMessage = CreateTemplateEmbed($"Welcome to the {DiscordFormatting.Bold("{guild.name}")} Discord server. " +
+            DiscordMessageTemplate pmWelcomeMessage = CreateTemplateEmbed($"Welcome to the {DiscordFormatting.Bold(DefaultKeys.Guild.Name)} Discord server. " +
             $"If you would link to link your player and Discord accounts please click on the {DiscordFormatting.Bold("Link Accounts")} button below to start the process." +
             $"{DiscordFormatting.Underline("\nNote: You must be in game to complete the link.")}", DiscordColor.Success);
             pmWelcomeMessage.Components = new List<BaseComponentTemplate>
@@ -1275,7 +1255,7 @@ namespace Oxide.Plugins
             };
             _templates.RegisterGlobalTemplateAsync(this, TemplateKeys.WelcomeMessage.PmWelcomeMessage, pmWelcomeMessage, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate guildWelcomeMessage = CreateTemplateEmbed($"Welcome to the {DiscordFormatting.Bold("{guild.name}")} Discord server. " +
+            DiscordMessageTemplate guildWelcomeMessage = CreateTemplateEmbed($"Welcome to the {DiscordFormatting.Bold(DefaultKeys.Guild.Name)} Discord server. " +
             "This server supports linking your Discord and in game accounts. " +
             $"If you would link to link your player and Discord accounts please click on the {DiscordFormatting.Bold("Link Accounts")} button below to start the process." +
             $"{DiscordFormatting.Underline("\nNote: You must be in game to complete the link.")}", DiscordColor.Success);
@@ -1285,22 +1265,22 @@ namespace Oxide.Plugins
             };
             _templates.RegisterGlobalTemplateAsync(this, TemplateKeys.WelcomeMessage.GuildWelcomeMessage, guildWelcomeMessage, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate welcomeMessageAlreadyLinked = CreateTemplateEmbed("You are unable to link your {user.mention} Discord user because you're already linked to {player.name}", DiscordColor.Danger);
+            DiscordMessageTemplate welcomeMessageAlreadyLinked = CreateTemplateEmbed($"You are unable to link your {DefaultKeys.User.Mention} Discord user because you're already linked to {DefaultKeys.Player.Name}", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.WelcomeMessage.Error.AlreadyLinked, welcomeMessageAlreadyLinked, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
         }
         
         public void RegisterCommandMessages()
         {
-            DiscordMessageTemplate codeSuccess = CreateTemplateEmbed($"Please join the {DiscordFormatting.Bold("{server.name}")} game server and type {DiscordFormatting.Bold($"/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {ServerLinkArgument} {{{PlaceholderKeys.LinkCode}}}")} in server chat.", DiscordColor.Success);
+            DiscordMessageTemplate codeSuccess = CreateTemplateEmbed($"Please join the {DiscordFormatting.Bold(DefaultKeys.Server.Name)} game server and type {DiscordFormatting.Bold($"/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {ServerLinkArgument} {PlaceholderKeys.LinkCode}")} in server chat.", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Code.Success, codeSuccess, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate userSuccess = CreateTemplateEmbed($"We have sent a message to {DiscordFormatting.Bold("{player.name}")} on the {DiscordFormatting.Bold("{server.name}")} server. Please follow the directions to complete your link.", DiscordColor.Success);
+            DiscordMessageTemplate userSuccess = CreateTemplateEmbed($"We have sent a message to {DiscordFormatting.Bold(DefaultKeys.Player.Name)} on the {DiscordFormatting.Bold(DefaultKeys.Server.Name)} server. Please follow the directions to complete your link.", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.User.Success, userSuccess, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
             DiscordMessageTemplate userInvalidPlayer = CreateTemplateEmbed($"You have not selected a valid player from the dropdown. Please try the command again.", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.User.Error.PlayerIsInvalid, userInvalidPlayer, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate userNotConnected = CreateTemplateEmbed($"Player {DiscordFormatting.Bold("{player.name}")} is not connected to the {DiscordFormatting.Bold("{server.name}")} server. Please join the server and try the command again.", DiscordColor.Danger);
+            DiscordMessageTemplate userNotConnected = CreateTemplateEmbed($"Player {DiscordFormatting.Bold(DefaultKeys.Player.Name)} is not connected to the {DiscordFormatting.Bold(DefaultKeys.Server.Name)} server. Please join the server and try the command again.", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.User.Error.PlayerNotConnected, userNotConnected, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
             DiscordMessageTemplate leaveNotLinked = CreateTemplateEmbed($"You are not able to unlink because you are not currently linked.", DiscordColor.Danger);
@@ -1309,36 +1289,36 @@ namespace Oxide.Plugins
         
         public void RegisterAdminCommandMessages()
         {
-            DiscordMessageTemplate playerNotFound = CreateTemplateEmbed($"Failed to link. Player with '{DiscordFormatting.Bold("{player.id}")}' ID was not found.", DiscordColor.Danger);
+            DiscordMessageTemplate playerNotFound = CreateTemplateEmbed($"Failed to link. Player with '{DiscordFormatting.Bold(DefaultKeys.Player.Name)}' ID was not found.", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Link.Error.PlayerNotFound, playerNotFound, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate playerAlreadyLinked = CreateTemplateEmbed($"Failed to link. Player '{DiscordFormatting.Bold("{player.name}({player.id})")}' is already linked to {{user.mention}}. If you would like to link this player please unlink first.", DiscordColor.Danger);
+            DiscordMessageTemplate playerAlreadyLinked = CreateTemplateEmbed($"Failed to link. Player '{DiscordFormatting.Bold($"{DefaultKeys.Player.NamePlayerId}")}' is already linked to {DefaultKeys.User.Mention}. If you would like to link this player please unlink first.", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Link.Error.PlayerAlreadyLinked, playerAlreadyLinked, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate userAlreadyLinked = CreateTemplateEmbed($"Failed to link. User {{user.mention}} is already linked to {{player.name}}({{player.id}}). If you would like to link this user please unlink them first.", DiscordColor.Danger);
+            DiscordMessageTemplate userAlreadyLinked = CreateTemplateEmbed($"Failed to link. User {DefaultKeys.User.Mention} is already linked to {DefaultKeys.Player.NamePlayerId}. If you would like to link this user please unlink them first.", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Link.Error.UserAlreadyLinked, userAlreadyLinked, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate adminLinkSuccess = CreateTemplateEmbed($"You have successfully linked Player '{DiscordFormatting.Bold("{player.name}({player.id})")}' to {{user.mention}}", DiscordColor.Success);
+            DiscordMessageTemplate adminLinkSuccess = CreateTemplateEmbed($"You have successfully linked Player '{DiscordFormatting.Bold($"{DefaultKeys.Player.NamePlayerId}")}' to {DefaultKeys.User.Mention}", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Link.Success, adminLinkSuccess, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
             DiscordMessageTemplate unlinkMustSpecify = CreateTemplateEmbed($"Failed to unlink. You must specify either player or user or both.", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unlink.Error.MustSpecifyOne, unlinkMustSpecify, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate unlinkPlayerNotLinked = CreateTemplateEmbed($"Failed to unlink.'{DiscordFormatting.Bold("{player.name}({player.id})")}' is not linked.", DiscordColor.Danger);
+            DiscordMessageTemplate unlinkPlayerNotLinked = CreateTemplateEmbed($"Failed to unlink.'{DiscordFormatting.Bold($"{DefaultKeys.Player.NamePlayerId}")}' is not linked.", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unlink.Error.PlayerIsNotLinked, unlinkPlayerNotLinked, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate unlinkUserNotLinked = CreateTemplateEmbed($"Failed to unlink. {{user.mention}} is not linked.", DiscordColor.Danger);
+            DiscordMessageTemplate unlinkUserNotLinked = CreateTemplateEmbed($"Failed to unlink. {DefaultKeys.User.Mention} is not linked.", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unlink.Error.UserIsNotLinked, unlinkUserNotLinked, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
             DiscordMessageTemplate unlinkNotSame = CreateTemplateEmbed($"Failed to unlink. The specified player and user are not linked to each other.\n" +
-            $"Player '{DiscordFormatting.Bold("{player.name}({player.id})")}' is linked to {{user.target.mention}}.\n" +
-            $"User {{user.mention}} is linked to '{DiscordFormatting.Bold("{target.name}({target.id})")}'", DiscordColor.Danger);
+            $"Player '{DiscordFormatting.Bold($"{DefaultKeys.Player.NamePlayerId}")}' is linked to {DefaultKeys.UserTarget.Mention}.\n" +
+            $"User {DefaultKeys.User.Mention} is linked to '{DiscordFormatting.Bold($"{DefaultKeys.PlayerTarget.Name}({DefaultKeys.PlayerTarget.Id})")}'", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unlink.Error.LinkNotSame, unlinkNotSame, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate adminUnlinkSuccess = CreateTemplateEmbed($"You have successfully unlink Player '{DiscordFormatting.Bold("{player.name}({player.id})")}' from {{user.mention}}", DiscordColor.Success);
+            DiscordMessageTemplate adminUnlinkSuccess = CreateTemplateEmbed($"You have successfully unlink Player '{DiscordFormatting.Bold($"{DefaultKeys.Player.NamePlayerId}")}' from {DefaultKeys.User.Mention}", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unlink.Success, adminUnlinkSuccess, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate playerSearchNotFound = CreateTemplateEmbed($"Failed to find Player with '{DiscordFormatting.Bold("{player.id}")}' ID", DiscordColor.Danger);
+            DiscordMessageTemplate playerSearchNotFound = CreateTemplateEmbed($"Failed to find Player with '{DiscordFormatting.Bold(DefaultKeys.Player.Name)}' ID", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Search.Error.PlayerNotFound, playerSearchNotFound, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
             DiscordMessageTemplate searchSuccess = new DiscordMessageTemplate
@@ -1347,76 +1327,77 @@ namespace Oxide.Plugins
                 {
                     new DiscordEmbedTemplate
                     {
-                        Description = "[{{plugin.title}}] Successfully found a match.",
+                        Description = $"[{DefaultKeys.Plugin.Title}] Successfully found a match.",
                         Color = DiscordColor.Danger.ToHex(),
                         Fields =
                         {
-                            new DiscordEmbedFieldTemplate("Player", "{player.name}({player.id})"),
-                            new DiscordEmbedFieldTemplate("User", "{user.fullname}"),
-                            new DiscordEmbedFieldTemplate("Is Linked", "{player.islinked}"),
+                            new DiscordEmbedFieldTemplate("Player", $"{DefaultKeys.Player.NamePlayerId}"),
+                            new DiscordEmbedFieldTemplate("User", DefaultKeys.User.Fullname),
+                            new DiscordEmbedFieldTemplate("Is Linked", DefaultKeys.Player.IsLinked),
                         }
                     }
                 },
                 Components =
                 {
-                    new ButtonTemplate("Steam Profile", ButtonStyle.Link, "https://steamcommunity.com/profiles/{player.id}"),
-                    new ButtonTemplate("BattleMetrics Profile", ButtonStyle.Link, "https://www.battlemetrics.com/rcon/players?filter[search]={player.id}"),
-                },
+                    new ButtonTemplate("Steam Profile", ButtonStyle.Link, DefaultKeys.Player.SteamProfile),
+                    new ButtonTemplate("BattleMetrics Profile", ButtonStyle.Link, DefaultKeys.Player.BattleMetricsPlayerId),
+                    new ButtonTemplate("Server Armor", ButtonStyle.Link, DefaultKeys.Player.ServerArmorProfile),
+                }
             };
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Search.Success, searchSuccess, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
         }
         
         public void RegisterLinkMessages()
         {
-            DiscordMessageTemplate linkCommand = CreateTemplateEmbed($"You have successfully linked {DiscordFormatting.Bold("{player.name}")} with your Discord user {{user.mention}}", DiscordColor.Success);
+            DiscordMessageTemplate linkCommand = CreateTemplateEmbed($"You have successfully linked {DiscordFormatting.Bold(DefaultKeys.Player.Name)} with your Discord user {DefaultKeys.User.Mention}", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Link.Completed.Command, linkCommand, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate linkAdmin = CreateTemplateEmbed($"You have been successfully linked with {DiscordFormatting.Bold("{player.name}")} and Discord user {{user.mention}} by an admin", DiscordColor.Success);
+            DiscordMessageTemplate linkAdmin = CreateTemplateEmbed($"You have been successfully linked with {DiscordFormatting.Bold(DefaultKeys.Player.Name)} and Discord user {DefaultKeys.User.Mention} by an admin", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Link.Completed.Admin, linkAdmin, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate linkApi = CreateTemplateEmbed($"You have successfully linked {DiscordFormatting.Bold("{player.name}")} with your Discord user {{user.mention}}", DiscordColor.Success);
+            DiscordMessageTemplate linkApi = CreateTemplateEmbed($"You have successfully linked {DiscordFormatting.Bold(DefaultKeys.Player.Name)} with your Discord user {DefaultKeys.User.Mention}", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Link.Completed.Api, linkApi, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate linkRejoin = CreateTemplateEmbed($"Your {DiscordFormatting.Bold("{player.name}")} game account has been relinked with your Discord user {{user.mention}} because you rejoined the {DiscordFormatting.Bold("{guild.name}")} Discord server", DiscordColor.Success);
+            DiscordMessageTemplate linkRejoin = CreateTemplateEmbed($"Your {DiscordFormatting.Bold(DefaultKeys.Player.Name)} game account has been relinked with your Discord user {DefaultKeys.User.Mention} because you rejoined the {DiscordFormatting.Bold(DefaultKeys.Guild.Name)} Discord server", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Link.Completed.GuildRejoin, linkRejoin, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate linkInactive = CreateTemplateEmbed($"Your {DiscordFormatting.Bold("{player.name}")} game account has been relinked with your Discord user {{user.mention}} because you rejoined the {DiscordFormatting.Bold("{server.name}")} game server", DiscordColor.Success);
+            DiscordMessageTemplate linkInactive = CreateTemplateEmbed($"Your {DiscordFormatting.Bold(DefaultKeys.Player.Name)} game account has been relinked with your Discord user {DefaultKeys.User.Mention} because you rejoined the {DiscordFormatting.Bold(DefaultKeys.Server.Name)} game server", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Link.Completed.InactiveRejoin, linkInactive, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate unlinkCommand = CreateTemplateEmbed($"You have successfully unlinked {DiscordFormatting.Bold("{player.name}")} from your Discord user {{user.mention}}", DiscordColor.Success);
+            DiscordMessageTemplate unlinkCommand = CreateTemplateEmbed($"You have successfully unlinked {DiscordFormatting.Bold(DefaultKeys.Player.Name)} from your Discord user {DefaultKeys.User.Mention}", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Unlink.Completed.Command, unlinkCommand, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate unlinkAdmin = CreateTemplateEmbed($"You have successfully been unlinked {DiscordFormatting.Bold("{player.name}")} from your Discord user {{user.mention}} by an admin", DiscordColor.Success);
+            DiscordMessageTemplate unlinkAdmin = CreateTemplateEmbed($"You have successfully been unlinked {DiscordFormatting.Bold(DefaultKeys.Player.Name)} from your Discord user {DefaultKeys.User.Mention} by an admin", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Unlink.Completed.Admin, unlinkAdmin, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate unlinkApi = CreateTemplateEmbed($"You have successfully unlinked {DiscordFormatting.Bold("{player.name}")} from your Discord user {{user.mention}}", DiscordColor.Success);
+            DiscordMessageTemplate unlinkApi = CreateTemplateEmbed($"You have successfully unlinked {DiscordFormatting.Bold(DefaultKeys.Player.Name)} from your Discord user {DefaultKeys.User.Mention}", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Unlink.Completed.Api, unlinkApi, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate unlinkInactive = CreateTemplateEmbed($"You have been successfully unlinked from {DiscordFormatting.Bold("{player.name}")} and Discord user {{user.mention}} because you have been inactive since {{timestamp.longdatetime}}", DiscordColor.Success);
+            DiscordMessageTemplate unlinkInactive = CreateTemplateEmbed($"You have been successfully unlinked from {DiscordFormatting.Bold(DefaultKeys.Player.Name)} and Discord user {DefaultKeys.User.Mention} because you have been inactive since {DefaultKeys.Timestamp.LongDateTime}", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Unlink.Completed.Inactive, unlinkInactive, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate declineUser = CreateTemplateEmbed("We have successfully declined the link request from {player.name}. We're sorry for the inconvenience.", DiscordColor.Danger);
+            DiscordMessageTemplate declineUser = CreateTemplateEmbed($"We have successfully declined the link request from {DefaultKeys.Player.Name}. We're sorry for the inconvenience.", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Link.Declined.JoinWithUser, declineUser, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate declinePlayer = CreateTemplateEmbed("{player.name} has declined your link request. Repeated declined attempts may result in a link ban.", DiscordColor.Danger);
+            DiscordMessageTemplate declinePlayer = CreateTemplateEmbed($"{DefaultKeys.Player.Name} has declined your link request. Repeated declined attempts may result in a link ban.", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Link.Declined.JoinWithPlayer, declinePlayer, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate dmLinkAccounts = CreateTemplateEmbed($"To complete the link process please join the {DiscordFormatting.Bold("{server.name}")} game server and type {DiscordFormatting.Bold($"/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {ServerLinkArgument} {{{PlaceholderKeys.LinkCode}}}")} in server chat.", DiscordColor.Success);
+            DiscordMessageTemplate dmLinkAccounts = CreateTemplateEmbed($"To complete the link process please join the {DiscordFormatting.Bold(DefaultKeys.Server.Name)} game server and type {DiscordFormatting.Bold($"/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {ServerLinkArgument} {PlaceholderKeys.LinkCode}")} in server chat.", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Link.WelcomeMessage.DmLinkAccounts, dmLinkAccounts, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate guildLinkAccounts = CreateTemplateEmbed($"To complete the link process please join the {DiscordFormatting.Bold("{server.name}")} game server and type {DiscordFormatting.Bold($"/{{plugin.lang:{ServerLang.Commands.DcCommand}}} {ServerLinkArgument} {{{PlaceholderKeys.LinkCode}}}")} in server chat.", DiscordColor.Success);
+            DiscordMessageTemplate guildLinkAccounts = CreateTemplateEmbed($"To complete the link process please join the {DiscordFormatting.Bold(DefaultKeys.Server.Name)} game server and type {DiscordFormatting.Bold($"/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {ServerLinkArgument} {PlaceholderKeys.LinkCode}")} in server chat.", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Link.WelcomeMessage.GuildLinkAccounts, guildLinkAccounts, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
         }
         
         public void RegisterBanMessages()
         {
-            DiscordMessageTemplate banned = CreateTemplateEmbed($"You have been banned from making any more player link requests for until {{timestamp.longdatetime}} due to multiple declined requests.", DiscordColor.Danger);
+            DiscordMessageTemplate banned = CreateTemplateEmbed($"You have been banned from making any more player link requests for until {DefaultKeys.Timestamp.LongDateTime} due to multiple declined requests.", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Banned.PlayerBanned, banned, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
         }
         
         public void RegisterJoinMessages()
         {
-            DiscordMessageTemplate byUsername = CreateTemplateEmbed($"The player {DiscordFormatting.Bold("{player.name}")} is trying to link their game account to this discord user.\n" +
+            DiscordMessageTemplate byUsername = CreateTemplateEmbed($"The player {DiscordFormatting.Bold(DefaultKeys.Player.Name)} is trying to link their game account to this discord user.\n" +
             $"If you could like to accept please click on the {DiscordFormatting.Bold("Accept")} button.\n" +
             $"If you did not initiate this link please click on the {DiscordFormatting.Bold("Decline")} button", DiscordColor.Success);
             byUsername.Components = new List<BaseComponentTemplate>
@@ -1424,21 +1405,21 @@ namespace Oxide.Plugins
                 new ButtonTemplate("Accept", ButtonStyle.Success, AcceptLinkButtonId, AcceptEmoji),
                 new ButtonTemplate("Decline", ButtonStyle.Danger, DeclineLinkButtonId, DeclineEmoji)
             };
-            _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Join.ByUsername, byUsername, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
+            _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Join.CompleteLink, byUsername, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
         }
         
         public void RegisterErrorMessages()
         {
-            DiscordMessageTemplate userAlreadyLinked = CreateTemplateEmbed($"You are unable to link because you are already linked to player {DiscordFormatting.Bold("{player.name}")}", DiscordColor.Danger);
+            DiscordMessageTemplate userAlreadyLinked = CreateTemplateEmbed($"You are unable to link because you are already linked to player {DiscordFormatting.Bold(DefaultKeys.Player.Name)}", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Errors.UserAlreadyLinked, userAlreadyLinked, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate playerAlreadyLinked = CreateTemplateEmbed($"You are unable to link to player {DiscordFormatting.Bold("{player.name}")} because they are already linked", DiscordColor.Danger);
+            DiscordMessageTemplate playerAlreadyLinked = CreateTemplateEmbed($"You are unable to link to player {DiscordFormatting.Bold(DefaultKeys.Player.Name)} because they are already linked", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Errors.PlayerAlreadyLinked, playerAlreadyLinked, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate codeActivationNotFound = CreateTemplateEmbed($"We failed to find a pending link activation for the code {DiscordFormatting.Bold(PlaceholderKeys.LinkCode)}. Please confirm you have the correct code and try again.", DiscordColor.Danger);
+            DiscordMessageTemplate codeActivationNotFound = CreateTemplateEmbed($"We failed to find a pending link activation for the code {DiscordFormatting.Bold(PlaceholderKeys.LinkCode.Placeholder)}. Please confirm you have the correct code and try again.", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Errors.CodActivationNotFound, codeActivationNotFound, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate lookupActivationNotFound = CreateTemplateEmbed($"We failed to find a pending link activation for the code {DiscordFormatting.Bold("{user.fullname}")}. Please confirm you have started that activation from the game server for this user.", DiscordColor.Danger);
+            DiscordMessageTemplate lookupActivationNotFound = CreateTemplateEmbed($"We failed to find a pending link activation for the code {DiscordFormatting.Bold(DefaultKeys.User.Fullname)}. Please confirm you have started that activation from the game server for this user.", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Errors.LookupActivationNotFound, lookupActivationNotFound, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
         }
         
@@ -1450,7 +1431,7 @@ namespace Oxide.Plugins
                 {
                     new DiscordEmbedTemplate
                     {
-                        Description = $"[{{plugin.title}}] {description}",
+                        Description = $"[{DefaultKeys.Plugin.Title}] {description}",
                         Color = color.ToHex()
                     }
                 }
@@ -1510,12 +1491,13 @@ namespace Oxide.Plugins
         {
             if (!string.IsNullOrEmpty(_pluginConfig.ServerNameOverride))
             {
-                _placeholders.RegisterPlaceholder(this, "guild.name", _pluginConfig.ServerNameOverride);
+                _placeholders.RegisterPlaceholder(this, new PlaceholderKey("guild.name"), _pluginConfig.ServerNameOverride);
             }
             
             _placeholders.RegisterPlaceholder(this, PlaceholderKeys.InviteCode, _pluginConfig.InviteCode);
             _placeholders.RegisterPlaceholder(this, PlaceholderKeys.ServerLinkArg, ServerLinkArgument);
-            _placeholders.RegisterPlaceholder<string>(this, PlaceholderKeys.LinkCode, PlaceholderKeys.Data.CodeKey);
+            _placeholders.RegisterPlaceholder<string>(this, PlaceholderKeys.LinkCode, PlaceholderKeys.Data.Code);
+            _placeholders.RegisterPlaceholder<string>(this, PlaceholderKeys.NotFound, PlaceholderKeys.Data.NotFound);
         }
         
         public string LangPlaceholder(string key, PlaceholderData data)
@@ -1545,12 +1527,12 @@ namespace Oxide.Plugins
         #endregion
 
         #region Plugins\DiscordCore.Link.cs
-        public IDictionary<string, Snowflake> GetSteamToDiscordIds()
+        public IDictionary<PlayerId, Snowflake> GetPlayerIdToDiscordIds()
         {
-            Hash<string, Snowflake> data = new Hash<string, Snowflake>();
+            Hash<PlayerId, Snowflake> data = new Hash<PlayerId, Snowflake>();
             foreach (DiscordInfo info in _pluginData.PlayerDiscordInfo.Values)
             {
-                data[info.PlayerId] = info.DiscordId;
+                data[new PlayerId(info.PlayerId)] = info.DiscordId;
             }
             
             return data;
@@ -1600,21 +1582,6 @@ namespace Oxide.Plugins
             {
                 Interface.Oxide.DataFileSystem.WriteObject(Name, _pluginData);
             }
-        }
-        
-        public void LogGuildLeaveUnlink(IPlayer player, DiscordUser user)
-        {
-            Puts($"Player {player.Name}({player.Id}) Discord {user.FullUserName}({user.Id}) is no longer in the guild and has been unlinked.");
-        }
-        
-        public void LogServerInactiveUnlink(IPlayer player, DiscordUser user)
-        {
-            Puts($"Player {player.Name}({player.Id}) Discord {user.FullUserName}({user.Id}) has been inactive for {{0}} days and has been unlinked.");
-        }
-        
-        public void LogApiUnlink(IPlayer player, DiscordUser user)
-        {
-            Puts($"Player {player.Name}({player.Id}) Discord {user.FullUserName}({user.Id}) has been unlinked using through the API.");
         }
         #endregion
 
@@ -2142,15 +2109,14 @@ namespace Oxide.Plugins
             private readonly LinkSettings _settings;
             private readonly LinkHandler _linkHandler;
             private readonly JoinBanHandler _ban;
-            private readonly DiscordPluginPool _pool;
             private readonly DiscordCore _plugin = DiscordCore.Instance;
+            private readonly StringBuilder _sb = new StringBuilder();
             
-            public JoinHandler(LinkSettings settings, LinkHandler linkHandler, JoinBanHandler ban, DiscordPluginPool pool)
+            public JoinHandler(LinkSettings settings, LinkHandler linkHandler, JoinBanHandler ban)
             {
                 _settings = settings;
                 _linkHandler = linkHandler;
                 _ban = ban;
-                _pool = pool;
             }
             
             public JoinData FindByCode(string code)
@@ -2264,15 +2230,13 @@ namespace Oxide.Plugins
             
             private string GenerateCode()
             {
-                StringBuilder sb = _pool.GetStringBuilder();
+                _sb.Clear();
                 for (int i = 0; i < _settings.LinkCodeLength; i++)
                 {
-                    sb.Append(_settings.LinkCodeCharacters[Oxide.Core.Random.Range(0, _settings.LinkCodeCharacters.Length)]);
+                    _sb.Append(_settings.LinkCodeCharacters[Oxide.Core.Random.Range(0, _settings.LinkCodeCharacters.Length)]);
                 }
                 
-                string code = sb.ToString();
-                _pool.FreeStringBuilder(sb);
-                return code;
+                return _sb.ToString();
             }
             
             public void CompleteLink(JoinData data, DiscordInteraction interaction)
@@ -2302,8 +2266,12 @@ namespace Oxide.Plugins
                 {
                     _ban.AddBan(data.Discord);
                     RemoveByUser(data.Discord);
-                    _plugin.Chat(data.Player, ServerLang.Link.Declined.JoinWithPlayer, _plugin.GetDefault(data.Player, data.Discord));
-                    _plugin.SendTemplateMessage(TemplateKeys.Link.Declined.JoinWithPlayer, interaction);
+                    using (PlaceholderData placeholders = _plugin.GetDefault(data.Player, data.Discord))
+                    {
+                        placeholders.ManualPool();
+                        _plugin.Chat(data.Player, ServerLang.Link.Declined.JoinWithPlayer, placeholders);
+                        _plugin.SendTemplateMessage(TemplateKeys.Link.Declined.JoinWithPlayer, data.Discord, data.Player, placeholders);
+                    }
                 }
             }
         }
@@ -2635,6 +2603,8 @@ namespace Oxide.Plugins
                 {
                     private const string Base = Commands.Base + nameof(User) + ".";
                     
+                    public const string MatchFound = Base + nameof(MatchFound);
+                    
                     public static class Errors
                     {
                         private const string Base = User.Base + nameof(Errors) + ".";
@@ -2750,15 +2720,16 @@ namespace Oxide.Plugins
         #region Placeholders\PlaceholderKeys.cs
         public class PlaceholderKeys
         {
-            private const string Base = "dicordcore.";
-            
-            public const string InviteCode = Base + "invite.code";
-            public const string ServerLinkArg = Base + "server.link.arg";
-            public const string LinkCode = Base + "link.code";
+            public static readonly PlaceholderKey InviteCode = new PlaceholderKey(nameof(DiscordCore), "invite.code");
+            public static readonly PlaceholderKey ServerLinkArg = new PlaceholderKey(nameof(DiscordCore), "server.link.arg");
+            public static readonly PlaceholderKey LinkCode = new PlaceholderKey(nameof(DiscordCore), "link.code");
+            public static readonly PlaceholderKey CommandChannels = new PlaceholderKey(nameof(DiscordCore), "command.channels");
+            public static readonly PlaceholderKey NotFound = new PlaceholderKey(nameof(DiscordCore), "notfound");
             
             public class Data
             {
-                public const string CodeKey = "dc.code";
+                public static readonly PlaceholderDataKey Code = new PlaceholderDataKey("dc.code");
+                public static readonly PlaceholderDataKey NotFound = new PlaceholderDataKey("dc.notfound");
             }
         }
         #endregion
@@ -2955,7 +2926,7 @@ namespace Oxide.Plugins
             {
                 private const string Base = nameof(Join) + ".";
                 
-                public const string ByUsername = Base + nameof(ByUsername);
+                public const string CompleteLink = Base + nameof(CompleteLink);
             }
             
             public static class Errors

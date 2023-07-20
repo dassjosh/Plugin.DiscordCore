@@ -191,7 +191,7 @@
         {
             private const string Base = nameof(Join) + ".";
             
-            public const string ByUsername = Base + nameof(ByUsername);
+            public const string CompleteLink = Base + nameof(CompleteLink);
         }
 
         public static class Errors

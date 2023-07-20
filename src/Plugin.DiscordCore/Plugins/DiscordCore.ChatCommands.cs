@@ -94,7 +94,7 @@ namespace DiscordCorePlugin.Plugins
             }
 
             JoinData join = _joinHandler.CreateActivation(player);
-            using (PlaceholderData data = GetDefault(player).AddUser(_bot).Add(PlaceholderKeys.Data.CodeKey, join.Code))
+            using (PlaceholderData data = GetDefault(player).AddUser(_bot).Add(PlaceholderDataKeys.Code, join.Code))
             {
                 data.ManualPool();
                 _sb.Clear();
@@ -146,7 +146,7 @@ namespace DiscordCorePlugin.Plugins
                     return;
                 }
                 
-                SendTemplateMessage(TemplateKeys.Join.ByUsername, member.User, player);
+                UserSearchMatchFound(player, member.User);
                 return;
             }
 
@@ -184,13 +184,13 @@ namespace DiscordCorePlugin.Plugins
             if (members.Count == 0)
             {
                 string name = !string.IsNullOrEmpty(discriminator) ? $"{userName}#{discriminator}" : userName;
-                Chat(player, ServerLang.Commands.User.Errors.UserNotFound, GetDefault(player), name);
+                Chat(player, ServerLang.Commands.User.Errors.UserNotFound, GetDefault(player).Add(PlaceholderDataKeys.NotFound, name));
                 return;
             }
 
             if (members.Count == 1)
             {
-                SendTemplateMessage(TemplateKeys.Join.ByUsername, members[0].User, player);
+                UserSearchMatchFound(player, members[0].User);
                 return;
             }
             
@@ -225,11 +225,22 @@ namespace DiscordCorePlugin.Plugins
             if (user == null || count > 1)
             {
                 string name = !string.IsNullOrEmpty(discriminator) ? $"{userName}#{discriminator}" : userName;
-                Chat(player, ServerLang.Commands.User.Errors.MultipleUsersFound, GetDefault(player), name);
+                Chat(player, ServerLang.Commands.User.Errors.MultipleUsersFound, GetDefault(player).Add(PlaceholderDataKeys.NotFound, name));
                 return;
             }
-            
-            SendTemplateMessage(TemplateKeys.Join.ByUsername, user, player);
+
+            UserSearchMatchFound(player, user);
+        }
+
+        public void UserSearchMatchFound(IPlayer player, DiscordUser user)
+        {
+            _joinHandler.CreateActivation(player, user, JoinSource.Server);
+            using (PlaceholderData data = GetDefault(player, user))
+            {
+                data.ManualPool();
+                Chat(player, ServerLang.Commands.User.MatchFound, data);
+                SendTemplateMessage(TemplateKeys.Join.CompleteLink, user, player, data);
+            }
         }
 
         public void HandleServerLeave(IPlayer player)

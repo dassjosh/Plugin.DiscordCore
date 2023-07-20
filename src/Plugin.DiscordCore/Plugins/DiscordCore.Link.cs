@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using DiscordCorePlugin.Data;
 using Oxide.Ext.Discord.Entities;
+using Oxide.Ext.Discord.Libraries.Linking;
 using Oxide.Plugins;
 
 namespace DiscordCorePlugin.Plugins
@@ -8,12 +9,12 @@ namespace DiscordCorePlugin.Plugins
     //Define:FileOrder=60
     public partial class DiscordCore
     {
-        public IDictionary<string, Snowflake> GetSteamToDiscordIds()
+        public IDictionary<PlayerId, Snowflake> GetPlayerIdToDiscordIds()
         {
-            Hash<string, Snowflake> data = new Hash<string, Snowflake>();
+            Hash<PlayerId, Snowflake> data = new Hash<PlayerId, Snowflake>();
             foreach (DiscordInfo info in _pluginData.PlayerDiscordInfo.Values)
             {
-                data[info.PlayerId] = info.DiscordId;
+                data[new PlayerId(info.PlayerId)] = info.DiscordId;
             }
 
             return data;

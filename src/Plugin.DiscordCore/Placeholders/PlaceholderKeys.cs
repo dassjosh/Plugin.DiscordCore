@@ -1,16 +1,14 @@
-﻿namespace DiscordCorePlugin.Placeholders
+﻿using DiscordCorePlugin.Plugins;
+using Oxide.Ext.Discord.Libraries.Placeholders;
+
+namespace DiscordCorePlugin.Placeholders
 {
     public class PlaceholderKeys
     {
-        private const string Base = "dicordcore.";
-
-        public const string InviteCode = Base + "invite.code";
-        public const string ServerLinkArg = Base + "server.link.arg";
-        public const string LinkCode = Base + "link.code";
-
-        public class Data
-        {
-            public const string CodeKey = "dc.code";
-        }
+        public static readonly PlaceholderKey InviteCode = new PlaceholderKey(nameof(DiscordCore), "invite.code");
+        public static readonly PlaceholderKey ServerLinkArg = new PlaceholderKey(nameof(DiscordCore), "server.link.arg");
+        public static readonly PlaceholderKey LinkCode = new PlaceholderKey(nameof(DiscordCore), "link.code");
+        public static readonly PlaceholderKey CommandChannels = new PlaceholderKey(nameof(DiscordCore), "command.channels");
+        public static readonly PlaceholderKey NotFound = new PlaceholderKey(nameof(DiscordCore), "notfound");
     }
 }

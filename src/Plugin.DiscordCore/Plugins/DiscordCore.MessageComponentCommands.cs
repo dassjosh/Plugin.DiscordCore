@@ -28,7 +28,7 @@ namespace DiscordCorePlugin.Plugins
             }
 
             JoinData join = _joinHandler.CreateActivation(user);
-            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.DmLinkAccounts, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, join.Code));
+            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.DmLinkAccounts, interaction, GetDefault(user).Add(PlaceholderDataKeys.Code, join.Code));
         }
         
         // ReSharper disable once UnusedMember.Local
@@ -43,7 +43,7 @@ namespace DiscordCorePlugin.Plugins
             }
             
             JoinData join = _joinHandler.CreateActivation(user);
-            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.GuildLinkAccounts, interaction, GetDefault(user).Add(PlaceholderKeys.Data.CodeKey, join.Code));
+            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.GuildLinkAccounts, interaction, GetDefault(user).Add(PlaceholderDataKeys.Code, join.Code));
         }
 
         // ReSharper disable once UnusedMember.Local

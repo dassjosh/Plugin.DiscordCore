@@ -1,5 +1,6 @@
 ﻿using DiscordCorePlugin.AppCommands;
 using DiscordCorePlugin.Enums;
+using DiscordCorePlugin.Placeholders;
 using DiscordCorePlugin.Templates;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Attributes.ApplicationCommands;
@@ -28,6 +29,7 @@ namespace DiscordCorePlugin.Plugins
             AddAdminLinkCommand(builder);
             AddAdminUnlinkCommand(builder);
             AddAdminSearchGroupCommand(builder);
+            AddAdminUnbanGroupCommand(builder);
 
             CommandCreate build = builder.Build();
             DiscordCommandLocalization localization = builder.BuildCommandLocalization();
@@ -73,7 +75,7 @@ namespace DiscordCorePlugin.Plugins
             });
         }
 
-        public void AddAdminSearchByPlayerCommand( ApplicationCommandGroupBuilder builder)
+        public void AddAdminSearchByPlayerCommand(ApplicationCommandGroupBuilder builder)
         {
             builder.AddSubCommand(AdminAppCommands.PlayerCommand, "search by player", sub =>
             {
@@ -87,6 +89,32 @@ namespace DiscordCorePlugin.Plugins
             builder.AddSubCommand(AdminAppCommands.UserCommand, "search by user", sub =>
             {
                 sub.AddOption(CommandOptionType.User, UserArg, "user to search");
+            });
+        }
+        
+        public void AddAdminUnbanGroupCommand(ApplicationCommandBuilder builder)
+        {
+            builder.AddSubCommandGroup(AdminAppCommands.Unban, "unban player who is link banned", group =>
+            {
+                AddAdminUnbanByPlayerCommand(group);
+                AddAdminUnbanByUserCommand(group);
+            });
+        }
+        
+        public void AddAdminUnbanByPlayerCommand(ApplicationCommandGroupBuilder builder)
+        {
+            builder.AddSubCommand(AdminAppCommands.PlayerCommand, "unban by player", sub =>
+            {
+                sub.AddOption(CommandOptionType.String, PlayerArg, "player to unban",
+                    options => options.AutoComplete());
+            });
+        }
+        
+        public void AddAdminUnbanByUserCommand( ApplicationCommandGroupBuilder builder)
+        {
+            builder.AddSubCommand(AdminAppCommands.UserCommand, "unban by user", sub =>
+            {
+                sub.AddOption(CommandOptionType.User, UserArg, "user to unban");
             });
         }
         
@@ -177,12 +205,47 @@ namespace DiscordCorePlugin.Plugins
             IPlayer player = !string.IsNullOrEmpty(playerId) ? players.FindPlayerById(playerId) : null;
             if (player == null)
             {
-                SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Error.PlayerNotFound, interaction, GetDefault(ServerPlayerCache.Instance.GetPlayerById(playerId)));
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Error.PlayerNotFound, interaction, GetDefault().Add(PlaceholderDataKeys.NotFound, playerId));
                 return;
             }
 
             DiscordUser user = player.GetDiscordUser();
             SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Success, interaction, GetDefault(player, user));
+        }
+        
+        // ReSharper disable once UnusedMember.Local
+        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.UserCommand, AdminAppCommands.SearchCommand)]
+        private void DiscordAdminUnbanByUser(DiscordInteraction interaction, InteractionDataParsed parsed)
+        {
+            DiscordUser user = parsed.Args.GetUser(UserArg);
+            if (!_banHandler.Unban(user))
+            {
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Unban.Error.UserNotBanned, interaction, GetDefault(user));
+                return;
+            }
+            
+            SendTemplateMessage(TemplateKeys.Commands.Admin.Unban.User, interaction, GetDefault(user));
+        }
+        
+        // ReSharper disable once UnusedMember.Local
+        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.PlayerCommand, AdminAppCommands.SearchCommand)]
+        private void DiscordAdminUnbanByPlayer(DiscordInteraction interaction, InteractionDataParsed parsed)
+        {
+            string playerId = parsed.Args.GetString(PlayerArg);
+            IPlayer player = !string.IsNullOrEmpty(playerId) ? players.FindPlayerById(playerId) : null;
+            if (player == null)
+            {
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Unban.Error.PlayerNotFound, interaction, GetDefault().Add(PlaceholderDataKeys.NotFound, playerId));
+                return;
+            }
+            
+            if (!_banHandler.Unban(player))
+            {
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Unban.Error.PlayerNotBanned, interaction, GetDefault(player));
+                return;
+            }
+            
+            SendTemplateMessage(TemplateKeys.Commands.Admin.Unban.Player, interaction, GetDefault(player));
         }
         
         // ReSharper disable once UnusedMember.Local
@@ -195,6 +258,7 @@ namespace DiscordCorePlugin.Plugins
         }
         
         // ReSharper disable once UnusedMember.Local
+        [DiscordAutoCompleteCommand(AdminAppCommands.Command, PlayerArg, AdminAppCommands.PlayerCommand, AdminAppCommands.Unban)]
         [DiscordAutoCompleteCommand(AdminAppCommands.Command, PlayerArg, AdminAppCommands.PlayerCommand, AdminAppCommands.SearchCommand)]
         [DiscordAutoCompleteCommand(AdminAppCommands.Command, PlayerArg, AdminAppCommands.LinkCommand)]
         [DiscordAutoCompleteCommand(AdminAppCommands.Command, PlayerArg, AdminAppCommands.UnlinkCommand)]

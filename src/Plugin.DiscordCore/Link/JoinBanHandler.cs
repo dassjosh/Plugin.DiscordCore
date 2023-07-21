@@ -50,6 +50,16 @@ namespace DiscordCorePlugin.Link
             }
         }
 
+        public bool Unban(IPlayer player)
+        {
+            return _playerBans.Remove(player.Id);
+        }
+        
+        public bool Unban(DiscordUser user)
+        {
+            return _discordBans.Remove(user.Id);
+        }
+
         public bool IsBanned(IPlayer player)
         {
             if (!_settings.EnableLinkBanning)

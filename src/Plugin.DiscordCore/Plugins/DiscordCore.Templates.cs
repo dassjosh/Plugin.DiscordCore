@@ -149,7 +149,22 @@ namespace DiscordCorePlugin.Plugins
             DiscordMessageTemplate adminUnlinkSuccess = CreateTemplateEmbed($"You have successfully unlink Player '{DiscordFormatting.Bold($"{DefaultKeys.Player.NamePlayerId}")}' from {DefaultKeys.User.Mention}", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unlink.Success, adminUnlinkSuccess, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
 
-            DiscordMessageTemplate playerSearchNotFound = CreateTemplateEmbed($"Failed to find Player with '{DiscordFormatting.Bold(DefaultKeys.Player.Name)}' ID", DiscordColor.Danger);
+            DiscordMessageTemplate playerUnbanSuccess = CreateTemplateEmbed($"You have successfully unbanned Player '{DiscordFormatting.Bold($"{DefaultKeys.Player.NamePlayerId}")}'. The player can now link again.", DiscordColor.Success);
+            _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unban.Player, playerUnbanSuccess, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
+            
+            DiscordMessageTemplate userUnbanSuccess = CreateTemplateEmbed($"You have successfully unbanned User {DefaultKeys.User.Mention}. The user can now link again.", DiscordColor.Success);
+            _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unban.User, userUnbanSuccess, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
+            
+            DiscordMessageTemplate playerUnbanNotFound = CreateTemplateEmbed($"Failed to find Player with '{DiscordFormatting.Bold(PlaceholderKeys.NotFound)}' ID", DiscordColor.Danger);
+            _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unban.Error.PlayerNotFound, playerUnbanNotFound, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
+            
+            DiscordMessageTemplate playerUnbanNotBanned = CreateTemplateEmbed($"Failed to find unban player '{DiscordFormatting.Bold(DefaultKeys.Player.NamePlayerId)}' because they are not banned", DiscordColor.Danger);
+            _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unban.Error.PlayerNotBanned, playerUnbanNotBanned, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
+            
+            DiscordMessageTemplate userUnbanNotBanned = CreateTemplateEmbed($"Failed to find unban user {DefaultKeys.User.Mention} because they are not banned", DiscordColor.Danger);
+            _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unban.Error.UserNotBanned, userUnbanNotBanned, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
+            
+            DiscordMessageTemplate playerSearchNotFound = CreateTemplateEmbed($"Failed to find Player with '{DiscordFormatting.Bold(PlaceholderKeys.NotFound)}' ID", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Search.Error.PlayerNotFound, playerSearchNotFound, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
             DiscordMessageTemplate searchSuccess = new DiscordMessageTemplate

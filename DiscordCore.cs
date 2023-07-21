@@ -387,7 +387,7 @@ namespace Oxide.Plugins
             }
             
             JoinData join = _joinHandler.CreateActivation(player);
-            using (PlaceholderData data = GetDefault(player).AddUser(_bot).Add(PlaceholderKeys.Data.Code, join.Code))
+            using (PlaceholderData data = GetDefault(player).AddUser(_bot).Add(PlaceholderDataKeys.Code, join.Code))
             {
                 data.ManualPool();
                 _sb.Clear();
@@ -477,7 +477,7 @@ namespace Oxide.Plugins
             if (members.Count == 0)
             {
                 string name = !string.IsNullOrEmpty(discriminator) ? $"{userName}#{discriminator}" : userName;
-                Chat(player, ServerLang.Commands.User.Errors.UserNotFound, GetDefault(player).Add(PlaceholderKeys.Data.NotFound, name));
+                Chat(player, ServerLang.Commands.User.Errors.UserNotFound, GetDefault(player).Add(PlaceholderDataKeys.NotFound, name));
                 return;
             }
             
@@ -518,7 +518,7 @@ namespace Oxide.Plugins
             if (user == null || count > 1)
             {
                 string name = !string.IsNullOrEmpty(discriminator) ? $"{userName}#{discriminator}" : userName;
-                Chat(player, ServerLang.Commands.User.Errors.MultipleUsersFound, GetDefault(player).Add(PlaceholderKeys.Data.NotFound, name));
+                Chat(player, ServerLang.Commands.User.Errors.MultipleUsersFound, GetDefault(player).Add(PlaceholderDataKeys.NotFound, name));
                 return;
             }
             
@@ -827,7 +827,7 @@ namespace Oxide.Plugins
             }
             
             JoinData join = _joinHandler.CreateActivation(user);
-            SendTemplateMessage(TemplateKeys.Commands.Code.Success, interaction, GetDefault(user).Add(PlaceholderKeys.Data.Code, join.Code));
+            SendTemplateMessage(TemplateKeys.Commands.Code.Success, interaction, GetDefault(user).Add(PlaceholderDataKeys.Code, join.Code));
         }
         
         // ReSharper disable once UnusedMember.Local
@@ -918,7 +918,7 @@ namespace Oxide.Plugins
             JoinData join = _joinHandler.FindByCode(code);
             if (join == null)
             {
-                SendTemplateMessage(TemplateKeys.Errors.CodActivationNotFound, interaction, GetDefault(user).Add(PlaceholderKeys.Data.Code, code));
+                SendTemplateMessage(TemplateKeys.Errors.CodActivationNotFound, interaction, GetDefault(user).Add(PlaceholderDataKeys.Code, code));
                 return;
             }
             
@@ -946,7 +946,7 @@ namespace Oxide.Plugins
             }
             
             JoinData join = _joinHandler.CreateActivation(user);
-            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.DmLinkAccounts, interaction, GetDefault(user).Add(PlaceholderKeys.Data.Code, join.Code));
+            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.DmLinkAccounts, interaction, GetDefault(user).Add(PlaceholderDataKeys.Code, join.Code));
         }
         
         // ReSharper disable once UnusedMember.Local
@@ -961,7 +961,7 @@ namespace Oxide.Plugins
             }
             
             JoinData join = _joinHandler.CreateActivation(user);
-            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.GuildLinkAccounts, interaction, GetDefault(user).Add(PlaceholderKeys.Data.Code, join.Code));
+            SendTemplateMessage(TemplateKeys.Link.WelcomeMessage.GuildLinkAccounts, interaction, GetDefault(user).Add(PlaceholderDataKeys.Code, join.Code));
         }
         
         // ReSharper disable once UnusedMember.Local
@@ -1016,6 +1016,7 @@ namespace Oxide.Plugins
             AddAdminLinkCommand(builder);
             AddAdminUnlinkCommand(builder);
             AddAdminSearchGroupCommand(builder);
+            AddAdminUnbanGroupCommand(builder);
             
             CommandCreate build = builder.Build();
             DiscordCommandLocalization localization = builder.BuildCommandLocalization();
@@ -1061,7 +1062,7 @@ namespace Oxide.Plugins
             });
         }
         
-        public void AddAdminSearchByPlayerCommand( ApplicationCommandGroupBuilder builder)
+        public void AddAdminSearchByPlayerCommand(ApplicationCommandGroupBuilder builder)
         {
             builder.AddSubCommand(AdminAppCommands.PlayerCommand, "search by player", sub =>
             {
@@ -1075,6 +1076,32 @@ namespace Oxide.Plugins
             builder.AddSubCommand(AdminAppCommands.UserCommand, "search by user", sub =>
             {
                 sub.AddOption(CommandOptionType.User, UserArg, "user to search");
+            });
+        }
+        
+        public void AddAdminUnbanGroupCommand(ApplicationCommandBuilder builder)
+        {
+            builder.AddSubCommandGroup(AdminAppCommands.Unban, "unban player who is link banned", group =>
+            {
+                AddAdminUnbanByPlayerCommand(group);
+                AddAdminUnbanByUserCommand(group);
+            });
+        }
+        
+        public void AddAdminUnbanByPlayerCommand(ApplicationCommandGroupBuilder builder)
+        {
+            builder.AddSubCommand(AdminAppCommands.PlayerCommand, "unban by player", sub =>
+            {
+                sub.AddOption(CommandOptionType.String, PlayerArg, "player to unban",
+                options => options.AutoComplete());
+            });
+        }
+        
+        public void AddAdminUnbanByUserCommand( ApplicationCommandGroupBuilder builder)
+        {
+            builder.AddSubCommand(AdminAppCommands.UserCommand, "unban by user", sub =>
+            {
+                sub.AddOption(CommandOptionType.User, UserArg, "user to unban");
             });
         }
         
@@ -1165,12 +1192,47 @@ namespace Oxide.Plugins
             IPlayer player = !string.IsNullOrEmpty(playerId) ? players.FindPlayerById(playerId) : null;
             if (player == null)
             {
-                SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Error.PlayerNotFound, interaction, GetDefault(ServerPlayerCache.Instance.GetPlayerById(playerId)));
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Error.PlayerNotFound, interaction, GetDefault().Add(PlaceholderDataKeys.NotFound, playerId));
                 return;
             }
             
             DiscordUser user = player.GetDiscordUser();
             SendTemplateMessage(TemplateKeys.Commands.Admin.Search.Success, interaction, GetDefault(player, user));
+        }
+        
+        // ReSharper disable once UnusedMember.Local
+        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.UserCommand, AdminAppCommands.SearchCommand)]
+        private void DiscordAdminUnbanByUser(DiscordInteraction interaction, InteractionDataParsed parsed)
+        {
+            DiscordUser user = parsed.Args.GetUser(UserArg);
+            if (!_banHandler.Unban(user))
+            {
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Unban.Error.UserNotBanned, interaction, GetDefault(user));
+                return;
+            }
+            
+            SendTemplateMessage(TemplateKeys.Commands.Admin.Unban.User, interaction, GetDefault(user));
+        }
+        
+        // ReSharper disable once UnusedMember.Local
+        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.PlayerCommand, AdminAppCommands.SearchCommand)]
+        private void DiscordAdminUnbanByPlayer(DiscordInteraction interaction, InteractionDataParsed parsed)
+        {
+            string playerId = parsed.Args.GetString(PlayerArg);
+            IPlayer player = !string.IsNullOrEmpty(playerId) ? players.FindPlayerById(playerId) : null;
+            if (player == null)
+            {
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Unban.Error.PlayerNotFound, interaction, GetDefault().Add(PlaceholderDataKeys.NotFound, playerId));
+                return;
+            }
+            
+            if (!_banHandler.Unban(player))
+            {
+                SendTemplateMessage(TemplateKeys.Commands.Admin.Unban.Error.PlayerNotBanned, interaction, GetDefault(player));
+                return;
+            }
+            
+            SendTemplateMessage(TemplateKeys.Commands.Admin.Unban.Player, interaction, GetDefault(player));
         }
         
         // ReSharper disable once UnusedMember.Local
@@ -1183,6 +1245,7 @@ namespace Oxide.Plugins
         }
         
         // ReSharper disable once UnusedMember.Local
+        [DiscordAutoCompleteCommand(AdminAppCommands.Command, PlayerArg, AdminAppCommands.PlayerCommand, AdminAppCommands.Unban)]
         [DiscordAutoCompleteCommand(AdminAppCommands.Command, PlayerArg, AdminAppCommands.PlayerCommand, AdminAppCommands.SearchCommand)]
         [DiscordAutoCompleteCommand(AdminAppCommands.Command, PlayerArg, AdminAppCommands.LinkCommand)]
         [DiscordAutoCompleteCommand(AdminAppCommands.Command, PlayerArg, AdminAppCommands.UnlinkCommand)]
@@ -1318,7 +1381,22 @@ namespace Oxide.Plugins
             DiscordMessageTemplate adminUnlinkSuccess = CreateTemplateEmbed($"You have successfully unlink Player '{DiscordFormatting.Bold($"{DefaultKeys.Player.NamePlayerId}")}' from {DefaultKeys.User.Mention}", DiscordColor.Success);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unlink.Success, adminUnlinkSuccess, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate playerSearchNotFound = CreateTemplateEmbed($"Failed to find Player with '{DiscordFormatting.Bold(DefaultKeys.Player.Name)}' ID", DiscordColor.Danger);
+            DiscordMessageTemplate playerUnbanSuccess = CreateTemplateEmbed($"You have successfully unbanned Player '{DiscordFormatting.Bold($"{DefaultKeys.Player.NamePlayerId}")}'. The player can now link again.", DiscordColor.Success);
+            _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unban.Player, playerUnbanSuccess, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
+            
+            DiscordMessageTemplate userUnbanSuccess = CreateTemplateEmbed($"You have successfully unbanned User {DefaultKeys.User.Mention}. The user can now link again.", DiscordColor.Success);
+            _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unban.User, userUnbanSuccess, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
+            
+            DiscordMessageTemplate playerUnbanNotFound = CreateTemplateEmbed($"Failed to find Player with '{DiscordFormatting.Bold(PlaceholderKeys.NotFound)}' ID", DiscordColor.Danger);
+            _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unban.Error.PlayerNotFound, playerUnbanNotFound, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
+            
+            DiscordMessageTemplate playerUnbanNotBanned = CreateTemplateEmbed($"Failed to find unban player '{DiscordFormatting.Bold(DefaultKeys.Player.NamePlayerId)}' because they are not banned", DiscordColor.Danger);
+            _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unban.Error.PlayerNotBanned, playerUnbanNotBanned, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
+            
+            DiscordMessageTemplate userUnbanNotBanned = CreateTemplateEmbed($"Failed to find unban user {DefaultKeys.User.Mention} because they are not banned", DiscordColor.Danger);
+            _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Unban.Error.UserNotBanned, userUnbanNotBanned, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
+            
+            DiscordMessageTemplate playerSearchNotFound = CreateTemplateEmbed($"Failed to find Player with '{DiscordFormatting.Bold(PlaceholderKeys.NotFound)}' ID", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Search.Error.PlayerNotFound, playerSearchNotFound, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
             DiscordMessageTemplate searchSuccess = new DiscordMessageTemplate
@@ -1496,8 +1574,8 @@ namespace Oxide.Plugins
             
             _placeholders.RegisterPlaceholder(this, PlaceholderKeys.InviteCode, _pluginConfig.InviteCode);
             _placeholders.RegisterPlaceholder(this, PlaceholderKeys.ServerLinkArg, ServerLinkArgument);
-            _placeholders.RegisterPlaceholder<string>(this, PlaceholderKeys.LinkCode, PlaceholderKeys.Data.Code);
-            _placeholders.RegisterPlaceholder<string>(this, PlaceholderKeys.NotFound, PlaceholderKeys.Data.NotFound);
+            _placeholders.RegisterPlaceholder<string>(this, PlaceholderKeys.LinkCode, PlaceholderDataKeys.Code);
+            _placeholders.RegisterPlaceholder<string>(this, PlaceholderKeys.NotFound, PlaceholderDataKeys.NotFound);
         }
         
         public string LangPlaceholder(string key, PlaceholderData data)
@@ -1656,6 +1734,7 @@ namespace Oxide.Plugins
             public const string SearchCommand = "search";
             public const string PlayerCommand = "player";
             public const string UserCommand = "user";
+            public const string Unban = "unban";
         }
         #endregion
 
@@ -2006,6 +2085,16 @@ namespace Oxide.Plugins
                 {
                     ban.SetBanDuration(_settings.BanDuration);
                 }
+            }
+            
+            public bool Unban(IPlayer player)
+            {
+                return _playerBans.Remove(player.Id);
+            }
+            
+            public bool Unban(DiscordUser user)
+            {
+                return _discordBans.Remove(user.Id);
             }
             
             public bool IsBanned(IPlayer player)
@@ -2717,6 +2806,14 @@ namespace Oxide.Plugins
         }
         #endregion
 
+        #region Placeholders\PlaceholderDataKeys.cs
+        public class PlaceholderDataKeys
+        {
+            public static readonly PlaceholderDataKey Code = new PlaceholderDataKey("dc.code");
+            public static readonly PlaceholderDataKey NotFound = new PlaceholderDataKey("dc.notfound");
+        }
+        #endregion
+
         #region Placeholders\PlaceholderKeys.cs
         public class PlaceholderKeys
         {
@@ -2725,12 +2822,6 @@ namespace Oxide.Plugins
             public static readonly PlaceholderKey LinkCode = new PlaceholderKey(nameof(DiscordCore), "link.code");
             public static readonly PlaceholderKey CommandChannels = new PlaceholderKey(nameof(DiscordCore), "command.channels");
             public static readonly PlaceholderKey NotFound = new PlaceholderKey(nameof(DiscordCore), "notfound");
-            
-            public class Data
-            {
-                public static readonly PlaceholderDataKey Code = new PlaceholderDataKey("dc.code");
-                public static readonly PlaceholderDataKey NotFound = new PlaceholderDataKey("dc.notfound");
-            }
         }
         #endregion
 
@@ -2864,6 +2955,24 @@ namespace Oxide.Plugins
                             private const string Base = Search.Base + nameof(Error) + ".";
                             
                             public const string PlayerNotFound = Base + nameof(PlayerNotFound);
+                        }
+                    }
+                    
+                    
+                    public static class Unban
+                    {
+                        private const string Base = nameof(Unban) + ".";
+                        
+                        public const string Player = Base + nameof(Player);
+                        public const string User = Base + nameof(User);
+                        
+                        public static class Error
+                        {
+                            private const string Base = Unban.Base + nameof(Error) + ".";
+                            
+                            public const string PlayerNotFound = Base + nameof(PlayerNotFound);
+                            public const string PlayerNotBanned = Base + nameof(PlayerNotBanned);
+                            public const string UserNotBanned = Base + nameof(UserNotBanned);
                         }
                     }
                 }

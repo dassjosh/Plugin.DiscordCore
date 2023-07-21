@@ -131,6 +131,24 @@
                         public const string PlayerNotFound = Base + nameof(PlayerNotFound);
                     }
                 }
+                
+                
+                public static class Unban
+                {
+                    private const string Base = nameof(Unban) + ".";
+            
+                    public const string Player = Base + nameof(Player); 
+                    public const string User = Base + nameof(User);
+
+                    public static class Error
+                    {
+                        private const string Base = Unban.Base + nameof(Error) + ".";
+
+                        public const string PlayerNotFound = Base + nameof(PlayerNotFound);
+                        public const string PlayerNotBanned = Base + nameof(PlayerNotBanned);
+                        public const string UserNotBanned = Base + nameof(UserNotBanned);
+                    }
+                }
             }
         }
 

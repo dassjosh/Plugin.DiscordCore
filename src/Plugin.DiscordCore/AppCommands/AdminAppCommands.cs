@@ -8,5 +8,6 @@
         public const string SearchCommand = "search";
         public const string PlayerCommand = "player";
         public const string UserCommand = "user";
+        public const string Unban = "unban";
     }
 }

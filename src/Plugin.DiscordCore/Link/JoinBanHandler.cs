@@ -1,5 +1,7 @@
 ﻿using System;
 using DiscordCorePlugin.Configuration;
+using DiscordCorePlugin.Plugins;
+using DiscordCorePlugin.Templates;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Entities;
 using Oxide.Ext.Discord.Entities.Users;
@@ -31,6 +33,7 @@ namespace DiscordCorePlugin.Link
             if (ban.Times >= _settings.BanDeclineAmount)
             {
                 ban.SetBanDuration(_settings.BanDuration);
+                DiscordCore.Instance.SendGlobalTemplateMessage(TemplateKeys.Announcements.Ban.PlayerBanned, _settings.BanAnnouncementChannel, null, player, DiscordCore.Instance.GetDefault(player).AddTimestamp(GetBannedEndDate(player)));
             }
         }
         
@@ -47,6 +50,7 @@ namespace DiscordCorePlugin.Link
             if (ban.Times >= _settings.BanDeclineAmount)
             {
                 ban.SetBanDuration(_settings.BanDuration);
+                DiscordCore.Instance.SendGlobalTemplateMessage(TemplateKeys.Announcements.Ban.UserBanned, _settings.BanAnnouncementChannel, user, null, DiscordCore.Instance.GetDefault(user).AddTimestamp(GetBannedEndDate(user)));
             }
         }
 
@@ -82,7 +86,7 @@ namespace DiscordCorePlugin.Link
             return ban != null && ban.IsBanned();
         }
 
-        public TimeSpan GetRemainingBan(IPlayer player)
+        public TimeSpan GetRemainingDuration(IPlayer player)
         {
             if (!_settings.EnableLinkBanning)
             {
@@ -90,6 +94,11 @@ namespace DiscordCorePlugin.Link
             }
             
             return _playerBans[player.Id]?.GetRemainingBan() ?? TimeSpan.Zero;
+        }
+        
+        public DateTimeOffset GetBannedEndDate(IPlayer player)
+        {
+            return DateTimeOffset.UtcNow + GetRemainingDuration(player);
         }
 
         public TimeSpan GetRemainingDuration(DiscordUser user)
@@ -102,7 +111,7 @@ namespace DiscordCorePlugin.Link
             return _discordBans[user.Id]?.GetRemainingBan() ?? TimeSpan.Zero;
         }
         
-        public DateTimeOffset GetRemainingBan(DiscordUser user)
+        public DateTimeOffset GetBannedEndDate(DiscordUser user)
         {
             return DateTimeOffset.UtcNow + GetRemainingDuration(user);
         }

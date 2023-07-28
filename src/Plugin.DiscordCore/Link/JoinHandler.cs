@@ -170,8 +170,12 @@ namespace DiscordCorePlugin.Link
             {
                 _ban.AddBan(data.Player);
                 RemoveByPlayer(data.Player);
-                _plugin.Chat(data.Player, ServerLang.Link.Declined.JoinWithUser, _plugin.GetDefault(data.Player, data.Discord));
-                _plugin.SendTemplateMessage(TemplateKeys.Link.Declined.JoinWithUser, interaction);
+                using (PlaceholderData placeholders = _plugin.GetDefault(data.Player, data.Discord))
+                {
+                    placeholders.ManualPool();
+                    _plugin.Chat(data.Player, ServerLang.Link.Declined.JoinWithUser, placeholders);
+                    _plugin.SendTemplateMessage(TemplateKeys.Link.Declined.JoinWithUser, interaction, placeholders);
+                }
             }
             else if (data.From == JoinSource.Discord)
             {

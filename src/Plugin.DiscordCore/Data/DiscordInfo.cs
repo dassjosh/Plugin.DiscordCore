@@ -10,7 +10,7 @@ namespace DiscordCorePlugin.Data
     {
         public Snowflake DiscordId { get; set; }
         public string PlayerId { get; set; }
-        public DateTime LastOnline { get; set; }
+        public DateTime LastOnline { get; set; } = DateTime.UtcNow;
 
         [JsonConstructor]
         public DiscordInfo() { }
@@ -19,7 +19,6 @@ namespace DiscordCorePlugin.Data
         {
             PlayerId = player.Id;
             DiscordId = user.Id;
-            LastOnline = DateTime.UtcNow;
         }
     }
 }

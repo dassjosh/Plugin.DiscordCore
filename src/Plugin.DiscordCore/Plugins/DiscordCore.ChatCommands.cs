@@ -17,8 +17,6 @@ namespace DiscordCorePlugin.Plugins
     //Define:FileOrder=20
     public partial class DiscordCore
     {
-        private const string ServerLinkArgument = "link";
-        
         // ReSharper disable once UnusedParameter.Local
         private void DiscordCoreChatCommand(IPlayer player, string cmd, string[] args)
         {
@@ -71,7 +69,7 @@ namespace DiscordCorePlugin.Plugins
                 return;
             }
 
-            if (subCommand.Equals(ServerLinkArgument, StringComparison.OrdinalIgnoreCase))
+            if (subCommand.Equals(Lang(ServerLang.Commands.LinkCommand, player), StringComparison.OrdinalIgnoreCase))
             {
                 HandleServerCompleteLink(player, args);
                 return;
@@ -92,8 +90,11 @@ namespace DiscordCorePlugin.Plugins
                 Chat(player, ServerLang.Errors.PlayerAlreadyLinked, GetDefault(player, player.GetDiscordUser()));
                 return;
             }
+            
+            Puts("A");
 
             JoinData join = _joinHandler.CreateActivation(player);
+            Puts("B");
             using (PlaceholderData data = GetDefault(player).AddUser(_bot).Add(PlaceholderDataKeys.Code, join.Code))
             {
                 data.ManualPool();
@@ -105,7 +106,7 @@ namespace DiscordCorePlugin.Plugins
                     _sb.Append(LangPlaceholder(ServerLang.Commands.Code.LinkInGuild, data));
                 }
 
-                if (_appCommand.DmPermission.HasValue && _appCommand.DmPermission.Value)
+                if (_appCommand?.DmPermission != null && _appCommand.DmPermission.Value)
                 {
                     _sb.Append(LangPlaceholder(ServerLang.Commands.Code.LinkInDm, data));
                 }
@@ -124,7 +125,7 @@ namespace DiscordCorePlugin.Plugins
 
             if (_banHandler.IsBanned(player))
             {
-                Chat(player, ServerLang.Banned.IsUserBanned, GetDefault(player).AddTimeSpan(_banHandler.GetRemainingBan(player)));
+                Chat(player, ServerLang.Banned.IsUserBanned, GetDefault(player).AddTimeSpan(_banHandler.GetRemainingDuration(player)));
                 return;
             }
 

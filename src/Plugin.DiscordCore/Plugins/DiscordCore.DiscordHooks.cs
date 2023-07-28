@@ -86,7 +86,7 @@ namespace DiscordCorePlugin.Plugins
                 return;
             }
             
-            SendTemplateMessage(TemplateKeys.WelcomeMessage.PmWelcomeMessage, member.User);
+            SendGlobalTemplateMessage(TemplateKeys.WelcomeMessage.PmWelcomeMessage, member.User);
         }
         
         // ReSharper disable once UnusedMember.Local

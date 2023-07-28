@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Oxide.Ext.Discord.Entities;
 
 namespace DiscordCorePlugin.Configuration
 {
@@ -6,6 +7,9 @@ namespace DiscordCorePlugin.Configuration
     {
         [JsonProperty(PropertyName = "Enable Link Ban")]
         public bool EnableLinkBanning { get; set; }
+        
+        [JsonProperty(PropertyName = "Ban Announcement Channel ID")]
+        public Snowflake BanAnnouncementChannel { get; set; }
             
         [JsonProperty(PropertyName = "Ban Link After X Join Declines")]
         public int BanDeclineAmount { get; set; }
@@ -16,6 +20,7 @@ namespace DiscordCorePlugin.Configuration
         public LinkBanSettings(LinkBanSettings settings)
         {
             EnableLinkBanning = settings?.EnableLinkBanning ?? true;
+            BanAnnouncementChannel = settings?.BanAnnouncementChannel ?? default(Snowflake);
             BanDeclineAmount = settings?.BanDeclineAmount ?? 3;
             BanDuration = settings?.BanDuration ?? 24;
         }

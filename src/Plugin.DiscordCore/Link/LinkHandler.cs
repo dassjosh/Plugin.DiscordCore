@@ -79,7 +79,7 @@ namespace DiscordCorePlugin.Link
             if (reason == UnlinkedReason.LeftGuild)
             {
                 _pluginData.LeftPlayerInfo[info.DiscordId] = info;
-            } 
+            }
             else if (reason == UnlinkedReason.Inactive)
             {
                 _pluginData.InactivePlayerInfo[info.PlayerId] = info;

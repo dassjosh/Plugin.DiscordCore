@@ -5,6 +5,7 @@ using DiscordCorePlugin.Link;
 using Oxide.Ext.Discord.Attributes.Pooling;
 using Oxide.Ext.Discord.Clients;
 using Oxide.Ext.Discord.Connections;
+using Oxide.Ext.Discord.Entities;
 using Oxide.Ext.Discord.Entities.Gateway;
 using Oxide.Ext.Discord.Entities.Guilds;
 using Oxide.Ext.Discord.Entities.Interactions.ApplicationCommands;
@@ -47,9 +48,9 @@ namespace DiscordCorePlugin.Plugins
         private LinkHandler _linkHandler;
 
         private const string UsePermission = "discordcore.use";
-        private const string AccentColor = "de8732";
-        private const string Success = "43b581";
-        private const string Danger = "f04747";
+        private static readonly DiscordColor AccentColor = new DiscordColor("de8732");
+        private static readonly DiscordColor Success = new DiscordColor("43b581");
+        private static readonly DiscordColor Danger = new DiscordColor("f04747");
         private const string PlayerArg = "player";
         private const string UserArg = "user";
         private const string CodeArg = "code";

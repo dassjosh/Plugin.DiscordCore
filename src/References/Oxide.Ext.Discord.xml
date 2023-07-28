@@ -20081,6 +20081,11 @@
             <see cref="P:Oxide.Core.Libraries.Covalence.IServer.MaxPlayers"/> placeholder
             </summary>
         </member>
+        <member name="M:Oxide.Ext.Discord.Libraries.Placeholders.Default.ServerPlaceholders.TotalPlayers(Oxide.Core.Libraries.Covalence.IServer)">
+            <summary>
+            <see cref="P:Oxide.Core.Libraries.Covalence.IServer.MaxPlayers"/> placeholder
+            </summary>
+        </member>
         <member name="M:Oxide.Ext.Discord.Libraries.Placeholders.Default.ServerPlaceholders.Version(Oxide.Core.Libraries.Covalence.IServer)">
             <summary>
             <see cref="P:Oxide.Core.Libraries.Covalence.IServer.Version"/> placeholder
@@ -20633,6 +20638,11 @@
             <see cref="T:Oxide.Ext.Discord.Entities.Users.DiscordUser"/> Placeholder Keys
             </summary>
         </member>
+        <member name="F:Oxide.Ext.Discord.Libraries.Placeholders.Keys.DefaultKeys.Bot">
+            <summary>
+            <see cref="T:Oxide.Ext.Discord.Entities.Users.DiscordUser"/> Bot User Placeholder Keys
+            </summary>
+        </member>
         <member name="F:Oxide.Ext.Discord.Libraries.Placeholders.Keys.DefaultKeys.UserTarget">
             <summary>
             <see cref="T:Oxide.Ext.Discord.Entities.Users.DiscordUser"/> Target Placeholder Keys
@@ -20994,6 +21004,11 @@
             <see cref="T:Oxide.Ext.Discord.Libraries.Placeholders.PlaceholderKey"/> for <see cref="P:Oxide.Core.Libraries.Covalence.IServer.MaxPlayers"/>
             </summary>
         </member>
+        <member name="F:Oxide.Ext.Discord.Libraries.Placeholders.Keys.ServerKeys.TotalPlayers">
+            <summary>
+            <see cref="T:Oxide.Ext.Discord.Libraries.Placeholders.PlaceholderKey"/> for Total Players
+            </summary>
+        </member>
         <member name="F:Oxide.Ext.Discord.Libraries.Placeholders.Keys.ServerKeys.Version">
             <summary>
             <see cref="T:Oxide.Ext.Discord.Libraries.Placeholders.PlaceholderKey"/> for <see cref="P:Oxide.Core.Libraries.Covalence.IServer.Version"/>
@@ -21289,6 +21304,13 @@
             <param name="user">User to add</param>
             <returns>This</returns>
         </member>
+        <member name="M:Oxide.Ext.Discord.Libraries.Placeholders.PlaceholderData.AddBotUser(Oxide.Ext.Discord.Entities.Users.DiscordUser)">
+            <summary>
+            Adds a <see cref="T:Oxide.Ext.Discord.Entities.Users.DiscordUser"/>
+            </summary>
+            <param name="user">User to add</param>
+            <returns>This</returns>
+        </member>
         <member name="M:Oxide.Ext.Discord.Libraries.Placeholders.PlaceholderData.AddUserTarget(Oxide.Ext.Discord.Entities.Users.DiscordUser)">
             <summary>
             Adds a <see cref="T:Oxide.Ext.Discord.Entities.Users.DiscordUser"/>
@@ -21571,13 +21593,6 @@
             Constructor
             </summary>
             <param name="placeholder">Placeholder Value</param>
-        </member>
-        <member name="M:Oxide.Ext.Discord.Libraries.Placeholders.PlaceholderKey.#ctor(System.String,System.String)">
-            <summary>
-            Constructor
-            </summary>
-            <param name="placeholder">Placeholder Value</param>
-            <param name="format">Format to be applied</param>
         </member>
         <member name="M:Oxide.Ext.Discord.Libraries.Placeholders.PlaceholderKey.#ctor(System.String,System.String,System.String)">
             <summary>

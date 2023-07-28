@@ -26,6 +26,14 @@
                 public const string LeftGuild = Base + nameof(LeftGuild);
                 public const string Inactive = Base + nameof(Inactive);
             }
+
+            public static class Ban
+            {
+                private const string Base = Announcements.Base + nameof(Ban) + ".";
+
+                public const string PlayerBanned = Base + nameof(PlayerBanned);
+                public const string UserBanned = Base + nameof(UserBanned);
+            }
         }
 
         public static class WelcomeMessage

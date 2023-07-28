@@ -11,6 +11,7 @@ using Oxide.Ext.Discord.Attributes.ApplicationCommands;
 using Oxide.Ext.Discord.Builders.ApplicationCommands;
 using Oxide.Ext.Discord.Builders.Interactions;
 using Oxide.Ext.Discord.Builders.Interactions.AutoComplete;
+using Oxide.Ext.Discord.Entities.Api;
 using Oxide.Ext.Discord.Entities.Interactions;
 using Oxide.Ext.Discord.Entities.Interactions.ApplicationCommands;
 using Oxide.Ext.Discord.Entities.Permissions;
@@ -28,7 +29,7 @@ namespace DiscordCorePlugin.Plugins
         public void RegisterUserApplicationCommands()
         {
             ApplicationCommandBuilder builder = new ApplicationCommandBuilder(UserAppCommands.Command, "Discord Core Commands", ApplicationCommandType.ChatInput)
-                .AddDefaultPermissions(PermissionFlags.Administrator);
+                .AddDefaultPermissions(PermissionFlags.None);
 
             AddUserCodeCommand(builder);
             AddUserUserCommand(builder);
@@ -36,6 +37,11 @@ namespace DiscordCorePlugin.Plugins
             AddUserLinkCommand(builder);
 
             CommandCreate build = builder.Build();
+            Puts($@"{JsonConvert.SerializeObject(build, new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented,
+                NullValueHandling = NullValueHandling.Ignore
+            })}");
             DiscordCommandLocalization localization = builder.BuildCommandLocalization();
             
             _local.RegisterCommandLocalizationAsync(this, "User", localization, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0)).Then(_ =>
@@ -45,7 +51,7 @@ namespace DiscordCorePlugin.Plugins
                     Client.Bot.Application.CreateGlobalCommand(Client, build).Then(command =>
                     {
                         _appCommand = command;
-                        command.GetPermissions(Client, Guild.Id).Then(CreateAllowedChannels);
+                        CreateAllowedChannels(command);
                     });
                 });
             });
@@ -81,6 +87,29 @@ namespace DiscordCorePlugin.Plugins
             });
         }
 
+        public void CreateAllowedChannels(DiscordApplicationCommand command, int attempts = 0)
+        {
+            if (attempts >= 3)
+            {
+                return;
+            }
+            
+            command.GetPermissions(Client, Guild.Id)
+                   .Then(CreateAllowedChannels)
+                   .Catch<ResponseError>(error =>
+                   {
+                       timer.In(1f, () =>
+                       {
+                           attempts++;
+                           if (attempts < 3)
+                           {
+                               error.SuppressErrorMessage();
+                               CreateAllowedChannels(command, attempts);
+                           }
+                       });
+                   });
+        }
+        
         public void CreateAllowedChannels(GuildCommandPermissions permissions)
         {
             List<string> channels = new List<string>();
@@ -130,7 +159,7 @@ namespace DiscordCorePlugin.Plugins
 
             if (_banHandler.IsBanned(user))
             {
-                SendTemplateMessage(TemplateKeys.Banned.PlayerBanned, interaction,GetDefault(user).AddTimestamp(_banHandler.GetRemainingBan(user)));
+                SendTemplateMessage(TemplateKeys.Banned.PlayerBanned, interaction,GetDefault(user).AddTimestamp(_banHandler.GetBannedEndDate(user)));
                 return;
             }
 

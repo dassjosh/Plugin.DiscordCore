@@ -24,7 +24,7 @@ namespace DiscordCorePlugin.Plugins
         public void RegisterAdminApplicationCommands()
         {
             ApplicationCommandBuilder builder = new ApplicationCommandBuilder(AdminAppCommands.Command, "Discord Core Admin Commands", ApplicationCommandType.ChatInput)
-                .AddDefaultPermissions(PermissionFlags.Administrator);
+                .AddDefaultPermissions(PermissionFlags.None);
             
             AddAdminLinkCommand(builder);
             AddAdminUnlinkCommand(builder);
@@ -214,7 +214,7 @@ namespace DiscordCorePlugin.Plugins
         }
         
         // ReSharper disable once UnusedMember.Local
-        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.UserCommand, AdminAppCommands.SearchCommand)]
+        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.UserCommand, AdminAppCommands.Unban)]
         private void DiscordAdminUnbanByUser(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
             DiscordUser user = parsed.Args.GetUser(UserArg);
@@ -228,7 +228,7 @@ namespace DiscordCorePlugin.Plugins
         }
         
         // ReSharper disable once UnusedMember.Local
-        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.PlayerCommand, AdminAppCommands.SearchCommand)]
+        [DiscordApplicationCommand(AdminAppCommands.Command, AdminAppCommands.PlayerCommand, AdminAppCommands.Unban)]
         private void DiscordAdminUnbanByPlayer(DiscordInteraction interaction, InteractionDataParsed parsed)
         {
             string playerId = parsed.Args.GetString(PlayerArg);

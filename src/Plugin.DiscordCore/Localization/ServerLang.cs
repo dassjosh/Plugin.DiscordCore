@@ -2,14 +2,12 @@
 {
     public static class ServerLang
     {
-        private const string Base = "Chat.";
-        
-        public const string Format = Base + nameof(Format);
-        public const string NoPermission = Base + nameof(NoPermission);
+        public const string Format = nameof(Format);
+        public const string NoPermission = nameof(NoPermission);
 
         public static class Announcements
         {
-            private const string Base = ServerLang.Base + nameof(Announcements) + ".";
+            private const string Base = nameof(Announcements) + ".";
 
             public static class Link
             {
@@ -35,7 +33,7 @@
         
         public static class Commands
         {
-            private const string Base = ServerLang.Base + nameof(Commands) + ".";
+            private const string Base = nameof(Commands) + ".";
             
             public const string DcCommand = Base + nameof(DcCommand);
             public const string CodeCommand = Base + nameof(CodeCommand);
@@ -43,6 +41,7 @@
             public const string LeaveCommand = Base + nameof(LeaveCommand);
             public const string AcceptCommand = Base + nameof(AcceptCommand);
             public const string DeclineCommand = Base + nameof(DeclineCommand);
+            public const string LinkCommand = Base + nameof(LinkCommand);
             public const string HelpMessage = Base + nameof(HelpMessage);
 
             public static class Code
@@ -88,7 +87,7 @@
         
         public static class Link
         {
-            private const string Base = ServerLang.Base + nameof(Link) + ".";
+            private const string Base = nameof(Link) + ".";
             public static class Completed
             {
                 private const string Base = Link.Base + nameof(Completed) + ".";
@@ -118,7 +117,7 @@
 
         public static class Unlink
         {
-            private const string Base = ServerLang.Base + nameof(Unlink) + ".";
+            private const string Base = nameof(Unlink) + ".";
 
             public static class Completed
             {
@@ -133,14 +132,14 @@
 
         public static class Banned
         {
-            private const string Base = ServerLang.Base + nameof(Banned) + ".";
+            private const string Base = nameof(Banned) + ".";
 
             public const string IsUserBanned = Base + nameof(IsUserBanned);
         }
         
         public static class Join
         {
-            private const string Base = ServerLang.Base + nameof(Join) + ".";
+            private const string Base = nameof(Join) + ".";
             
             public const string ByPlayer = Base + nameof(ByPlayer);
 
@@ -154,7 +153,7 @@
 
         public static class Discord
         {
-            private const string Base = ServerLang.Base + nameof(Discord) + ".";
+            private const string Base = nameof(Discord) + ".";
             
             public const string DiscordCommand = Base + nameof(DiscordCommand);
             public const string LinkCommand = Base + nameof(LinkCommand);
@@ -162,7 +161,7 @@
 
         public static class Errors
         {
-            private const string Base = ServerLang.Base + nameof(Errors) + ".";
+            private const string Base = nameof(Errors) + ".";
 
             public const string PlayerAlreadyLinked = Base + nameof(PlayerAlreadyLinked);
             public const string DiscordAlreadyLinked = Base + nameof(DiscordAlreadyLinked);

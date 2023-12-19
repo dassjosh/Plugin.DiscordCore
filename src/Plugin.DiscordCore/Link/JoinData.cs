@@ -1,6 +1,6 @@
 ﻿using DiscordCorePlugin.Enums;
 using Oxide.Core.Libraries.Covalence;
-using Oxide.Ext.Discord.Entities.Users;
+using Oxide.Ext.Discord.Entities;
 
 namespace DiscordCorePlugin.Link
 {

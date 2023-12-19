@@ -9,12 +9,8 @@ using DiscordCorePlugin.Templates;
 using Oxide.Core;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Entities;
-using Oxide.Ext.Discord.Entities.Guilds;
-using Oxide.Ext.Discord.Entities.Interactions;
-using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Ext.Discord.Extensions;
-using Oxide.Ext.Discord.Libraries.Linking;
-using Oxide.Ext.Discord.Libraries.Placeholders;
+using Oxide.Ext.Discord.Libraries;
 using Oxide.Plugins;
 
 namespace DiscordCorePlugin.Link

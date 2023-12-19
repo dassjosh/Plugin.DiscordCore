@@ -1,9 +1,8 @@
 ﻿using DiscordCorePlugin.Link;
 using DiscordCorePlugin.Placeholders;
 using DiscordCorePlugin.Templates;
-using Oxide.Ext.Discord.Attributes.ApplicationCommands;
-using Oxide.Ext.Discord.Entities.Interactions;
-using Oxide.Ext.Discord.Entities.Users;
+using Oxide.Ext.Discord.Attributes;
+using Oxide.Ext.Discord.Entities;
 using Oxide.Ext.Discord.Extensions;
 
 namespace DiscordCorePlugin.Plugins

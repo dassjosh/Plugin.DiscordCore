@@ -1,8 +1,7 @@
 ﻿using DiscordCorePlugin.Configuration;
 using DiscordCorePlugin.Data;
 using DiscordCorePlugin.Templates;
-using Oxide.Ext.Discord.Entities.Api;
-using Oxide.Ext.Discord.Entities.Channels;
+using Oxide.Ext.Discord.Entities;
 
 namespace DiscordCorePlugin.Plugins
 {

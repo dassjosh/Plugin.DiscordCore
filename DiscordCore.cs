@@ -3,44 +3,19 @@ using Newtonsoft.Json.Converters;
 using Oxide.Core;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Core.Plugins;
-using Oxide.Ext.Discord.Attributes.ApplicationCommands;
-using Oxide.Ext.Discord.Attributes.Pooling;
-using Oxide.Ext.Discord.Builders.ApplicationCommands;
-using Oxide.Ext.Discord.Builders.Interactions;
-using Oxide.Ext.Discord.Builders.Interactions.AutoComplete;
+using Oxide.Ext.Discord.Attributes;
+using Oxide.Ext.Discord.Builders;
 using Oxide.Ext.Discord.Cache;
 using Oxide.Ext.Discord.Clients;
 using Oxide.Ext.Discord.Connections;
 using Oxide.Ext.Discord.Constants;
 using Oxide.Ext.Discord.Entities;
-using Oxide.Ext.Discord.Entities.Api;
-using Oxide.Ext.Discord.Entities.Applications;
-using Oxide.Ext.Discord.Entities.Channels;
-using Oxide.Ext.Discord.Entities.Gateway;
-using Oxide.Ext.Discord.Entities.Gateway.Events;
-using Oxide.Ext.Discord.Entities.Guilds;
-using Oxide.Ext.Discord.Entities.Interactions;
-using Oxide.Ext.Discord.Entities.Interactions.ApplicationCommands;
-using Oxide.Ext.Discord.Entities.Interactions.MessageComponents;
-using Oxide.Ext.Discord.Entities.Interactions.Response;
-using Oxide.Ext.Discord.Entities.Messages;
-using Oxide.Ext.Discord.Entities.Permissions;
-using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Ext.Discord.Extensions;
 using Oxide.Ext.Discord.Helpers;
-using Oxide.Ext.Discord.Interfaces.Promises;
-using Oxide.Ext.Discord.Libraries.Linking;
-using Oxide.Ext.Discord.Libraries.Locale;
-using Oxide.Ext.Discord.Libraries.Placeholders;
-using Oxide.Ext.Discord.Libraries.Placeholders.Keys;
-using Oxide.Ext.Discord.Libraries.Templates;
-using Oxide.Ext.Discord.Libraries.Templates.Commands;
-using Oxide.Ext.Discord.Libraries.Templates.Components;
-using Oxide.Ext.Discord.Libraries.Templates.Embeds;
-using Oxide.Ext.Discord.Libraries.Templates.Messages;
+using Oxide.Ext.Discord.Interfaces;
+using Oxide.Ext.Discord.Libraries;
 using Oxide.Ext.Discord.Logging;
-using Oxide.Ext.Discord.Pooling;
-using Oxide.Ext.Discord.Promises;
+using Oxide.Ext.Discord.Types;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -155,8 +130,44 @@ namespace Oxide.Plugins
             
             _link.AddLinkPlugin(this);
             RegisterPlaceholders();
+            ValidateGroups();
             
             Client.Connect(_discordSettings);
+        }
+        
+        public void ValidateGroups()
+        {
+            foreach (string group in _pluginConfig.PermissionSettings.LinkGroups)
+            {
+                if (!permission.GroupExists(group))
+                {
+                    PrintWarning($"`{group}` is set as the link group but group does not exist");
+                }
+            }
+            
+            foreach (string group in _pluginConfig.PermissionSettings.UnlinkGroups)
+            {
+                if (!permission.GroupExists(group))
+                {
+                    PrintWarning($"`{group}` is set as the unlink group but group does not exist");
+                }
+            }
+            
+            foreach (string perm in _pluginConfig.PermissionSettings.LinkPermissions)
+            {
+                if (!permission.PermissionExists(perm))
+                {
+                    PrintWarning($"`{perm}` is set as the link permission but group does not exist");
+                }
+            }
+            
+            foreach (string perm in _pluginConfig.PermissionSettings.UnlinkPermissions)
+            {
+                if (!permission.PermissionExists(perm))
+                {
+                    PrintWarning($"`{perm}` is set as the unlink permission but group does not exist");
+                }
+            }
         }
         
         // ReSharper disable once UnusedMember.Local
@@ -231,7 +242,7 @@ namespace Oxide.Plugins
                 
                 [ServerLang.Commands.Code.LinkInfo] = $"To complete your activation please open Discord use the following command: [{AccentColor.ToHex()}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Discord.DiscordCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Discord.LinkCommand)} {PlaceholderKeys.LinkCode}[/#].\n",
                 [ServerLang.Commands.Code.LinkServer] = $"In order to use this command you must be in the {DefaultKeys.Guild.Name.Color(AccentColor)} discord server. " +
-                $"You can join @ {ServerFormatting.Color($"discord.gg/{PlaceholderKeys.InviteCode}", AccentColor)}.\n",
+                $"You can join @ {ServerFormatting.Color($"{PlaceholderKeys.InviteUrl}", AccentColor)}.\n",
                 [ServerLang.Commands.Code.LinkInGuild] = $"This command can be used in the following guild channels {PlaceholderKeys.CommandChannels}.\n",
                 [ServerLang.Commands.Code.LinkInDm] = $"This command can be used in the following in a direct message to {DefaultKeys.User.Fullname.Color(AccentColor)} bot",
                 
@@ -300,7 +311,7 @@ namespace Oxide.Plugins
                 [ServerLang.Errors.ConsolePlayerNotSupported] = "This command cannot be ran in the server console. ",
                 
                 [ServerLang.Commands.HelpMessage] = "Allows players to link their player and discord accounts together. " +
-                $"Players must first join the {DefaultKeys.Guild.Name.Color(AccentColor)} Discord @ [{AccentColor.ToHex()}]discord.gg/{PlaceholderKeys.InviteCode}[/#]\n" +
+                $"Players must first join the {DefaultKeys.Guild.Name.Color(AccentColor)} Discord @ [{AccentColor.ToHex()}]{PlaceholderKeys.InviteUrl}[/#]\n" +
                 $"[{AccentColor.ToHex()}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.CodeCommand)}[/#] to start the link process using a code\n" +
                 $"[{AccentColor.ToHex()}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.UserCommand)} username[/#] to start the link process by your discord username\n" +
                 $"[{AccentColor.ToHex()}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.UserCommand)} userid[/#] to start the link process by your discord user ID\n" +
@@ -679,6 +690,21 @@ namespace Oxide.Plugins
             RegisterAdminApplicationCommands();
             _linkHandler.ProcessLeaveAndRejoin();
             SetupGuildWelcomeMessage();
+            foreach (Snowflake role in _pluginConfig.PermissionSettings.LinkRoles)
+            {
+                if (!Guild?.Roles.ContainsKey(role) ?? false)
+                {
+                    PrintWarning($"`{role}` is set as the link role but role does not exist");
+                }
+            }
+            
+            foreach (Snowflake role in _pluginConfig.PermissionSettings.UnlinkRoles)
+            {
+                if (!Guild?.Roles.ContainsKey(role) ?? false)
+                {
+                    PrintWarning($"`{role}` is set as the unlink role but role does not exist");
+                }
+            }
         }
         
         // ReSharper disable once UnusedMember.Local
@@ -1042,6 +1068,7 @@ namespace Oxide.Plugins
             {
                 ApplicationCommandBuilder builder = new ApplicationCommandBuilder(AdminAppCommands.Command, "Discord Core Admin Commands", ApplicationCommandType.ChatInput)
                 .AddDefaultPermissions(PermissionFlags.None);
+                builder.AllowInDirectMessages(false);
                 
                 AddAdminLinkCommand(builder);
                 AddAdminUnlinkCommand(builder);
@@ -1282,6 +1309,7 @@ namespace Oxide.Plugins
             private void HandleAdminNameAutoComplete(DiscordInteraction interaction, InteractionDataOption focused)
             {
                 string search = focused.GetString();
+                Puts($"HandleAdminNameAutoComplete - {search}");
                 InteractionAutoCompleteBuilder response = interaction.GetAutoCompleteBuilder();
                 response.AddAllOnlineFirstPlayers(search, PlayerNameFormatter.All);
                 interaction.CreateResponse(Client, response);
@@ -1620,7 +1648,7 @@ namespace Oxide.Plugins
                     _placeholders.RegisterPlaceholder(this, new PlaceholderKey("guild.name"), _pluginConfig.ServerNameOverride);
                 }
                 
-                _placeholders.RegisterPlaceholder(this, PlaceholderKeys.InviteCode, _pluginConfig.InviteCode);
+                _placeholders.RegisterPlaceholder(this, PlaceholderKeys.InviteUrl, _pluginConfig.InviteUrl);
                 _placeholders.RegisterPlaceholder<string>(this, PlaceholderKeys.LinkCode, PlaceholderDataKeys.Code);
                 _placeholders.RegisterPlaceholder<string>(this, PlaceholderKeys.NotFound, PlaceholderDataKeys.NotFound);
             }
@@ -1940,8 +1968,8 @@ namespace Oxide.Plugins
                 public string ServerNameOverride { get; set; }
                 
                 [DefaultValue("")]
-                [JsonProperty(PropertyName = "Discord Server Invite Code")]
-                public string InviteCode { get; set; }
+                [JsonProperty(PropertyName = "Discord Server Invite Url")]
+                public string InviteUrl { get; set; }
                 
                 [JsonProperty(PropertyName = "Link Settings")]
                 public LinkSettings LinkSettings { get; set; }
@@ -2877,7 +2905,7 @@ namespace Oxide.Plugins
             #region Placeholders\PlaceholderKeys.cs
             public class PlaceholderKeys
             {
-                public static readonly PlaceholderKey InviteCode = new PlaceholderKey(nameof(DiscordCore), "invite.code");
+                public static readonly PlaceholderKey InviteUrl = new PlaceholderKey(nameof(DiscordCore), "invite.url");
                 public static readonly PlaceholderKey LinkCode = new PlaceholderKey(nameof(DiscordCore), "link.code");
                 public static readonly PlaceholderKey CommandChannels = new PlaceholderKey(nameof(DiscordCore), "command.channels");
                 public static readonly PlaceholderKey NotFound = new PlaceholderKey(nameof(DiscordCore), "notfound");

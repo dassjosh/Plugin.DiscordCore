@@ -71,8 +71,44 @@ namespace DiscordCorePlugin.Plugins
 
             _link.AddLinkPlugin(this);
             RegisterPlaceholders();
+            ValidateGroups();
             
             Client.Connect(_discordSettings);
+        }
+
+        public void ValidateGroups()
+        {
+            foreach (string group in _pluginConfig.PermissionSettings.LinkGroups)
+            {
+                if (!permission.GroupExists(group))
+                {
+                    PrintWarning($"`{group}` is set as the link group but group does not exist");
+                }
+            }
+            
+            foreach (string group in _pluginConfig.PermissionSettings.UnlinkGroups)
+            {
+                if (!permission.GroupExists(group))
+                {
+                    PrintWarning($"`{group}` is set as the unlink group but group does not exist");
+                }
+            }
+            
+            foreach (string perm in _pluginConfig.PermissionSettings.LinkPermissions)
+            {
+                if (!permission.PermissionExists(perm))
+                {
+                    PrintWarning($"`{perm}` is set as the link permission but group does not exist");
+                }
+            }
+            
+            foreach (string perm in _pluginConfig.PermissionSettings.UnlinkPermissions)
+            {
+                if (!permission.PermissionExists(perm))
+                {
+                    PrintWarning($"`{perm}` is set as the unlink permission but group does not exist");
+                }
+            }
         }
 
         // ReSharper disable once UnusedMember.Local

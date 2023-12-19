@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using DiscordCorePlugin.Data;
 using Oxide.Ext.Discord.Entities;
-using Oxide.Ext.Discord.Libraries.Linking;
+using Oxide.Ext.Discord.Libraries;
 using Oxide.Plugins;
 
 namespace DiscordCorePlugin.Plugins

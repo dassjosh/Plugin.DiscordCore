@@ -2,20 +2,10 @@
 using DiscordCorePlugin.Configuration;
 using DiscordCorePlugin.Data;
 using DiscordCorePlugin.Link;
-using Oxide.Ext.Discord.Attributes.Pooling;
 using Oxide.Ext.Discord.Clients;
 using Oxide.Ext.Discord.Connections;
 using Oxide.Ext.Discord.Entities;
-using Oxide.Ext.Discord.Entities.Gateway;
-using Oxide.Ext.Discord.Entities.Guilds;
-using Oxide.Ext.Discord.Entities.Interactions.ApplicationCommands;
-using Oxide.Ext.Discord.Entities.Users;
-using Oxide.Ext.Discord.Libraries.Linking;
-using Oxide.Ext.Discord.Libraries.Locale;
-using Oxide.Ext.Discord.Libraries.Placeholders;
-using Oxide.Ext.Discord.Libraries.Templates.Commands;
-using Oxide.Ext.Discord.Libraries.Templates.Messages;
-using Oxide.Ext.Discord.Pooling;
+using Oxide.Ext.Discord.Libraries;
 
 namespace DiscordCorePlugin.Plugins
 {

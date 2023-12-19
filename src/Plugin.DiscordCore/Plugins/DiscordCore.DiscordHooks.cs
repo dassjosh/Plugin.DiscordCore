@@ -3,9 +3,6 @@ using DiscordCorePlugin.Templates;
 using Oxide.Core.Plugins;
 using Oxide.Ext.Discord.Constants;
 using Oxide.Ext.Discord.Entities;
-using Oxide.Ext.Discord.Entities.Applications;
-using Oxide.Ext.Discord.Entities.Gateway.Events;
-using Oxide.Ext.Discord.Entities.Guilds;
 using Oxide.Ext.Discord.Extensions;
 
 namespace DiscordCorePlugin.Plugins
@@ -64,6 +61,21 @@ namespace DiscordCorePlugin.Plugins
             RegisterAdminApplicationCommands();
             _linkHandler.ProcessLeaveAndRejoin();
             SetupGuildWelcomeMessage();
+            foreach (Snowflake role in _pluginConfig.PermissionSettings.LinkRoles)
+            {
+                if (!Guild?.Roles.ContainsKey(role) ?? false)
+                {
+                    PrintWarning($"`{role}` is set as the link role but role does not exist");
+                }
+            }
+            
+            foreach (Snowflake role in _pluginConfig.PermissionSettings.UnlinkRoles)
+            {
+                if (!Guild?.Roles.ContainsKey(role) ?? false)
+                {
+                    PrintWarning($"`{role}` is set as the unlink role but role does not exist");
+                }
+            }
         }
 
         // ReSharper disable once UnusedMember.Local

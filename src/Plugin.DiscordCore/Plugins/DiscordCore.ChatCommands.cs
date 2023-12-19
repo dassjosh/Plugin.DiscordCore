@@ -7,10 +7,8 @@ using DiscordCorePlugin.Placeholders;
 using DiscordCorePlugin.Templates;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Entities;
-using Oxide.Ext.Discord.Entities.Guilds;
-using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Ext.Discord.Extensions;
-using Oxide.Ext.Discord.Libraries.Placeholders;
+using Oxide.Ext.Discord.Libraries;
 
 namespace DiscordCorePlugin.Plugins
 {

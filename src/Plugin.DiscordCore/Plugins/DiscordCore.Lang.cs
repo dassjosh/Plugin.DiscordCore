@@ -4,8 +4,7 @@ using DiscordCorePlugin.Placeholders;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Extensions;
 using Oxide.Ext.Discord.Helpers;
-using Oxide.Ext.Discord.Libraries.Placeholders;
-using Oxide.Ext.Discord.Libraries.Placeholders.Keys;
+using Oxide.Ext.Discord.Libraries;
 
 namespace DiscordCorePlugin.Plugins
 {
@@ -75,7 +74,7 @@ namespace DiscordCorePlugin.Plugins
                 
                 [ServerLang.Commands.Code.LinkInfo] = $"To complete your activation please open Discord use the following command: [{AccentColor.ToHex()}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Discord.DiscordCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Discord.LinkCommand)} {PlaceholderKeys.LinkCode}[/#].\n",
                 [ServerLang.Commands.Code.LinkServer] = $"In order to use this command you must be in the {DefaultKeys.Guild.Name.Color(AccentColor)} discord server. " +
-                                                        $"You can join @ {ServerFormatting.Color($"discord.gg/{PlaceholderKeys.InviteCode}", AccentColor)}.\n",
+                                                        $"You can join @ {ServerFormatting.Color($"{PlaceholderKeys.InviteUrl}", AccentColor)}.\n",
                 [ServerLang.Commands.Code.LinkInGuild] = $"This command can be used in the following guild channels {PlaceholderKeys.CommandChannels}.\n",
                 [ServerLang.Commands.Code.LinkInDm] = $"This command can be used in the following in a direct message to {DefaultKeys.User.Fullname.Color(AccentColor)} bot",
                 
@@ -144,7 +143,7 @@ namespace DiscordCorePlugin.Plugins
                 [ServerLang.Errors.ConsolePlayerNotSupported] = "This command cannot be ran in the server console. ",
                 
                 [ServerLang.Commands.HelpMessage] = "Allows players to link their player and discord accounts together. " +
-                                                    $"Players must first join the {DefaultKeys.Guild.Name.Color(AccentColor)} Discord @ [{AccentColor.ToHex()}]discord.gg/{PlaceholderKeys.InviteCode}[/#]\n" +
+                                                    $"Players must first join the {DefaultKeys.Guild.Name.Color(AccentColor)} Discord @ [{AccentColor.ToHex()}]{PlaceholderKeys.InviteUrl}[/#]\n" +
                                                     $"[{AccentColor.ToHex()}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.CodeCommand)}[/#] to start the link process using a code\n" +
                                                     $"[{AccentColor.ToHex()}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.UserCommand)} username[/#] to start the link process by your discord username\n" +
                                                     $"[{AccentColor.ToHex()}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.DcCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Commands.UserCommand)} userid[/#] to start the link process by your discord user ID\n" +

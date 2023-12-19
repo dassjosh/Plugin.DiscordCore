@@ -4,7 +4,6 @@ using DiscordCorePlugin.Plugins;
 using DiscordCorePlugin.Templates;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Entities;
-using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Plugins;
 
 namespace DiscordCorePlugin.Link

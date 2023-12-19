@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Entities;
-using Oxide.Ext.Discord.Entities.Users;
 
 namespace DiscordCorePlugin.Data
 {

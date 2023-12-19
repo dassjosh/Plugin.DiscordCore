@@ -20,8 +20,8 @@ namespace DiscordCorePlugin.Configuration
         public string ServerNameOverride { get; set; }
             
         [DefaultValue("")]
-        [JsonProperty(PropertyName = "Discord Server Invite Code")]
-        public string InviteCode { get; set; }
+        [JsonProperty(PropertyName = "Discord Server Invite Url")]
+        public string InviteUrl { get; set; }
 
         [JsonProperty(PropertyName = "Link Settings")]
         public LinkSettings LinkSettings { get; set; }

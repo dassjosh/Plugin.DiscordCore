@@ -7,19 +7,11 @@ using DiscordCorePlugin.Placeholders;
 using DiscordCorePlugin.Templates;
 using Newtonsoft.Json;
 using Oxide.Core.Libraries.Covalence;
-using Oxide.Ext.Discord.Attributes.ApplicationCommands;
-using Oxide.Ext.Discord.Builders.ApplicationCommands;
-using Oxide.Ext.Discord.Builders.Interactions;
-using Oxide.Ext.Discord.Builders.Interactions.AutoComplete;
-using Oxide.Ext.Discord.Entities.Api;
-using Oxide.Ext.Discord.Entities.Interactions;
-using Oxide.Ext.Discord.Entities.Interactions.ApplicationCommands;
-using Oxide.Ext.Discord.Entities.Permissions;
-using Oxide.Ext.Discord.Entities.Users;
+using Oxide.Ext.Discord.Attributes;
+using Oxide.Ext.Discord.Builders;
+using Oxide.Ext.Discord.Entities;
 using Oxide.Ext.Discord.Extensions;
-using Oxide.Ext.Discord.Libraries.Placeholders;
-using Oxide.Ext.Discord.Libraries.Templates;
-using Oxide.Ext.Discord.Libraries.Templates.Commands;
+using Oxide.Ext.Discord.Libraries;
 
 namespace DiscordCorePlugin.Plugins
 {

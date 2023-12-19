@@ -5,22 +5,11 @@ using DiscordCorePlugin.Placeholders;
 using DiscordCorePlugin.Templates;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Entities;
-using Oxide.Ext.Discord.Entities.Channels;
-using Oxide.Ext.Discord.Entities.Interactions;
-using Oxide.Ext.Discord.Entities.Interactions.MessageComponents;
-using Oxide.Ext.Discord.Entities.Interactions.Response;
-using Oxide.Ext.Discord.Entities.Messages;
-using Oxide.Ext.Discord.Entities.Users;
 using Oxide.Ext.Discord.Extensions;
 using Oxide.Ext.Discord.Helpers;
-using Oxide.Ext.Discord.Interfaces.Promises;
-using Oxide.Ext.Discord.Libraries.Placeholders;
-using Oxide.Ext.Discord.Libraries.Placeholders.Keys;
-using Oxide.Ext.Discord.Libraries.Templates;
-using Oxide.Ext.Discord.Libraries.Templates.Components;
-using Oxide.Ext.Discord.Libraries.Templates.Embeds;
-using Oxide.Ext.Discord.Libraries.Templates.Messages;
-using Oxide.Ext.Discord.Promises;
+using Oxide.Ext.Discord.Interfaces;
+using Oxide.Ext.Discord.Libraries;
+using Oxide.Ext.Discord.Types;
 
 namespace DiscordCorePlugin.Plugins
 {
@@ -182,8 +171,8 @@ namespace DiscordCorePlugin.Plugins
                         Color = DiscordColor.Danger.ToHex(),
                         Fields =
                         {
-                            new DiscordEmbedFieldTemplate("Player", $"{DefaultKeys.Player.NameClan}"),
-                            new DiscordEmbedFieldTemplate("Player ID", $"{DefaultKeys.Player.Id}"),
+                            new DiscordEmbedFieldTemplate("Player", DefaultKeys.Player.NameClan),
+                            new DiscordEmbedFieldTemplate("Player ID", DefaultKeys.Player.Id),
                             new DiscordEmbedFieldTemplate("User", DefaultKeys.User.Fullname),
                             new DiscordEmbedFieldTemplate("Is Linked", DefaultKeys.Player.IsLinked),
                         }

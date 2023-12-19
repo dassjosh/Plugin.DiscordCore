@@ -1,8 +1,7 @@
 ﻿using DiscordCorePlugin.Placeholders;
 using Oxide.Core.Libraries.Covalence;
-using Oxide.Ext.Discord.Entities.Users;
-using Oxide.Ext.Discord.Libraries.Placeholders;
-using Oxide.Ext.Discord.Libraries.Placeholders.Keys;
+using Oxide.Ext.Discord.Entities;
+using Oxide.Ext.Discord.Libraries;
 
 namespace DiscordCorePlugin.Plugins
 {
@@ -16,7 +15,7 @@ namespace DiscordCorePlugin.Plugins
                 _placeholders.RegisterPlaceholder(this, new PlaceholderKey("guild.name"), _pluginConfig.ServerNameOverride);
             }
 
-            _placeholders.RegisterPlaceholder(this, PlaceholderKeys.InviteCode, _pluginConfig.InviteCode);
+            _placeholders.RegisterPlaceholder(this, PlaceholderKeys.InviteUrl, _pluginConfig.InviteUrl);
             _placeholders.RegisterPlaceholder<string>(this, PlaceholderKeys.LinkCode, PlaceholderDataKeys.Code);
             _placeholders.RegisterPlaceholder<string>(this, PlaceholderKeys.NotFound, PlaceholderDataKeys.NotFound);
         }

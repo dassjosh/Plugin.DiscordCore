@@ -1,4 +1,4 @@
-﻿using Oxide.Ext.Discord.Libraries.Linking;
+﻿using Oxide.Ext.Discord.Libraries;
 using Oxide.Plugins;
 
 namespace DiscordCorePlugin.Plugins

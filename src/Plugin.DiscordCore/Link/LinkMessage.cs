@@ -1,9 +1,8 @@
 ﻿using DiscordCorePlugin.Configuration;
 using DiscordCorePlugin.Plugins;
 using Oxide.Core.Libraries.Covalence;
-using Oxide.Ext.Discord.Entities.Interactions;
-using Oxide.Ext.Discord.Entities.Users;
-using Oxide.Ext.Discord.Libraries.Placeholders;
+using Oxide.Ext.Discord.Entities;
+using Oxide.Ext.Discord.Libraries;
 
 namespace DiscordCorePlugin.Link
 {

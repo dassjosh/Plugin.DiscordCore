@@ -7,10 +7,8 @@ using DiscordCorePlugin.Localization;
 using DiscordCorePlugin.Plugins;
 using DiscordCorePlugin.Templates;
 using Oxide.Core.Libraries.Covalence;
-using Oxide.Ext.Discord.Entities.Interactions;
-using Oxide.Ext.Discord.Entities.Users;
-using Oxide.Ext.Discord.Libraries.Placeholders;
-using Oxide.Ext.Discord.Pooling;
+using Oxide.Ext.Discord.Entities;
+using Oxide.Ext.Discord.Libraries;
 
 namespace DiscordCorePlugin.Link
 {

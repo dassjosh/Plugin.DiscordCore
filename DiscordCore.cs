@@ -27,7 +27,7 @@ namespace Oxide.Plugins
 {
     [Info("Discord Core", "MJSU", "3.0.0")]
     [Description("Creates a link between a player and discord")]
-    public partial class DiscordCore : CovalencePlugin, IDiscordLinkPlugin
+    public partial class DiscordCore : CovalencePlugin, IDiscordPlugin, IDiscordLink
     {
         #region Plugins\DiscordCore.Fields.cs
         public DiscordClient Client { get; set; }
@@ -1472,8 +1472,8 @@ namespace Oxide.Plugins
                             Color = DiscordColor.Danger.ToHex(),
                             Fields =
                             {
-                                new DiscordEmbedFieldTemplate("Player", $"{DefaultKeys.Player.NameClan}"),
-                                new DiscordEmbedFieldTemplate("Player ID", $"{DefaultKeys.Player.Id}"),
+                                new DiscordEmbedFieldTemplate("Player", DefaultKeys.Player.NameClan),
+                                new DiscordEmbedFieldTemplate("Player ID", DefaultKeys.Player.Id),
                                 new DiscordEmbedFieldTemplate("User", DefaultKeys.User.Fullname),
                                 new DiscordEmbedFieldTemplate("Is Linked", DefaultKeys.Player.IsLinked),
                             }

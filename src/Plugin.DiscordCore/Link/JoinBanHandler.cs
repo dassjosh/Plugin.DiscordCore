@@ -10,8 +10,8 @@ namespace DiscordCorePlugin.Link
 {
     public class JoinBanHandler
     {
-        private readonly Hash<string, JoinBanData> _playerBans = new Hash<string, JoinBanData>();
-        private readonly Hash<Snowflake, JoinBanData> _discordBans = new Hash<Snowflake, JoinBanData>();
+        private readonly Hash<string, JoinBanData> _playerBans = new();
+        private readonly Hash<Snowflake, JoinBanData> _discordBans = new();
         private readonly LinkBanSettings _settings;
 
         public JoinBanHandler(LinkBanSettings settings)

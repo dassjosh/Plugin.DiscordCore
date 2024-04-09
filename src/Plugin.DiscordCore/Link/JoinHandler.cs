@@ -14,12 +14,12 @@ namespace DiscordCorePlugin.Link
 {
     public class JoinHandler
     {
-        private readonly List<JoinData> _activations = new List<JoinData>();
+        private readonly List<JoinData> _activations = new();
         private readonly LinkSettings _settings;
         private readonly LinkHandler _linkHandler;
         private readonly JoinBanHandler _ban;
         private readonly DiscordCore _plugin = DiscordCore.Instance;
-        private readonly StringBuilder _sb = new StringBuilder();
+        private readonly StringBuilder _sb = new();
 
         public JoinHandler(LinkSettings settings, LinkHandler linkHandler, JoinBanHandler ban)
         {
@@ -33,7 +33,7 @@ namespace DiscordCorePlugin.Link
             for (int index = 0; index < _activations.Count; index++)
             {
                 JoinData activation = _activations[index];
-                if (activation.Code.Equals(code, StringComparison.OrdinalIgnoreCase))
+                if (activation.Code?.Equals(code, StringComparison.OrdinalIgnoreCase) ?? false)
                 {
                     return activation;
                 }
@@ -99,7 +99,7 @@ namespace DiscordCorePlugin.Link
             if (player == null) throw new ArgumentNullException(nameof(player));
             
             RemoveByPlayer(player);
-            JoinData activation = new JoinData(JoinSource.Server)
+            JoinData activation = new(JoinSource.Server)
             {
                 Code = GenerateCode(),
                 Player = player
@@ -113,7 +113,7 @@ namespace DiscordCorePlugin.Link
             if (user == null) throw new ArgumentNullException(nameof(user));
             
             RemoveByUser(user);
-            JoinData activation = new JoinData(JoinSource.Discord)
+            JoinData activation = new(JoinSource.Discord)
             {
                 Code = GenerateCode(),
                 Discord = user
@@ -128,7 +128,7 @@ namespace DiscordCorePlugin.Link
             
             RemoveByPlayer(player);
             RemoveByUser(user);
-            JoinData activation = new JoinData(from)
+            JoinData activation = new(from)
             {
                 Discord = user,
                 Player = player

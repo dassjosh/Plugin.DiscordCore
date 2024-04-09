@@ -29,9 +29,10 @@ namespace DiscordCorePlugin.Plugins
             CommandCreate build = builder.Build();
             DiscordCommandLocalization localization = builder.BuildCommandLocalization();
 
-            _local.RegisterCommandLocalizationAsync(this, "Admin", localization, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0)).Then(_ =>
+            TemplateKey template = new("Admin");
+            _local.RegisterCommandLocalizationAsync(this, template, localization, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0)).Then(_ =>
             {
-                _local.ApplyCommandLocalizationsAsync(this, build, "Admin").Then(() =>
+                _local.ApplyCommandLocalizationsAsync(this, build, template).Then(() =>
                 {
                     Client.Bot.Application.CreateGlobalCommand(Client, build);
                 });
@@ -79,7 +80,7 @@ namespace DiscordCorePlugin.Plugins
             });
         }
         
-        public void AddAdminSearchByUserCommand( ApplicationCommandGroupBuilder builder)
+        public void AddAdminSearchByUserCommand(ApplicationCommandGroupBuilder builder)
         {
             builder.AddSubCommand(AdminAppCommands.UserCommand, "search by user", sub =>
             {
@@ -105,7 +106,7 @@ namespace DiscordCorePlugin.Plugins
             });
         }
         
-        public void AddAdminUnbanByUserCommand( ApplicationCommandGroupBuilder builder)
+        public void AddAdminUnbanByUserCommand(ApplicationCommandGroupBuilder builder)
         {
             builder.AddSubCommand(AdminAppCommands.UserCommand, "unban by user", sub =>
             {
@@ -260,7 +261,7 @@ namespace DiscordCorePlugin.Plugins
         private void HandleAdminNameAutoComplete(DiscordInteraction interaction, InteractionDataOption focused)
         {
             string search = focused.GetString();
-            Puts($"HandleAdminNameAutoComplete - {search}");
+            //Puts($"HandleAdminNameAutoComplete - {search}");
             InteractionAutoCompleteBuilder response = interaction.GetAutoCompleteBuilder();
             response.AddAllOnlineFirstPlayers(search, PlayerNameFormatter.All);
             interaction.CreateResponse(Client, response);

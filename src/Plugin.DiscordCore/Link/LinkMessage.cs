@@ -10,12 +10,12 @@ namespace DiscordCorePlugin.Link
     {
         private readonly string _chatLang;
         private readonly string _chatAnnouncement;
-        private readonly string _discordTemplate;
-        private readonly string _announcementTemplate;
+        private readonly TemplateKey _discordTemplate;
+        private readonly TemplateKey _announcementTemplate;
         private readonly DiscordCore _plugin;
         private readonly LinkSettings _link;
 
-        public LinkMessage(string chatLang, string chatAnnouncement, string discordTemplate, string announcementTemplate, DiscordCore plugin, LinkSettings link)
+        public LinkMessage(string chatLang, string chatAnnouncement, TemplateKey discordTemplate, TemplateKey announcementTemplate, DiscordCore plugin, LinkSettings link)
         {
             _chatLang = chatLang;
             _chatAnnouncement = chatAnnouncement;
@@ -32,7 +32,7 @@ namespace DiscordCorePlugin.Link
                 data.ManualPool();
                 _plugin.BroadcastMessage(_chatAnnouncement, data);
                 _plugin.Chat(player, _chatLang, data);
-                if (!string.IsNullOrEmpty(_discordTemplate))
+                if (_discordTemplate.IsValid)
                 {
                     if (interaction != null)
                     {

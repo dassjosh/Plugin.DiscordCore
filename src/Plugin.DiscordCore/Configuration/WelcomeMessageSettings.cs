@@ -22,7 +22,7 @@ namespace DiscordCorePlugin.Configuration
         {
             EnableWelcomeMessage = settings?.EnableWelcomeMessage ?? true;
             SendOnGuildJoin = settings?.SendOnGuildJoin ?? false;
-            SendOnRoleAdded = settings?.SendOnRoleAdded ?? new List<Snowflake> {new Snowflake(1234567890)};
+            SendOnRoleAdded = settings?.SendOnRoleAdded ?? new List<Snowflake> {new(1234567890)};
             EnableLinkButton = settings?.EnableLinkButton ?? true;
         }
     }

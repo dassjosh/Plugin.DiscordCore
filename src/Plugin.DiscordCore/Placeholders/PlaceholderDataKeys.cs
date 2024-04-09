@@ -4,7 +4,7 @@ namespace DiscordCorePlugin.Placeholders
 {
     public class PlaceholderDataKeys
     {
-        public static readonly PlaceholderDataKey Code = new PlaceholderDataKey("dc.code");
-        public static readonly PlaceholderDataKey NotFound = new PlaceholderDataKey("dc.notfound");
+        public static readonly PlaceholderDataKey Code = new("dc.code");
+        public static readonly PlaceholderDataKey NotFound = new("dc.notfound");
     }
 }

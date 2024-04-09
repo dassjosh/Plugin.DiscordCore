@@ -42,12 +42,6 @@ namespace DiscordCorePlugin.Plugins
                            $"{Name} will not function correctly until that is fixed. Once updated please reload {Name}.");
                 return;
             }
-                
-            if (!app.HasApplicationFlag(ApplicationFlags.GatewayMessageContentLimited) && !app.HasApplicationFlag(ApplicationFlags.GatewayMessageContent))
-            {
-                PrintWarning($"You will need to enable \"Message Content Intent\" for {_bot.FullUserName} @ https://discord.com/developers/applications\n by April 2022" +
-                             $"{Name} will stop function correctly after that date until that is fixed.");
-            }
             
             Puts($"Connected to bot: {_bot.Username}");
         }

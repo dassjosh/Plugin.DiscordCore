@@ -89,10 +89,10 @@ namespace DiscordCorePlugin.Plugins
                 return;
             }
             
-            Puts("A");
+            //Puts("A");
 
             JoinData join = _joinHandler.CreateActivation(player);
-            Puts("B");
+            //Puts("B");
             using (PlaceholderData data = GetDefault(player).AddUser(_bot).Add(PlaceholderDataKeys.Code, join.Code))
             {
                 data.ManualPool();
@@ -163,7 +163,7 @@ namespace DiscordCorePlugin.Plugins
                 discriminator = search.Substring(discriminatorIndex, search.Length - discriminatorIndex);
             }
 
-            GuildSearchMembers guildSearch = new GuildSearchMembers
+            GuildSearchMembers guildSearch = new()
             {
                 Query = userName,
                 Limit = 1000

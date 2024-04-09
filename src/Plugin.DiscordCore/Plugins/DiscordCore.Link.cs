@@ -11,7 +11,7 @@ namespace DiscordCorePlugin.Plugins
     {
         public IDictionary<PlayerId, Snowflake> GetPlayerIdToDiscordIds()
         {
-            Hash<PlayerId, Snowflake> data = new Hash<PlayerId, Snowflake>();
+            Hash<PlayerId, Snowflake> data = new();
             foreach (DiscordInfo info in _pluginData.PlayerDiscordInfo.Values)
             {
                 data[new PlayerId(info.PlayerId)] = info.DiscordId;

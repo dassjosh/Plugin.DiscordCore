@@ -2,7 +2,6 @@
 using DiscordCorePlugin.Localization;
 using DiscordCorePlugin.Placeholders;
 using Oxide.Core.Libraries.Covalence;
-using Oxide.Ext.Discord.Extensions;
 using Oxide.Ext.Discord.Helpers;
 using Oxide.Ext.Discord.Libraries;
 
@@ -45,7 +44,7 @@ namespace DiscordCorePlugin.Plugins
 
         public void RegisterChatLangCommand(string command, string langKey)
         {
-            HashSet<string> registeredCommands = new HashSet<string>();
+            HashSet<string> registeredCommands = new();
             foreach (string langType in lang.GetLanguages(this))
             {
                 Dictionary<string, string> langKeys = lang.GetMessages(langType, this);

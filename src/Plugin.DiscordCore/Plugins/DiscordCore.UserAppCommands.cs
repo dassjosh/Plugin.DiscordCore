@@ -5,7 +5,6 @@ using DiscordCorePlugin.Link;
 using DiscordCorePlugin.Localization;
 using DiscordCorePlugin.Placeholders;
 using DiscordCorePlugin.Templates;
-using Newtonsoft.Json;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Attributes;
 using Oxide.Ext.Discord.Builders;
@@ -29,16 +28,12 @@ namespace DiscordCorePlugin.Plugins
             AddUserLinkCommand(builder);
 
             CommandCreate build = builder.Build();
-            Puts($@"{JsonConvert.SerializeObject(build, new JsonSerializerSettings
-            {
-                Formatting = Formatting.Indented,
-                NullValueHandling = NullValueHandling.Ignore
-            })}");
             DiscordCommandLocalization localization = builder.BuildCommandLocalization();
             
-            _local.RegisterCommandLocalizationAsync(this, "User", localization, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0)).Then(_ =>
+            TemplateKey template = new("User");
+            _local.RegisterCommandLocalizationAsync(this, template, localization, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0)).Then(_ =>
             {
-                _local.ApplyCommandLocalizationsAsync(this, build, "User").Then(() =>
+                _local.ApplyCommandLocalizationsAsync(this, build, template).Then(() =>
                 {
                     Client.Bot.Application.CreateGlobalCommand(Client, build).Then(command =>
                     {
@@ -104,7 +99,7 @@ namespace DiscordCorePlugin.Plugins
         
         public void CreateAllowedChannels(GuildCommandPermissions permissions)
         {
-            List<string> channels = new List<string>();
+            List<string> channels = new();
             for (int index = 0; index < permissions.Permissions.Count; index++)
             {
                 CommandPermissions perm = permissions.Permissions[index];
@@ -226,7 +221,13 @@ namespace DiscordCorePlugin.Plugins
             JoinData join = _joinHandler.FindByCode(code);
             if (join == null)
             {
-                SendTemplateMessage(TemplateKeys.Errors.CodActivationNotFound, interaction, GetDefault(user).Add(PlaceholderDataKeys.Code, code));
+                SendTemplateMessage(TemplateKeys.Errors.CodeActivationNotFound, interaction, GetDefault(user).Add(PlaceholderDataKeys.Code, code));
+                return;
+            }
+
+            if (join.From == JoinSource.Discord)
+            {
+                SendTemplateMessage(TemplateKeys.Errors.MustBeCompletedInServer, interaction, GetDefault(user).Add(PlaceholderDataKeys.Code, code));
                 return;
             }
 

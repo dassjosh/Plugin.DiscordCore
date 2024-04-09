@@ -23,8 +23,8 @@ namespace DiscordCorePlugin.Link
         private readonly DiscordLink _link = Interface.Oxide.GetLibrary<DiscordLink>();
         private readonly IPlayerManager _players = Interface.Oxide.GetLibrary<Covalence>().Players;
         private readonly DiscordCore _plugin = DiscordCore.Instance;
-        private readonly Hash<LinkReason, LinkMessage> _linkMessages = new Hash<LinkReason, LinkMessage>();
-        private readonly Hash<UnlinkedReason, LinkMessage> _unlinkMessages = new Hash<UnlinkedReason, LinkMessage>();
+        private readonly Hash<LinkReason, LinkMessage> _linkMessages = new();
+        private readonly Hash<UnlinkedReason, LinkMessage> _unlinkMessages = new();
 
         public LinkHandler(PluginData pluginData, PluginConfig config)
         {
@@ -42,12 +42,14 @@ namespace DiscordCorePlugin.Link
             _unlinkMessages[UnlinkedReason.Command] = new LinkMessage(ServerLang.Unlink.Completed.Command, ServerLang.Announcements.Unlink.Command, TemplateKeys.Unlink.Completed.Command, TemplateKeys.Announcements.Unlink.Command, _plugin, link);
             _unlinkMessages[UnlinkedReason.Admin] = new LinkMessage(ServerLang.Unlink.Completed.Admin, ServerLang.Announcements.Unlink.Admin, TemplateKeys.Unlink.Completed.Admin, TemplateKeys.Announcements.Unlink.Admin, _plugin, link);
             _unlinkMessages[UnlinkedReason.Api] = new LinkMessage(ServerLang.Unlink.Completed.Api, ServerLang.Announcements.Unlink.Api, TemplateKeys.Unlink.Completed.Api, TemplateKeys.Announcements.Unlink.Api, _plugin, link);
-            _unlinkMessages[UnlinkedReason.LeftGuild] = new LinkMessage(ServerLang.Unlink.Completed.LeftGuild, ServerLang.Announcements.Unlink.LeftGuild, null, TemplateKeys.Announcements.Unlink.LeftGuild, _plugin, link);
-            _unlinkMessages[UnlinkedReason.Inactive] = new LinkMessage(null, TemplateKeys.Unlink.Completed.Inactive, ServerLang.Announcements.Unlink.Inactive, TemplateKeys.Announcements.Unlink.Inactive, _plugin, link);
+            _unlinkMessages[UnlinkedReason.LeftGuild] = new LinkMessage(ServerLang.Unlink.Completed.LeftGuild, ServerLang.Announcements.Unlink.LeftGuild, default, TemplateKeys.Announcements.Unlink.LeftGuild, _plugin, link);
+            _unlinkMessages[UnlinkedReason.Inactive] = new LinkMessage(null, ServerLang.Announcements.Unlink.Inactive, TemplateKeys.Unlink.Completed.Inactive, TemplateKeys.Announcements.Unlink.Inactive, _plugin, link);
         }
 
         public void HandleLink(IPlayer player, DiscordUser user, LinkReason reason, DiscordInteraction interaction)
         {
+            if (player == null) throw new ArgumentNullException(nameof(player));
+            if (user == null) throw new ArgumentNullException(nameof(user));
             _pluginData.InactivePlayerInfo.Remove(player.Id);
             _pluginData.LeftPlayerInfo.Remove(user.Id);
             _pluginData.PlayerDiscordInfo[player.Id] = new DiscordInfo(player, user);

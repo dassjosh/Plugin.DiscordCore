@@ -1,4 +1,6 @@
-﻿namespace DiscordCorePlugin.Templates
+﻿using Oxide.Ext.Discord.Libraries;
+
+namespace DiscordCorePlugin.Templates
 {
     public static class TemplateKeys
     {
@@ -9,30 +11,30 @@
             public static class Link
             {
                 private const string Base = Announcements.Base + nameof(Link) + ".";
-                public const string Command = Base + nameof(Command);
-                public const string Admin = Base + nameof(Admin);
-                public const string Api = Base + nameof(Api);
-                public const string GuildRejoin = Base + nameof(GuildRejoin);
-                public const string InactiveRejoin = Base + nameof(InactiveRejoin);
+                public static readonly TemplateKey Command = new(Base + nameof(Command));
+                public static readonly TemplateKey Admin = new(Base + nameof(Admin));
+                public static readonly TemplateKey Api = new(Base + nameof(Api));
+                public static readonly TemplateKey GuildRejoin = new(Base + nameof(GuildRejoin));
+                public static readonly TemplateKey InactiveRejoin = new(Base + nameof(InactiveRejoin));
             }
 
             public static class Unlink
             {
                 private const string Base = Announcements.Base + nameof(Unlink) + ".";
                 
-                public const string Command = Base + nameof(Command);
-                public const string Admin = Base + nameof(Admin);
-                public const string Api = Base + nameof(Api);
-                public const string LeftGuild = Base + nameof(LeftGuild);
-                public const string Inactive = Base + nameof(Inactive);
+                public static readonly TemplateKey Command = new(Base + nameof(Command));
+                public static readonly TemplateKey Admin = new(Base + nameof(Admin));
+                public static readonly TemplateKey Api = new(Base + nameof(Api));
+                public static readonly TemplateKey LeftGuild = new(Base + nameof(LeftGuild));
+                public static readonly TemplateKey Inactive = new(Base + nameof(Inactive));
             }
 
             public static class Ban
             {
                 private const string Base = Announcements.Base + nameof(Ban) + ".";
 
-                public const string PlayerBanned = Base + nameof(PlayerBanned);
-                public const string UserBanned = Base + nameof(UserBanned);
+                public static readonly TemplateKey PlayerBanned = new(Base + nameof(PlayerBanned));
+                public static readonly TemplateKey UserBanned = new(Base + nameof(UserBanned));
             }
         }
 
@@ -40,14 +42,14 @@
         {
             private const string Base = nameof(WelcomeMessage) + ".";
             
-            public const string PmWelcomeMessage = Base + nameof(PmWelcomeMessage);
-            public const string GuildWelcomeMessage = Base + nameof(GuildWelcomeMessage);
+            public static readonly TemplateKey PmWelcomeMessage = new(Base + nameof(PmWelcomeMessage));
+            public static readonly TemplateKey GuildWelcomeMessage = new(Base + nameof(GuildWelcomeMessage));
 
             public static class Error
             {
                 private const string Base = WelcomeMessage.Base + nameof(Error) + ".";
                 
-                public const string AlreadyLinked = Base + nameof(AlreadyLinked);
+                public static readonly TemplateKey AlreadyLinked = new(Base + nameof(AlreadyLinked));
             }
         }
         
@@ -59,21 +61,21 @@
             {
                 private const string Base = Commands.Base + nameof(Code) + ".";
                 
-                public const string Success = Base + nameof(Success);
+                public static readonly TemplateKey Success = new(Base + nameof(Success));
             }
 
             public static class User
             {
                 private const string Base = Commands.Base + nameof(User) + ".";
                 
-                public const string Success = Base + nameof(Success);
+                public static readonly TemplateKey Success = new(Base + nameof(Success));
 
                 public static class Error
                 {
                     private const string Base = User.Base + nameof(Error) + ".";
                     
-                    public const string PlayerIsInvalid = Base + nameof(PlayerIsInvalid);
-                    public const string PlayerNotConnected = Base + nameof(PlayerNotConnected);
+                    public static readonly TemplateKey PlayerIsInvalid = new(Base + nameof(PlayerIsInvalid));
+                    public static readonly TemplateKey PlayerNotConnected = new(Base + nameof(PlayerNotConnected));
                 }
             }
 
@@ -85,7 +87,7 @@
                 {
                     private const string Base = Leave.Base + nameof(Error) + ".";
                     
-                    public const string UserNotLinked = Base + nameof(UserNotLinked);
+                    public static readonly TemplateKey UserNotLinked = new(Base + nameof(UserNotLinked));
                 }
             }
             
@@ -97,15 +99,15 @@
                 {
                     private const string Base = Admin.Base + nameof(Link) + ".";
                     
-                    public const string Success = Base + nameof(Success);
+                    public static readonly TemplateKey Success = new(Base + nameof(Success));
 
                     public static class Error
                     {
                         private const string Base = Link.Base + nameof(Error) + ".";
 
-                        public const string PlayerNotFound = Base + nameof(PlayerNotFound);
-                        public const string PlayerAlreadyLinked = Base + nameof(PlayerAlreadyLinked);
-                        public const string UserAlreadyLinked = Base + nameof(UserAlreadyLinked);
+                        public static readonly TemplateKey PlayerNotFound = new(Base + nameof(PlayerNotFound));
+                        public static readonly TemplateKey PlayerAlreadyLinked = new(Base + nameof(PlayerAlreadyLinked));
+                        public static readonly TemplateKey UserAlreadyLinked = new(Base + nameof(UserAlreadyLinked));
                     }
                 }
 
@@ -113,16 +115,16 @@
                 {
                     private const string Base = Admin.Base + nameof(Unlink) + ".";
 
-                    public const string Success = Base + nameof(Success);
+                    public static readonly TemplateKey Success = new(Base + nameof(Success));
 
                     public static class Error
                     {
                         private const string Base = Unlink.Base + nameof(Error) + ".";
                         
-                        public const string MustSpecifyOne = Base + nameof(MustSpecifyOne);
-                        public const string PlayerIsNotLinked = Base + nameof(PlayerIsNotLinked);
-                        public const string UserIsNotLinked = Base + nameof(UserIsNotLinked);
-                        public const string LinkNotSame = Base + nameof(LinkNotSame);
+                        public static readonly TemplateKey MustSpecifyOne = new(Base + nameof(MustSpecifyOne));
+                        public static readonly TemplateKey PlayerIsNotLinked = new(Base + nameof(PlayerIsNotLinked));
+                        public static readonly TemplateKey UserIsNotLinked = new(Base + nameof(UserIsNotLinked));
+                        public static readonly TemplateKey LinkNotSame = new(Base + nameof(LinkNotSame));
                     }
                 }
 
@@ -130,13 +132,13 @@
                 {
                     private const string Base = Admin.Base + nameof(Search) + ".";
 
-                    public const string Success = Base + nameof(Success);
+                    public static readonly TemplateKey Success = new(Base + nameof(Success));
 
                     public static class Error
                     {
                         private const string Base = Search.Base + nameof(Error) + ".";
                         
-                        public const string PlayerNotFound = Base + nameof(PlayerNotFound);
+                        public static readonly TemplateKey PlayerNotFound = new(Base + nameof(PlayerNotFound));
                     }
                 }
                 
@@ -145,16 +147,16 @@
                 {
                     private const string Base = nameof(Unban) + ".";
             
-                    public const string Player = Base + nameof(Player); 
-                    public const string User = Base + nameof(User);
+                    public static readonly TemplateKey Player = new(Base + nameof(Player)); 
+                    public static readonly TemplateKey User = new(Base + nameof(User));
 
                     public static class Error
                     {
                         private const string Base = Unban.Base + nameof(Error) + ".";
 
-                        public const string PlayerNotFound = Base + nameof(PlayerNotFound);
-                        public const string PlayerNotBanned = Base + nameof(PlayerNotBanned);
-                        public const string UserNotBanned = Base + nameof(UserNotBanned);
+                        public static readonly TemplateKey PlayerNotFound = new(Base + nameof(PlayerNotFound));
+                        public static readonly TemplateKey PlayerNotBanned = new(Base + nameof(PlayerNotBanned));
+                        public static readonly TemplateKey UserNotBanned = new(Base + nameof(UserNotBanned));
                     }
                 }
             }
@@ -168,27 +170,27 @@
             {
                 private const string Base = Link.Base + nameof(Completed) + ".";
                 
-                public const string Command = Base + nameof(Command);
-                public const string Admin = Base + nameof(Admin);
-                public const string Api = Base + nameof(Api);
-                public const string GuildRejoin = Base + nameof(GuildRejoin);
-                public const string InactiveRejoin = Base + nameof(InactiveRejoin);
+                public static readonly TemplateKey Command = new(Base + nameof(Command));
+                public static readonly TemplateKey Admin = new(Base + nameof(Admin));
+                public static readonly TemplateKey Api = new(Base + nameof(Api));
+                public static readonly TemplateKey GuildRejoin = new(Base + nameof(GuildRejoin));
+                public static readonly TemplateKey InactiveRejoin = new(Base + nameof(InactiveRejoin));
             }
             
             public static class Declined
             {
                 private const string Base = Link.Base + nameof(Declined) + ".";
 
-                public const string JoinWithUser = Base + nameof(JoinWithUser);
-                public const string JoinWithPlayer = Base + nameof(JoinWithPlayer);
+                public static readonly TemplateKey JoinWithUser = new(Base + nameof(JoinWithUser));
+                public static readonly TemplateKey JoinWithPlayer = new(Base + nameof(JoinWithPlayer));
             }
 
             public static class WelcomeMessage
             {
                 private const string Base = Link.Base + nameof(WelcomeMessage) + ".";
 
-                public const string DmLinkAccounts = Base + nameof(DmLinkAccounts);
-                public const string GuildLinkAccounts = Base + nameof(GuildLinkAccounts);
+                public static readonly TemplateKey DmLinkAccounts = new(Base + nameof(DmLinkAccounts));
+                public static readonly TemplateKey GuildLinkAccounts = new(Base + nameof(GuildLinkAccounts));
             }
         }
 
@@ -199,10 +201,10 @@
             public static class Completed
             {
                 private const string Base = Unlink.Base + nameof(Completed) + ".";
-                public const string Command = Base + nameof(Command);
-                public const string Admin = Base + nameof(Admin);
-                public const string Api = Base + nameof(Api);
-                public const string Inactive = Base + nameof(Inactive);
+                public static readonly TemplateKey Command = new(Base + nameof(Command));
+                public static readonly TemplateKey Admin = new(Base + nameof(Admin));
+                public static readonly TemplateKey Api = new(Base + nameof(Api));
+                public static readonly TemplateKey Inactive = new(Base + nameof(Inactive));
             }
         }
         
@@ -210,24 +212,25 @@
         {
             private const string Base = nameof(Banned) + ".";
 
-            public const string PlayerBanned = Base + nameof(PlayerBanned);
+            public static readonly TemplateKey PlayerBanned = new(Base + nameof(PlayerBanned));
         }
 
         public static class Join
         {
             private const string Base = nameof(Join) + ".";
             
-            public const string CompleteLink = Base + nameof(CompleteLink);
+            public static readonly TemplateKey CompleteLink = new(Base + nameof(CompleteLink));
         }
 
         public static class Errors
         {
             private const string Base = nameof(Errors) + ".";
 
-            public const string UserAlreadyLinked = Base + nameof(UserAlreadyLinked);
-            public const string PlayerAlreadyLinked = Base + nameof(PlayerAlreadyLinked);
-            public const string CodActivationNotFound = Base + nameof(CodActivationNotFound);
-            public const string LookupActivationNotFound = Base + nameof(LookupActivationNotFound);
+            public static readonly TemplateKey UserAlreadyLinked = new(Base + nameof(UserAlreadyLinked));
+            public static readonly TemplateKey PlayerAlreadyLinked = new(Base + nameof(PlayerAlreadyLinked));
+            public static readonly TemplateKey CodeActivationNotFound = new(Base + nameof(CodeActivationNotFound));
+            public static readonly TemplateKey LookupActivationNotFound = new(Base + nameof(LookupActivationNotFound));
+            public static readonly TemplateKey MustBeCompletedInServer = new(Base + nameof(MustBeCompletedInServer));
         }
     }
 }

@@ -5,7 +5,6 @@ using DiscordCorePlugin.Placeholders;
 using DiscordCorePlugin.Templates;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Ext.Discord.Entities;
-using Oxide.Ext.Discord.Extensions;
 using Oxide.Ext.Discord.Helpers;
 using Oxide.Ext.Discord.Interfaces;
 using Oxide.Ext.Discord.Libraries;
@@ -162,11 +161,11 @@ namespace DiscordCorePlugin.Plugins
             DiscordMessageTemplate playerSearchNotFound = CreateTemplateEmbed($"Failed to find Player with '{DiscordFormatting.Bold(PlaceholderKeys.NotFound)}' ID", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Commands.Admin.Search.Error.PlayerNotFound, playerSearchNotFound, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
             
-            DiscordMessageTemplate searchSuccess = new DiscordMessageTemplate
+            DiscordMessageTemplate searchSuccess = new()
             {
                 Embeds = new List<DiscordEmbedTemplate>
                 {
-                    new DiscordEmbedTemplate
+                    new()
                     {
                         Color = DiscordColor.Danger.ToHex(),
                         Fields =
@@ -258,10 +257,13 @@ namespace DiscordCorePlugin.Plugins
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Errors.PlayerAlreadyLinked, playerAlreadyLinked, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
 
             DiscordMessageTemplate codeActivationNotFound = CreateTemplateEmbed($"We failed to find a pending link activation for the code {DiscordFormatting.Bold(PlaceholderKeys.LinkCode.Placeholder)}. Please confirm you have the correct code and try again.", DiscordColor.Danger);
-            _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Errors.CodActivationNotFound, codeActivationNotFound, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
+            _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Errors.CodeActivationNotFound, codeActivationNotFound, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
         
             DiscordMessageTemplate lookupActivationNotFound = CreateTemplateEmbed($"We failed to find a pending link activation for user {DiscordFormatting.Bold(DefaultKeys.User.Fullname)}. Please confirm you have started that activation from the game server for this user.", DiscordColor.Danger);
             _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Errors.LookupActivationNotFound, lookupActivationNotFound, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
+            
+            DiscordMessageTemplate mustBeCompletedInServer = CreateTemplateEmbed($"The link must be completed on the game server. Please join the server and use the command in came to complete the link.", DiscordColor.Danger);
+            _templates.RegisterLocalizedTemplateAsync(this, TemplateKeys.Errors.MustBeCompletedInServer, mustBeCompletedInServer, new TemplateVersion(1, 0, 0), new TemplateVersion(1, 0, 0));
         }
 
         public DiscordMessageTemplate CreateTemplateEmbed(string description, DiscordColor color)
@@ -270,7 +272,7 @@ namespace DiscordCorePlugin.Plugins
             {
                 Embeds = new List<DiscordEmbedTemplate>
                 {
-                    new DiscordEmbedTemplate
+                    new()
                     {
                         Description = $"[{DefaultKeys.Plugin.Title}] {description}",
                         Color = color.ToHex()
@@ -279,9 +281,9 @@ namespace DiscordCorePlugin.Plugins
             };
         }
         
-        public void SendTemplateMessage(string templateName, DiscordInteraction interaction, PlaceholderData placeholders = null)
+        public void SendTemplateMessage(TemplateKey templateName, DiscordInteraction interaction, PlaceholderData placeholders = null)
         {
-            InteractionCallbackData response = new InteractionCallbackData
+            InteractionCallbackData response = new()
             {
                 AllowedMentions = AllowedMentions.None
             };
@@ -293,7 +295,7 @@ namespace DiscordCorePlugin.Plugins
             interaction.CreateTemplateResponse(Client, InteractionResponseType.ChannelMessageWithSource, templateName, response, placeholders);
         }
 
-        public void SendTemplateMessage(string templateName, DiscordUser user, IPlayer player = null, PlaceholderData placeholders = null)
+        public void SendTemplateMessage(TemplateKey templateName, DiscordUser user, IPlayer player = null, PlaceholderData placeholders = null)
         {
             AddDefaultPlaceholders(ref placeholders, user, player);
             user.SendTemplateDirectMessage(Client, templateName, _lang.GetPlayerLanguage(player).Id, new MessageCreate
@@ -302,7 +304,7 @@ namespace DiscordCorePlugin.Plugins
             }, placeholders);
         }
 
-        public void SendGlobalTemplateMessage(string templateName, DiscordUser user, IPlayer player = null, PlaceholderData placeholders = null)
+        public void SendGlobalTemplateMessage(TemplateKey templateName, DiscordUser user, IPlayer player = null, PlaceholderData placeholders = null)
         {
             AddDefaultPlaceholders(ref placeholders, user, player);
             user.SendGlobalTemplateDirectMessage(Client, templateName, new MessageCreate
@@ -311,7 +313,7 @@ namespace DiscordCorePlugin.Plugins
             }, placeholders);
         }
         
-        public IPromise<DiscordMessage> SendGlobalTemplateMessage(string templateName, Snowflake channelId, DiscordUser user = null, IPlayer player = null, PlaceholderData placeholders = null)
+        public IPromise<DiscordMessage> SendGlobalTemplateMessage(TemplateKey templateName, Snowflake channelId, DiscordUser user = null, IPlayer player = null, PlaceholderData placeholders = null)
         {
             DiscordChannel channel = Guild.Channels[channelId];
             if (channel != null)
@@ -326,7 +328,7 @@ namespace DiscordCorePlugin.Plugins
             return Promise<DiscordMessage>.Rejected(new Exception("Channel Not Found"));
         }
         
-        public void UpdateGuildTemplateMessage(string templateName, DiscordMessage message, PlaceholderData placeholders = null)
+        public void UpdateGuildTemplateMessage(TemplateKey templateName, DiscordMessage message, PlaceholderData placeholders = null)
         {
             AddDefaultPlaceholders(ref placeholders, null, null);
             message.EditGlobalTemplateMessage(Client, templateName, placeholders);

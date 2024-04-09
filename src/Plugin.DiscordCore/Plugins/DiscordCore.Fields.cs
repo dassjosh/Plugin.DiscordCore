@@ -21,7 +21,7 @@ namespace DiscordCorePlugin.Plugins
         
         public DiscordGuild Guild;
         
-        private readonly BotConnection _discordSettings = new BotConnection
+        private readonly BotConnection _discordSettings = new()
         {
             Intents = GatewayIntents.Guilds | GatewayIntents.GuildMembers
         };
@@ -31,16 +31,16 @@ namespace DiscordCorePlugin.Plugins
         private readonly DiscordPlaceholders _placeholders = GetLibrary<DiscordPlaceholders>();
         private readonly DiscordLocales _lang = GetLibrary<DiscordLocales>();
         private readonly DiscordCommandLocalizations _local = GetLibrary<DiscordCommandLocalizations>();
-        private readonly StringBuilder _sb = new StringBuilder();
+        private readonly StringBuilder _sb = new();
 
         private JoinHandler _joinHandler;
         private JoinBanHandler _banHandler;
         private LinkHandler _linkHandler;
 
         private const string UsePermission = "discordcore.use";
-        private static readonly DiscordColor AccentColor = new DiscordColor("de8732");
-        private static readonly DiscordColor Success = new DiscordColor("43b581");
-        private static readonly DiscordColor Danger = new DiscordColor("f04747");
+        private static readonly DiscordColor AccentColor = new("de8732");
+        private static readonly DiscordColor Success = new("43b581");
+        private static readonly DiscordColor Danger = new("f04747");
         private const string PlayerArg = "player";
         private const string UserArg = "user";
         private const string CodeArg = "code";

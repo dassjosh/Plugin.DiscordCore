@@ -2260,12 +2260,39 @@ namespace Oxide.Plugins
         {
             public IPlayer Player { get; set; }
             public DiscordUser Discord { get; set; }
-            public string Code { get; set; }
-            public JoinSource From { get; }
+            public string Code { get; private set; }
+            public JoinSource From { get; private set; }
             
-            public JoinData(JoinSource from)
+            private JoinData() { }
+            
+            public static JoinData CreateServerActivation(IPlayer player, string code)
             {
-                From = from;
+                return new JoinData
+                {
+                    From = JoinSource.Server,
+                    Code = code,
+                    Player = player
+                };
+            }
+            
+            public static JoinData CreateDiscordActivation(DiscordUser user, string code)
+            {
+                return new JoinData
+                {
+                    From = JoinSource.Discord,
+                    Code = code,
+                    Discord = user
+                };
+            }
+            
+            public static JoinData CreateLinkedActivation(JoinSource source, IPlayer player, DiscordUser user)
+            {
+                return new JoinData
+                {
+                    From = source,
+                    Player = player,
+                    Discord = user
+                };
             }
             
             public bool IsCompleted() => Player != null && Discord != null && Discord.Id.IsValid();
@@ -2364,11 +2391,7 @@ namespace Oxide.Plugins
                 if (player == null) throw new ArgumentNullException(nameof(player));
                 
                 RemoveByPlayer(player);
-                JoinData activation = new(JoinSource.Server)
-                {
-                    Code = GenerateCode(),
-                    Player = player
-                };
+                JoinData activation = JoinData.CreateServerActivation(player, GenerateCode());
                 _activations.Add(activation);
                 return activation;
             }
@@ -2378,11 +2401,7 @@ namespace Oxide.Plugins
                 if (user == null) throw new ArgumentNullException(nameof(user));
                 
                 RemoveByUser(user);
-                JoinData activation = new(JoinSource.Discord)
-                {
-                    Code = GenerateCode(),
-                    Discord = user
-                };
+                JoinData activation = JoinData.CreateDiscordActivation(user, GenerateCode());
                 _activations.Add(activation);
                 return activation;
             }
@@ -2393,11 +2412,7 @@ namespace Oxide.Plugins
                 
                 RemoveByPlayer(player);
                 RemoveByUser(user);
-                JoinData activation = new(from)
-                {
-                    Discord = user,
-                    Player = player
-                };
+                JoinData activation = JoinData.CreateLinkedActivation(from, player, user);
                 _activations.Add(activation);
                 return activation;
             }

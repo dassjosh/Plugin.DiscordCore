@@ -8,12 +8,39 @@ namespace DiscordCorePlugin.Link
     {
         public IPlayer Player { get; set; }
         public DiscordUser Discord { get; set; }
-        public string Code { get; set; }
-        public JoinSource From { get; }
+        public string Code { get; private set; }
+        public JoinSource From { get; private set; }
 
-        public JoinData(JoinSource from)
+        private JoinData() { }
+
+        public static JoinData CreateServerActivation(IPlayer player, string code)
         {
-            From = from;
+            return new JoinData
+            {
+                From = JoinSource.Server,
+                Code = code,
+                Player = player
+            };
+        }
+        
+        public static JoinData CreateDiscordActivation(DiscordUser user, string code)
+        {
+            return new JoinData
+            {
+                From = JoinSource.Discord,
+                Code = code,
+                Discord = user
+            };
+        }
+
+        public static JoinData CreateLinkedActivation(JoinSource source, IPlayer player, DiscordUser user)
+        {
+            return new JoinData
+            {
+                From = source,
+                Player = player,
+                Discord = user
+            };
         }
         
         public bool IsCompleted() => Player != null && Discord != null && Discord.Id.IsValid();

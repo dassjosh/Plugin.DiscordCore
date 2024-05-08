@@ -99,11 +99,7 @@ namespace DiscordCorePlugin.Link
             if (player == null) throw new ArgumentNullException(nameof(player));
             
             RemoveByPlayer(player);
-            JoinData activation = new(JoinSource.Server)
-            {
-                Code = GenerateCode(),
-                Player = player
-            };
+            JoinData activation = JoinData.CreateServerActivation(player, GenerateCode());
             _activations.Add(activation);
             return activation;
         }
@@ -113,11 +109,7 @@ namespace DiscordCorePlugin.Link
             if (user == null) throw new ArgumentNullException(nameof(user));
             
             RemoveByUser(user);
-            JoinData activation = new(JoinSource.Discord)
-            {
-                Code = GenerateCode(),
-                Discord = user
-            };
+            JoinData activation = JoinData.CreateDiscordActivation(user, GenerateCode());
             _activations.Add(activation);
             return activation;
         }
@@ -128,11 +120,7 @@ namespace DiscordCorePlugin.Link
             
             RemoveByPlayer(player);
             RemoveByUser(user);
-            JoinData activation = new(from)
-            {
-                Discord = user,
-                Player = player
-            };
+            JoinData activation = JoinData.CreateLinkedActivation(from, player, user);
             _activations.Add(activation);
             return activation;
         }

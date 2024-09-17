@@ -104,7 +104,7 @@ namespace DiscordCorePlugin.Plugins
                     _sb.Append(LangPlaceholder(ServerLang.Commands.Code.LinkInGuild, data));
                 }
 
-                if (_appCommand?.DmPermission != null && _appCommand.DmPermission.Value)
+                if (_appCommand?.DmPermission is true)
                 {
                     _sb.Append(LangPlaceholder(ServerLang.Commands.Code.LinkInDm, data));
                 }

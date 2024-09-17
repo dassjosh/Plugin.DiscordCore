@@ -22,7 +22,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-//DiscordCore created with PluginMerge v(1.0.8.0) by MJSU @ https://github.com/dassjosh/Plugin.Merge
+//DiscordCore created with PluginMerge v(1.0.9.0) by MJSU @ https://github.com/dassjosh/Plugin.Merge
 namespace Oxide.Plugins
 {
     [Info("Discord Core", "MJSU", "3.0.0")]
@@ -242,9 +242,9 @@ namespace Oxide.Plugins
                 
                 [ServerLang.Commands.Code.LinkInfo] = $"To complete your activation please open Discord use the following command: [{AccentColor.ToHex()}]/{DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Discord.DiscordCommand)} {DefaultKeys.Plugin.Lang.WithFormat(ServerLang.Discord.LinkCommand)} {PlaceholderKeys.LinkCode}[/#].\n",
                 [ServerLang.Commands.Code.LinkServer] = $"In order to use this command you must be in the {DefaultKeys.Guild.Name.Color(AccentColor)} discord server. " +
-                $"You can join @ {ServerFormatting.Color($"{PlaceholderKeys.InviteUrl}", AccentColor)}.\n",
+                $"You can join @ {$"{PlaceholderKeys.InviteUrl}".Color(AccentColor)}.\n",
                 [ServerLang.Commands.Code.LinkInGuild] = $"This command can be used in the following guild channels {PlaceholderKeys.CommandChannels}.\n",
-                [ServerLang.Commands.Code.LinkInDm] = $"This command can be used in the following in a direct message to {DefaultKeys.User.Fullname.Color(AccentColor)} bot",
+                [ServerLang.Commands.Code.LinkInDm] = $"This command can be used in the following in a direct message to {DefaultKeys.User.Username.Color(AccentColor)} bot",
                 
                 [ServerLang.Commands.User.MatchFound] = $"We found a match by username. " +
                 $"We have a sent a discord message to {DefaultKeys.User.Fullname.Color(AccentColor)} to complete the link.\n" +
@@ -411,7 +411,7 @@ namespace Oxide.Plugins
                     _sb.Append(LangPlaceholder(ServerLang.Commands.Code.LinkInGuild, data));
                 }
                 
-                if (_appCommand?.DmPermission != null && _appCommand.DmPermission.Value)
+                if (_appCommand?.DmPermission is true)
                 {
                     _sb.Append(LangPlaceholder(ServerLang.Commands.Code.LinkInDm, data));
                 }
@@ -1958,18 +1958,18 @@ namespace Oxide.Plugins
         {
             [DefaultValue("")]
             [JsonProperty(PropertyName = "Discord Bot Token")]
-            public string ApiKey { get; set; }
+            public string ApiKey { get; set; } = string.Empty;
             
             [JsonProperty(PropertyName = "Discord Server ID (Optional if bot only in 1 guild)")]
             public Snowflake GuildId { get; set; }
             
             [DefaultValue("")]
             [JsonProperty(PropertyName = "Discord Server Name Override")]
-            public string ServerNameOverride { get; set; }
+            public string ServerNameOverride { get; set; } = string.Empty;
             
             [DefaultValue("")]
             [JsonProperty(PropertyName = "Discord Server Invite Url")]
-            public string InviteUrl { get; set; }
+            public string InviteUrl { get; set; } = string.Empty;
             
             [JsonProperty(PropertyName = "Link Settings")]
             public LinkSettings LinkSettings { get; set; }
@@ -2448,23 +2448,19 @@ namespace Oxide.Plugins
                 {
                     _ban.AddBan(data.Player);
                     RemoveByPlayer(data.Player);
-                    using (PlaceholderData placeholders = _plugin.GetDefault(data.Player, data.Discord))
-                    {
-                        placeholders.ManualPool();
-                        _plugin.Chat(data.Player, ServerLang.Link.Declined.JoinWithUser, placeholders);
-                        _plugin.SendTemplateMessage(TemplateKeys.Link.Declined.JoinWithUser, interaction, placeholders);
-                    }
+                    using PlaceholderData placeholders = _plugin.GetDefault(data.Player, data.Discord);
+                    placeholders.ManualPool();
+                    _plugin.Chat(data.Player, ServerLang.Link.Declined.JoinWithUser, placeholders);
+                    _plugin.SendTemplateMessage(TemplateKeys.Link.Declined.JoinWithUser, interaction, placeholders);
                 }
                 else if (data.From == JoinSource.Discord)
                 {
                     _ban.AddBan(data.Discord);
                     RemoveByUser(data.Discord);
-                    using (PlaceholderData placeholders = _plugin.GetDefault(data.Player, data.Discord))
-                    {
-                        placeholders.ManualPool();
-                        _plugin.Chat(data.Player, ServerLang.Link.Declined.JoinWithPlayer, placeholders);
-                        _plugin.SendTemplateMessage(TemplateKeys.Link.Declined.JoinWithPlayer, data.Discord, data.Player, placeholders);
-                    }
+                    using PlaceholderData placeholders = _plugin.GetDefault(data.Player, data.Discord);
+                    placeholders.ManualPool();
+                    _plugin.Chat(data.Player, ServerLang.Link.Declined.JoinWithPlayer, placeholders);
+                    _plugin.SendTemplateMessage(TemplateKeys.Link.Declined.JoinWithPlayer, data.Discord, data.Player, placeholders);
                 }
             }
         }

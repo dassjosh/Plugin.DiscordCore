@@ -7,6 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Reference Include="mscorlib">
+        <HintPath>..\References\mscorlib.dll</HintPath>
+      </Reference>
       <Reference Include="Oxide.Core">
         <HintPath>..\References\Oxide.Core.dll</HintPath>
       </Reference>

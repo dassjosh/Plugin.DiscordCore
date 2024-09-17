@@ -10,18 +10,18 @@ namespace DiscordCorePlugin.Configuration
     {
         [DefaultValue("")]
         [JsonProperty(PropertyName = "Discord Bot Token")]
-        public string ApiKey { get; set; }
+        public string ApiKey { get; set; } = string.Empty;
             
         [JsonProperty(PropertyName = "Discord Server ID (Optional if bot only in 1 guild)")]
         public Snowflake GuildId { get; set; }
 
         [DefaultValue("")]
         [JsonProperty(PropertyName = "Discord Server Name Override")]
-        public string ServerNameOverride { get; set; }
+        public string ServerNameOverride { get; set; } = string.Empty;
             
         [DefaultValue("")]
         [JsonProperty(PropertyName = "Discord Server Invite Url")]
-        public string InviteUrl { get; set; }
+        public string InviteUrl { get; set; } = string.Empty;
 
         [JsonProperty(PropertyName = "Link Settings")]
         public LinkSettings LinkSettings { get; set; }

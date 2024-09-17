@@ -156,23 +156,19 @@ namespace DiscordCorePlugin.Link
             {
                 _ban.AddBan(data.Player);
                 RemoveByPlayer(data.Player);
-                using (PlaceholderData placeholders = _plugin.GetDefault(data.Player, data.Discord))
-                {
-                    placeholders.ManualPool();
-                    _plugin.Chat(data.Player, ServerLang.Link.Declined.JoinWithUser, placeholders);
-                    _plugin.SendTemplateMessage(TemplateKeys.Link.Declined.JoinWithUser, interaction, placeholders);
-                }
+                using PlaceholderData placeholders = _plugin.GetDefault(data.Player, data.Discord);
+                placeholders.ManualPool();
+                _plugin.Chat(data.Player, ServerLang.Link.Declined.JoinWithUser, placeholders);
+                _plugin.SendTemplateMessage(TemplateKeys.Link.Declined.JoinWithUser, interaction, placeholders);
             }
             else if (data.From == JoinSource.Discord)
             {
                 _ban.AddBan(data.Discord);
                 RemoveByUser(data.Discord);
-                using (PlaceholderData placeholders = _plugin.GetDefault(data.Player, data.Discord))
-                {
-                    placeholders.ManualPool();
-                    _plugin.Chat(data.Player, ServerLang.Link.Declined.JoinWithPlayer, placeholders);
-                    _plugin.SendTemplateMessage(TemplateKeys.Link.Declined.JoinWithPlayer, data.Discord, data.Player, placeholders);
-                }
+                using PlaceholderData placeholders = _plugin.GetDefault(data.Player, data.Discord);
+                placeholders.ManualPool();
+                _plugin.Chat(data.Player, ServerLang.Link.Declined.JoinWithPlayer, placeholders);
+                _plugin.SendTemplateMessage(TemplateKeys.Link.Declined.JoinWithPlayer, data.Discord, data.Player, placeholders);
             }
         }
     }

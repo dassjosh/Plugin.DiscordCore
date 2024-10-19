@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using DiscordCorePlugin.Configuration;
 using DiscordCorePlugin.Data;
@@ -154,28 +155,24 @@ namespace DiscordCorePlugin.Link
 
         public void ProcessLeaveAndRejoin()
         {
+            List<DiscordInfo> possiblyLeftPlayers = new();
             foreach (DiscordInfo info in _pluginData.PlayerDiscordInfo.Values.ToList())
             {
-                if (!_plugin.Guild.Members.ContainsKey(info.DiscordId))
-                {
-                    IPlayer player = _link.GetPlayer(info.DiscordId);
-                    if (player != null)
-                    {
-                        DiscordUser user = player.GetDiscordUser();
-                        HandleUnlink(player, user, UnlinkedReason.LeftGuild, null);
-                    }
-                }
-
                 if (_settings.InactiveSettings.UnlinkInactive && info.LastOnline + TimeSpan.FromDays(_settings.InactiveSettings.UnlinkInactiveDays) < DateTime.UtcNow)
                 {
                     IPlayer player = _link.GetPlayer(info.DiscordId);
-                    if (player != null)
-                    {
-                        DiscordUser user = player.GetDiscordUser();
-                        HandleUnlink(player, user, UnlinkedReason.LeftGuild, null);
-                    }
+                    DiscordUser user = player.GetDiscordUser();
+                    HandleUnlink(player, user, UnlinkedReason.LeftGuild, null);
+                    continue;
+                }
+                
+                if (!_plugin.Guild.Members.ContainsKey(info.DiscordId))
+                {
+                    possiblyLeftPlayers.Add(info);
                 }
             }
+            
+            ProcessLeftPlayers(possiblyLeftPlayers);
 
             if (_settings.AutoRelinkPlayer)
             {
@@ -188,6 +185,32 @@ namespace DiscordCorePlugin.Link
                     }
                 }
             }
+        }
+
+        private void ProcessLeftPlayers(List<DiscordInfo> possiblyLeftPlayers)
+        {
+            if (possiblyLeftPlayers.Count != 0)
+            {
+                int index = possiblyLeftPlayers.Count - 1;
+                DiscordInfo info = possiblyLeftPlayers[index];
+                possiblyLeftPlayers.RemoveAt(index);
+                ProcessLeftPlayer(info, possiblyLeftPlayers);
+            }
+        }
+
+        private void ProcessLeftPlayer(DiscordInfo info, List<DiscordInfo> remaining)
+        {
+            DiscordCore.Instance.Guild.GetMember(DiscordCore.Instance.Client, info.DiscordId)
+                .Catch<ResponseError>(error =>
+                {
+                    if (error.DiscordError is { Code: 10013 })
+                    {
+                        error.SuppressErrorMessage();
+                        IPlayer player = _link.GetPlayer(info.DiscordId);
+                        DiscordUser user = player.GetDiscordUser();
+                        HandleUnlink(player, user, UnlinkedReason.LeftGuild, null);
+                    }
+                }).Finally(() => ProcessLeftPlayers(remaining));
         }
 
         private void AddPermissions(IPlayer player, DiscordUser user)

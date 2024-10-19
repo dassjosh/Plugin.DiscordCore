@@ -74,27 +74,17 @@ namespace DiscordCorePlugin.Plugins
             });
         }
 
-        public void CreateAllowedChannels(DiscordApplicationCommand command, int attempts = 0)
+        public void CreateAllowedChannels(DiscordApplicationCommand command)
         {
-            if (attempts >= 3)
+            timer.In(1f, () =>
             {
-                return;
-            }
-            
-            command.GetPermissions(Client, Guild.Id)
-                   .Then(CreateAllowedChannels)
-                   .Catch<ResponseError>(error =>
-                   {
-                       timer.In(1f, () =>
-                       {
-                           attempts++;
-                           if (attempts < 3)
-                           {
-                               error.SuppressErrorMessage();
-                               CreateAllowedChannels(command, attempts);
-                           }
-                       });
-                   });
+                command.GetPermissions(Client, Guild.Id)
+                    .Then(CreateAllowedChannels)
+                    .Catch<ResponseError>(error =>
+                    {
+                        error.SuppressErrorMessage();
+                    });
+            });
         }
         
         public void CreateAllowedChannels(GuildCommandPermissions permissions)

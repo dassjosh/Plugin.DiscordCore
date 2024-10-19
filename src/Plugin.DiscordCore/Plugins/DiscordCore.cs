@@ -4,7 +4,7 @@ using Oxide.Plugins;
 
 namespace DiscordCorePlugin.Plugins
 {
-    [Info("Discord Core", "MJSU", "3.0.0")]
+    [Info("Discord Core", "MJSU", "3.0.1")]
     [Description("Creates a link between a player and discord")]
     public partial class DiscordCore : CovalencePlugin, IDiscordPlugin, IDiscordLink
     {

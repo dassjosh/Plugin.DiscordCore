@@ -25,7 +25,7 @@ using System.Text;
 //DiscordCore created with PluginMerge v(1.0.9.0) by MJSU @ https://github.com/dassjosh/Plugin.Merge
 namespace Oxide.Plugins
 {
-    [Info("Discord Core", "MJSU", "3.0.0")]
+    [Info("Discord Core", "MJSU", "3.0.1")]
     [Description("Creates a link between a player and discord")]
     public partial class DiscordCore : CovalencePlugin, IDiscordPlugin, IDiscordLink
     {
@@ -817,25 +817,15 @@ namespace Oxide.Plugins
             });
         }
         
-        public void CreateAllowedChannels(DiscordApplicationCommand command, int attempts = 0)
+        public void CreateAllowedChannels(DiscordApplicationCommand command)
         {
-            if (attempts >= 3)
+            timer.In(1f, () =>
             {
-                return;
-            }
-            
-            command.GetPermissions(Client, Guild.Id)
-            .Then(CreateAllowedChannels)
-            .Catch<ResponseError>(error =>
-            {
-                timer.In(1f, () =>
+                command.GetPermissions(Client, Guild.Id)
+                .Then(CreateAllowedChannels)
+                .Catch<ResponseError>(error =>
                 {
-                    attempts++;
-                    if (attempts < 3)
-                    {
-                        error.SuppressErrorMessage();
-                        CreateAllowedChannels(command, attempts);
-                    }
+                    error.SuppressErrorMessage();
                 });
             });
         }
@@ -2606,28 +2596,24 @@ namespace Oxide.Plugins
             
             public void ProcessLeaveAndRejoin()
             {
+                List<DiscordInfo> possiblyLeftPlayers = new();
                 foreach (DiscordInfo info in _pluginData.PlayerDiscordInfo.Values.ToList())
                 {
-                    if (!_plugin.Guild.Members.ContainsKey(info.DiscordId))
-                    {
-                        IPlayer player = _link.GetPlayer(info.DiscordId);
-                        if (player != null)
-                        {
-                            DiscordUser user = player.GetDiscordUser();
-                            HandleUnlink(player, user, UnlinkedReason.LeftGuild, null);
-                        }
-                    }
-                    
                     if (_settings.InactiveSettings.UnlinkInactive && info.LastOnline + TimeSpan.FromDays(_settings.InactiveSettings.UnlinkInactiveDays) < DateTime.UtcNow)
                     {
                         IPlayer player = _link.GetPlayer(info.DiscordId);
-                        if (player != null)
-                        {
-                            DiscordUser user = player.GetDiscordUser();
-                            HandleUnlink(player, user, UnlinkedReason.LeftGuild, null);
-                        }
+                        DiscordUser user = player.GetDiscordUser();
+                        HandleUnlink(player, user, UnlinkedReason.LeftGuild, null);
+                        continue;
+                    }
+                    
+                    if (!_plugin.Guild.Members.ContainsKey(info.DiscordId))
+                    {
+                        possiblyLeftPlayers.Add(info);
                     }
                 }
+                
+                ProcessLeftPlayers(possiblyLeftPlayers);
                 
                 if (_settings.AutoRelinkPlayer)
                 {
@@ -2640,6 +2626,32 @@ namespace Oxide.Plugins
                         }
                     }
                 }
+            }
+            
+            private void ProcessLeftPlayers(List<DiscordInfo> possiblyLeftPlayers)
+            {
+                if (possiblyLeftPlayers.Count != 0)
+                {
+                    int index = possiblyLeftPlayers.Count - 1;
+                    DiscordInfo info = possiblyLeftPlayers[index];
+                    possiblyLeftPlayers.RemoveAt(index);
+                    ProcessLeftPlayer(info, possiblyLeftPlayers);
+                }
+            }
+            
+            private void ProcessLeftPlayer(DiscordInfo info, List<DiscordInfo> remaining)
+            {
+                DiscordCore.Instance.Guild.GetMember(DiscordCore.Instance.Client, info.DiscordId)
+                .Catch<ResponseError>(error =>
+                {
+                    if (error.DiscordError is { Code: 10013 })
+                    {
+                        error.SuppressErrorMessage();
+                        IPlayer player = _link.GetPlayer(info.DiscordId);
+                        DiscordUser user = player.GetDiscordUser();
+                        HandleUnlink(player, user, UnlinkedReason.LeftGuild, null);
+                    }
+                }).Finally(() => ProcessLeftPlayers(remaining));
             }
             
             private void AddPermissions(IPlayer player, DiscordUser user)

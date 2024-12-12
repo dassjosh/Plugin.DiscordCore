@@ -25,7 +25,7 @@ using System.Text;
 //DiscordCore created with PluginMerge v(1.0.9.0) by MJSU @ https://github.com/dassjosh/Plugin.Merge
 namespace Oxide.Plugins
 {
-    [Info("Discord Core", "MJSU", "3.0.1")]
+    [Info("Discord Core", "MJSU", "3.0.2")]
     [Description("Creates a link between a player and discord")]
     public partial class DiscordCore : CovalencePlugin, IDiscordPlugin, IDiscordLink
     {

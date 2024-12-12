@@ -2644,7 +2644,7 @@ namespace Oxide.Plugins
                 DiscordCore.Instance.Guild.GetMember(DiscordCore.Instance.Client, info.DiscordId)
                 .Catch<ResponseError>(error =>
                 {
-                    if (error.DiscordError is { Code: 10013 })
+                    if (error.DiscordError is { Code: 10013 } or { Code: 10007 })
                     {
                         error.SuppressErrorMessage();
                         IPlayer player = _link.GetPlayer(info.DiscordId);
